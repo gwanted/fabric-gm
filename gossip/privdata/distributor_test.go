@@ -10,6 +10,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/hyperledger/fabric/core/common/privdata"
 	"github.com/hyperledger/fabric/gossip/api"
 	gcommon "github.com/hyperledger/fabric/gossip/common"
 	"github.com/hyperledger/fabric/gossip/discovery"
@@ -17,9 +18,57 @@ import (
 	gossip2 "github.com/hyperledger/fabric/gossip/gossip"
 	"github.com/hyperledger/fabric/protos/common"
 	proto "github.com/hyperledger/fabric/protos/gossip"
+	"github.com/hyperledger/fabric/protos/transientstore"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+type collectionAccessFactoryMock struct {
+	mock.Mock
+}
+
+func (mock *collectionAccessFactoryMock) AccessPolicy(config *common.CollectionConfig, chainID string) (privdata.CollectionAccessPolicy, error) {
+	res := mock.Called(config, chainID)
+	return res.Get(0).(privdata.CollectionAccessPolicy), res.Error(1)
+}
+
+type collectionAccessPolicyMock struct {
+	mock.Mock
+}
+
+func (mock *collectionAccessPolicyMock) AccessFilter() privdata.Filter {
+	args := mock.Called()
+	return args.Get(0).(privdata.Filter)
+}
+
+func (mock *collectionAccessPolicyMock) RequiredPeerCount() int {
+	args := mock.Called()
+	return args.Int(0)
+}
+
+func (mock *collectionAccessPolicyMock) MaximumPeerCount() int {
+	args := mock.Called()
+	return args.Int(0)
+}
+
+func (mock *collectionAccessPolicyMock) MemberOrgs() []string {
+	args := mock.Called()
+	return args.Get(0).([]string)
+}
+
+func (mock *collectionAccessPolicyMock) IsMemberOnlyRead() bool {
+	args := mock.Called()
+	return args.Get(0).(bool)
+}
+
+func (mock *collectionAccessPolicyMock) Setup(requiredPeerCount int, maxPeerCount int,
+	accessFilter privdata.Filter, orgs []string, memberOnlyRead bool) {
+	mock.On("AccessFilter").Return(accessFilter)
+	mock.On("RequiredPeerCount").Return(requiredPeerCount)
+	mock.On("MaximumPeerCount").Return(maxPeerCount)
+	mock.On("MemberOrgs").Return(orgs)
+	mock.On("IsMemberOnlyRead").Return(memberOnlyRead)
+}
 
 type gossipMock struct {
 	err error
@@ -68,28 +117,54 @@ func TestDistributor(t *testing.T) {
 			SendCriteria:   sendCriteria,
 		}
 	}).Return(nil)
-	d := NewDistributor("test", g)
-	pdFactory := &pvtDataFactory{}
-	peerSelfSignedData := common.SignedData{
-		Identity:  []byte{0, 1, 2},
-		Signature: []byte{3, 4, 5},
-		Data:      []byte{6, 7, 8},
+	accessFactoryMock := &collectionAccessFactoryMock{}
+	c1ColConfig := &common.CollectionConfig{
+		Payload: &common.CollectionConfig_StaticCollectionConfig{
+			StaticCollectionConfig: &common.StaticCollectionConfig{
+				Name:              "c1",
+				RequiredPeerCount: 1,
+				MaximumPeerCount:  1,
+			},
+		},
 	}
-	cs := createcollectionStore(peerSelfSignedData).thatAccepts(common.CollectionCriteria{
-		TxId:       "tx1",
-		Namespace:  "ns1",
-		Channel:    "test",
-		Collection: "c1",
-	}).thatAccepts(common.CollectionCriteria{
-		TxId:       "tx2",
-		Namespace:  "ns2",
-		Channel:    "test",
-		Collection: "c2",
-	}).andIsLenient()
+
+	c2ColConfig := &common.CollectionConfig{
+		Payload: &common.CollectionConfig_StaticCollectionConfig{
+			StaticCollectionConfig: &common.StaticCollectionConfig{
+				Name:              "c2",
+				RequiredPeerCount: 1,
+				MaximumPeerCount:  1,
+			},
+		},
+	}
+
+	policyMock := &collectionAccessPolicyMock{}
+	policyMock.Setup(1, 2, func(_ common.SignedData) bool {
+		return true
+	}, []string{"org1", "org2"}, false)
+	accessFactoryMock.On("AccessPolicy", c1ColConfig, "test").Return(policyMock, nil)
+	accessFactoryMock.On("AccessPolicy", c2ColConfig, "test").Return(policyMock, nil)
+
+	d := NewDistributor("test", g, accessFactoryMock)
+	pdFactory := &pvtDataFactory{}
 	pvtData := pdFactory.addRWSet().addNSRWSet("ns1", "c1", "c2").addRWSet().addNSRWSet("ns2", "c1", "c2").create()
-	err := d.Distribute("tx1", pvtData[0].WriteSet, cs)
+	err := d.Distribute("tx1", &transientstore.TxPvtReadWriteSetWithConfigInfo{
+		PvtRwset: pvtData[0].WriteSet,
+		CollectionConfigs: map[string]*common.CollectionConfigPackage{
+			"ns1": {
+				Config: []*common.CollectionConfig{c1ColConfig, c2ColConfig},
+			},
+		},
+	}, 0)
 	assert.NoError(t, err)
-	err = d.Distribute("tx2", pvtData[1].WriteSet, cs)
+	err = d.Distribute("tx2", &transientstore.TxPvtReadWriteSetWithConfigInfo{
+		PvtRwset: pvtData[1].WriteSet,
+		CollectionConfigs: map[string]*common.CollectionConfigPackage{
+			"ns2": {
+				Config: []*common.CollectionConfig{c1ColConfig, c2ColConfig},
+			},
+		},
+	}, 0)
 	assert.NoError(t, err)
 
 	assertACL := func(pp *proto.PrivatePayload, sc gossip2.SendCriteria) {
@@ -116,14 +191,28 @@ func TestDistributor(t *testing.T) {
 
 	// Bad path: dependencies (gossip and others) don't work properly
 	g.err = errors.New("failed obtaining filter")
-	err = d.Distribute("tx1", pvtData[0].WriteSet, cs)
+	err = d.Distribute("tx1", &transientstore.TxPvtReadWriteSetWithConfigInfo{
+		PvtRwset: pvtData[0].WriteSet,
+		CollectionConfigs: map[string]*common.CollectionConfigPackage{
+			"ns1": {
+				Config: []*common.CollectionConfig{c1ColConfig, c2ColConfig},
+			},
+		},
+	}, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed obtaining filter")
 
 	g.Mock = mock.Mock{}
 	g.On("SendByCriteria", mock.Anything, mock.Anything).Return(errors.New("failed sending"))
 	g.err = nil
-	err = d.Distribute("tx1", pvtData[0].WriteSet, cs)
+	err = d.Distribute("tx1", &transientstore.TxPvtReadWriteSetWithConfigInfo{
+		PvtRwset: pvtData[0].WriteSet,
+		CollectionConfigs: map[string]*common.CollectionConfigPackage{
+			"ns1": {
+				Config: []*common.CollectionConfig{c1ColConfig, c2ColConfig},
+			},
+		},
+	}, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Failed disseminating 2 out of 2 private RWSets")
 }

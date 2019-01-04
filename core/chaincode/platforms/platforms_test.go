@@ -4,328 +4,271 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package platforms
+package platforms_test
 
 import (
+	"archive/tar"
+	"bytes"
 	"errors"
 	"fmt"
-	"strings"
-	"testing"
-
-	"os"
-
-	"archive/tar"
+	"io/ioutil"
 
 	"github.com/hyperledger/fabric/common/metadata"
-	"github.com/hyperledger/fabric/core/chaincode/platforms/golang"
-	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/stretchr/testify/assert"
+	"github.com/hyperledger/fabric/core/chaincode/platforms"
+	"github.com/hyperledger/fabric/core/chaincode/platforms/mock"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-// START Find tests
-func TestFind(t *testing.T) {
-	response, err := Find(pb.ChaincodeSpec_GOLANG)
-	_, ok := response.(Platform)
-	if !ok {
-		t.Error("Assertion error")
-	}
-	assert.NotNil(t, response, "Response should have been set")
-	assert.Nil(t, err, "Error should have been nil")
-
-	response, err = Find(pb.ChaincodeSpec_CAR)
-	_, ok = response.(Platform)
-	if !ok {
-		t.Error("Assertion error")
-	}
-	assert.NotNil(t, response, "Response should have been set")
-	assert.Nil(t, err, "Error should have been nil")
-
-	response, err = Find(pb.ChaincodeSpec_JAVA)
-	_, ok = response.(Platform)
-	if !ok {
-		t.Error("Assertion error")
-	}
-	assert.NotNil(t, response, "Response should have been set")
-	assert.Nil(t, err, "Error should have been nil")
-
-	response, err = Find(pb.ChaincodeSpec_UNDEFINED)
-	_, ok = response.(Platform)
-	assert.Nil(t, response, "Response should have been nil")
-	assert.NotNil(t, err, "Error should have been set")
-}
-
-//END Find tests
-
-// START GetDeploymentPayload tests
-type FakePlatformOk struct {
-	*golang.Platform
-}
-
-func (f *FakePlatformOk) GetDeploymentPayload(spec *pb.ChaincodeSpec) ([]byte, error) {
-	return []byte("success"), nil
-}
-
-func FakeFindOk(chaincodeType pb.ChaincodeSpec_Type) (Platform, error) {
-	platform := &FakePlatformOk{}
-	return platform, nil
-}
-
-func FakeFindErr(chaincodeType pb.ChaincodeSpec_Type) (Platform, error) {
-	return nil, fmt.Errorf("Unknown chaincodeType: %s", chaincodeType)
-}
-
-func TestGetDeplotmentPayload(t *testing.T) {
-
-	old := _Find
-	defer func() { _Find = old }()
-
-	_Find = FakeFindOk
-
-	fake := pb.ChaincodeSpec{
-		Type: pb.ChaincodeSpec_GOLANG,
-	}
-	response, err := GetDeploymentPayload(&fake)
-
-	fmt.Println(err)
-
-	assert.NotNil(t, response, "Response should have been set")
-	assert.Nil(t, err, "Error should have been nil")
-
-	_Find = FakeFindErr
-
-	response, err = GetDeploymentPayload(&fake)
-
-	fmt.Println(err)
-
-	assert.NotNil(t, err, "Error should have been set")
-	assert.Nil(t, response, "Response should have been nil")
-}
-
-// END GetDeploymentPayload tests
-
-//START getPeerTLSCert tests
-func GetPathErr(str string) string {
-	return ""
-}
-
-func VGetBoolFalse(str string) bool {
-	return false
-}
-
-func OSStatErr(str string) (os.FileInfo, error) {
-	return nil, errors.New("error")
-}
-
-func GetPathOk(str string) string {
-	return "OK"
-}
-
-func VGetBoolTrue(str string) bool {
-	return true
-}
-
-func OSStatOk(str string) (os.FileInfo, error) {
-	fileInfo, _ := os.Stat("./test.txt")
-	return fileInfo, nil
-}
-
-func IOUtilReadFile(str string) ([]byte, error) {
-	return []byte("Stub"), nil
-}
-
-//END getPeerTLSCert tests
-
-//START generateDockerfile tests
-func (*FakePlatformOk) GenerateDockerfile(spec *pb.ChaincodeDeploymentSpec) (string, error) {
-	return "file", nil
-}
-
-type FakePlatformErr struct {
-	*golang.Platform
-}
-
-func (*FakePlatformErr) GenerateDockerfile(spec *pb.ChaincodeDeploymentSpec) (string, error) {
-	return "", errors.New("error")
-}
-
-func TestGenerateDockerfile(t *testing.T) {
-	mockPlatform := &FakePlatformErr{}
-	fakeChaincodeSpec := &pb.ChaincodeDeploymentSpec{
-		ChaincodeSpec: &pb.ChaincodeSpec{
-			Type: pb.ChaincodeSpec_GOLANG,
-			ChaincodeId: &pb.ChaincodeID{
-				Name:    "cc",
-				Version: "1",
-			},
-		},
-	}
-	response, err := generateDockerfile(mockPlatform, fakeChaincodeSpec)
-	assert.NotNil(t, err, "Error should have been set")
-	assert.Nil(t, response, "Response should not have been set")
-
-	mockPlatformOk := &FakePlatformOk{}
-	response, err = generateDockerfile(mockPlatformOk, fakeChaincodeSpec)
-	assert.Nil(t, err, "Error should not have been set")
-	assert.NotNil(t, response, "Response should not have been set")
-
-	var buf []string
-	buf = append(buf, "file")
-	buf = append(buf, fmt.Sprintf("LABEL %s.chaincode.id.name=\"%s\" \\", metadata.BaseDockerLabel, "cc"))
-	buf = append(buf, fmt.Sprintf("      %s.chaincode.id.version=\"%s\" \\", metadata.BaseDockerLabel, "1"))
-	buf = append(buf, fmt.Sprintf("      %s.chaincode.type=\"%s\" \\", metadata.BaseDockerLabel, "GOLANG"))
-	buf = append(buf, fmt.Sprintf("      %s.version=\"%s\" \\", metadata.BaseDockerLabel, metadata.Version))
-	buf = append(buf, fmt.Sprintf("      %s.base.version=\"%s\"", metadata.BaseDockerLabel, metadata.BaseVersion))
-	buf = append(buf, fmt.Sprintf("ENV CORE_CHAINCODE_BUILDLEVEL=%s", metadata.Version))
-
-	contents := strings.Join(buf, "\n")
-	assert.Equal(
-		t,
-		response,
-		[]byte(contents),
-		"Should return the correct values when TLS is not enabled",
+var _ = Describe("Platforms", func() {
+	var (
+		registry     *platforms.Registry
+		fakePlatform *mock.Platform
 	)
 
-	response, err = generateDockerfile(mockPlatformOk, fakeChaincodeSpec)
-	contents = strings.Join(buf, "\n")
-	assert.Equal(
-		t,
-		response,
-		[]byte(contents),
-		"Should return the correct values when TLS is not enabled",
-	)
-}
-
-//END generateDockerfile tests
-
-//START generateDockerBuild tests
-func CUtilWriteBytesToPackageOk(name string, data []byte, tw *tar.Writer) error {
-	return nil
-}
-
-func CUtilWriteBytesToPackageErr(name string, data []byte, tw *tar.Writer) error {
-	return errors.New("error")
-}
-
-func (*FakePlatformOk) GenerateDockerBuild(cds *pb.ChaincodeDeploymentSpec, tw *tar.Writer) error {
-	return nil
-}
-
-func (*FakePlatformErr) GenerateDockerBuild(cds *pb.ChaincodeDeploymentSpec, tw *tar.Writer) error {
-	return errors.New("error")
-}
-
-func TestGenerateDockerBuild1(t *testing.T) {
-	oldCUtilWriteBytesToPackage := _CUtilWriteBytesToPackage
-
-	defer func() { _CUtilWriteBytesToPackage = oldCUtilWriteBytesToPackage }()
-
-	fakeChaincodeSpec := &pb.ChaincodeDeploymentSpec{
-		ChaincodeSpec: &pb.ChaincodeSpec{
-			Type: pb.ChaincodeSpec_GOLANG,
-			ChaincodeId: &pb.ChaincodeID{
-				Name:    "cc",
-				Version: "1",
+	BeforeEach(func() {
+		fakePlatform = &mock.Platform{}
+		registry = &platforms.Registry{
+			Platforms: map[string]platforms.Platform{
+				"fakeType": fakePlatform,
 			},
-		},
-	}
+		}
+	})
 
-	inputFiles := InputFiles{
-		"file1": []byte("contents1"),
-		"file2": []byte("contents2"),
-		"file3": []byte("contents3"),
-	}
+	Describe("pass through functions", func() {
+		Describe("ValidateSpec", func() {
+			It("returns the result of the underlying platform", func() {
+				fakePlatform.ValidatePathReturns(errors.New("fake-error"))
+				err := registry.ValidateSpec("fakeType", "cc-path")
+				Expect(err).To(MatchError(errors.New("fake-error")))
+				Expect(fakePlatform.ValidatePathCallCount()).To(Equal(1))
+				Expect(fakePlatform.ValidatePathArgsForCall(0)).To(Equal("cc-path"))
+			})
 
-	mockPlatformOk := &FakePlatformOk{}
-	mockPlatformErr := &FakePlatformErr{}
-	mockTw := &tar.Writer{}
+			Context("when the platform is unknown", func() {
+				It("returns an error", func() {
+					err := registry.ValidateSpec("badType", "")
+					Expect(err).To(MatchError("Unknown chaincodeType: badType"))
+				})
+			})
+		})
 
-	// No errors
-	_CUtilWriteBytesToPackage = CUtilWriteBytesToPackageOk
-	err := generateDockerBuild(mockPlatformOk, fakeChaincodeSpec, inputFiles, mockTw)
-	assert.Nil(t, err, "err should not have been set")
-	// Error from cutil.WriteBytesToPackage
-	_CUtilWriteBytesToPackage = CUtilWriteBytesToPackageErr
-	err = generateDockerBuild(mockPlatformOk, fakeChaincodeSpec, inputFiles, mockTw)
-	assert.NotNil(t, err, "err should have been set")
+		Describe("ValidateDeploymentSpec", func() {
+			It("returns the result of the underlying platform", func() {
+				fakePlatform.ValidateCodePackageReturns(errors.New("fake-error"))
+				err := registry.ValidateDeploymentSpec("fakeType", []byte("code-package"))
+				Expect(err).To(MatchError(errors.New("fake-error")))
+				Expect(fakePlatform.ValidateCodePackageCallCount()).To(Equal(1))
+				Expect(fakePlatform.ValidateCodePackageArgsForCall(0)).To(Equal([]byte("code-package")))
+			})
 
-	// Error from platform.GenerateDockerBuild
-	_CUtilWriteBytesToPackage = CUtilWriteBytesToPackageOk
-	err = generateDockerBuild(mockPlatformErr, fakeChaincodeSpec, inputFiles, mockTw)
-	assert.NotNil(t, err, "err should have been set")
+			Context("when the platform is unknown", func() {
+				It("returns an error", func() {
+					err := registry.ValidateDeploymentSpec("badType", nil)
+					Expect(err).To(MatchError("Unknown chaincodeType: badType"))
+				})
+			})
+		})
 
-}
+		Describe("GetMetadataProvider", func() {
+			It("returns the result of the underlying platform", func() {
+				md, err := registry.GetMetadataProvider("fakeType", []byte("code-package"))
+				Expect(md).To(BeNil())
+				Expect(err).NotTo(HaveOccurred())
+				Expect(fakePlatform.GetMetadataProviderCallCount()).To(Equal(1))
+				Expect(fakePlatform.GetMetadataProviderArgsForCall(0)).To(Equal([]byte("code-package")))
+			})
 
-//STOP generateDockerBuild tests
+			Context("when the platform is unknown", func() {
+				It("returns an error", func() {
+					md, err := registry.GetMetadataProvider("badType", nil)
+					Expect(md).To(BeNil())
+					Expect(err).To(MatchError("Unknown chaincodeType: badType"))
+				})
+			})
+		})
 
-//START GenerateDockerBuild tests
+		Describe("GetDeploymentPayload", func() {
+			It("returns the result of the underlying platform", func() {
+				fakePlatform.GetDeploymentPayloadReturns([]byte("payload"), errors.New("fake-error"))
+				payload, err := registry.GetDeploymentPayload("fakeType", "cc-path")
+				Expect(payload).To(Equal([]byte("payload")))
+				Expect(err).To(MatchError(errors.New("fake-error")))
+				Expect(fakePlatform.GetDeploymentPayloadCallCount()).To(Equal(1))
+				Expect(fakePlatform.GetDeploymentPayloadArgsForCall(0)).To(Equal("cc-path"))
+			})
 
-func FindOk(chaincodeType pb.ChaincodeSpec_Type) (Platform, error) {
-	return &FakePlatformOk{}, nil
-}
+			Context("when the platform is unknown", func() {
+				It("returns an error", func() {
+					payload, err := registry.GetDeploymentPayload("badType", "")
+					Expect(payload).To(BeNil())
+					Expect(err).To(MatchError("Unknown chaincodeType: badType"))
+				})
+			})
+		})
+	})
 
-func FindErr(chaincodeType pb.ChaincodeSpec_Type) (Platform, error) {
-	return nil, errors.New("error")
-}
+	Describe("GenerateDockerfile", func() {
+		It("calls the underlying platform, then appends some boilerplate", func() {
+			fakePlatform.GenerateDockerfileReturns("docker-header", nil)
+			df, err := registry.GenerateDockerfile("fakeType", "cc-name", "cc-version")
+			Expect(err).NotTo(HaveOccurred())
+			expectedDockerfile := fmt.Sprintf(`docker-header
+LABEL org.hyperledger.fabric.chaincode.id.name="cc-name" \
+      org.hyperledger.fabric.chaincode.id.version="cc-version" \
+      org.hyperledger.fabric.chaincode.type="fakeType" \
+      org.hyperledger.fabric.version="%s" \
+      org.hyperledger.fabric.base.version="%s"
+ENV CORE_CHAINCODE_BUILDLEVEL=%s`, metadata.Version, metadata.BaseVersion, metadata.Version)
+			Expect(df).To(Equal(expectedDockerfile))
+		})
 
-func getPeerTLSCertErr() ([]byte, error) {
-	return nil, errors.New("error")
-}
+		Context("when the underlying platform returns an error", func() {
+			It("returns the error", func() {
+				fakePlatform.GenerateDockerfileReturns("docker-header", errors.New("fake-error"))
+				_, err := registry.GenerateDockerfile("fakeType", "", "")
+				Expect(err).To(MatchError("Failed to generate platform-specific Dockerfile: fake-error"))
+			})
+		})
 
-func generateDockerfileErr(platform Platform, cds *pb.ChaincodeDeploymentSpec) ([]byte, error) {
-	return nil, errors.New("error")
-}
+		Context("when the platform is unknown", func() {
+			It("returns an error", func() {
+				df, err := registry.GenerateDockerfile("badType", "", "")
+				Expect(df).To(BeEmpty())
+				Expect(err).To(MatchError("Unknown chaincodeType: badType"))
+			})
+		})
+	})
 
-func generateDockerBuildErr(platform Platform, cds *pb.ChaincodeDeploymentSpec, inputFiles InputFiles, tw *tar.Writer) error {
-	return errors.New("error")
-}
+	Describe("the pieces which deal with packaging", func() {
+		var (
+			buf *bytes.Buffer
+			tw  *tar.Writer
+			pw  *mock.PackageWriter
+		)
 
-func TestGenerateDockerBuild2(t *testing.T) {
+		BeforeEach(func() {
+			buf = &bytes.Buffer{}
+			tw = tar.NewWriter(buf)
+			pw = &mock.PackageWriter{}
+			registry.PackageWriter = pw
+		})
+		Describe("StreamDockerBuild", func() {
 
-	oldFind := _Find
-	oldGenerateDockerfile := _generateDockerfile
-	oldGenerateDockerBuild := _generateDockerBuild
-	defer func() {
-		_Find = oldFind
-		_generateDockerfile = oldGenerateDockerfile
-		_generateDockerBuild = oldGenerateDockerBuild
-	}()
+			AfterEach(func() {
+				tw.Close()
+			})
 
-	_Find = FindOk
-	fakeChaincodeSpec := &pb.ChaincodeDeploymentSpec{
-		ChaincodeSpec: &pb.ChaincodeSpec{
-			Type: pb.ChaincodeSpec_GOLANG,
-			ChaincodeId: &pb.ChaincodeID{
-				Name:    "cc",
-				Version: "1",
-			},
-		},
-	}
+			It("adds the specified files to the tar, then has the underlying platform add its files", func() {
+				fileMap := map[string][]byte{
+					"foo": []byte("foo-bytes"),
+				}
+				err := registry.StreamDockerBuild("fakeType", "", nil, fileMap, tw)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(pw.WriteCallCount()).To(Equal(1))
+				name, data, writer := pw.WriteArgsForCall(0)
+				Expect(name).To(Equal("foo"))
+				Expect(data).To(Equal([]byte("foo-bytes")))
+				Expect(writer).To(Equal(tw))
+				Expect(fakePlatform.GenerateDockerBuildCallCount()).To(Equal(1))
+			})
 
-	// No error
-	io, err := GenerateDockerBuild(fakeChaincodeSpec)
-	assert.NotNil(t, io, "io should not be nil")
-	assert.Nil(t, err, "error should be nil")
+			Context("when the platform is unknown", func() {
+				It("returns an error", func() {
+					err := registry.StreamDockerBuild("badType", "", nil, nil, tw)
+					Expect(err).To(MatchError("could not find platform of type: badType"))
+				})
+			})
 
-	// Error from Find
-	_Find = FindErr
-	io, err = GenerateDockerBuild(fakeChaincodeSpec)
-	assert.Nil(t, io, "io should be nil")
-	assert.NotNil(t, err, "error should not be nil")
+			Context("when the writer fails", func() {
+				It("returns an error", func() {
+					fileMap := map[string][]byte{
+						"foo": []byte("foo-bytes"),
+					}
 
-	// Error from generateDockerfile
-	_Find = oldFind
-	_generateDockerfile = generateDockerfileErr
-	io, err = GenerateDockerBuild(fakeChaincodeSpec)
-	assert.Nil(t, io, "io should be nil")
-	assert.NotNil(t, err, "error should not be nil")
+					pw.WriteReturns(errors.New("fake-error"))
+					err := registry.StreamDockerBuild("fakeType", "", nil, fileMap, tw)
+					Expect(err).To(MatchError("Failed to inject \"foo\": fake-error"))
+					Expect(pw.WriteCallCount()).To(Equal(1))
+				})
+			})
 
-	// Error from generateDockerBuild
-	_Find = oldFind
-	_generateDockerfile = oldGenerateDockerfile
-	_generateDockerBuild = generateDockerBuildErr
-	io, err = GenerateDockerBuild(fakeChaincodeSpec)
-	assert.NotNil(t, io, "io should not be nil")
-	assert.Nil(t, err, "error should be nil")
-}
+			Context("when the underlying platform fails", func() {
+				It("returns an error", func() {
+					fakePlatform.GenerateDockerBuildReturns(errors.New("fake-error"))
+					err := registry.StreamDockerBuild("fakeType", "", nil, nil, tw)
+					Expect(err).To(MatchError("Failed to generate platform-specific docker build: fake-error"))
+				})
+			})
+		})
 
-//STOP GenerateDockerBuild tests
+		Describe("GenerateDockerBuild", func() {
+			It("creates a stream for the package", func() {
+				reader, err := registry.GenerateDockerBuild("fakeType", "", "", "", nil)
+				Expect(err).NotTo(HaveOccurred())
+				_, err = ioutil.ReadAll(reader)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			Context("when there is a problem generating the dockerfile", func() {
+				It("returns an error", func() {
+					fakePlatform.GenerateDockerfileReturns("docker-header", errors.New("fake-error"))
+					_, err := registry.GenerateDockerBuild("fakeType", "", "", "", nil)
+					Expect(err).To(MatchError("Failed to generate a Dockerfile: Failed to generate platform-specific Dockerfile: fake-error"))
+				})
+			})
+
+			Context("when there is a problem streaming the dockerbuild", func() {
+				It("closes the reader with an error", func() {
+					pw.WriteReturns(errors.New("fake-error"))
+					reader, err := registry.GenerateDockerBuild("fakeType", "", "", "", nil)
+					Expect(err).NotTo(HaveOccurred())
+					_, err = ioutil.ReadAll(reader)
+					Expect(err).To(MatchError("Failed to inject \"Dockerfile\": fake-error"))
+				})
+			})
+		})
+	})
+
+	Describe("NewRegistry", func() {
+		It("initializes with the known platform types and util writer", func() {
+			fakePlatformFoo := &mock.Platform{}
+			fakePlatformFoo.NameReturns("foo")
+			fakePlatformBar := &mock.Platform{}
+			fakePlatformBar.NameReturns("bar")
+
+			registry = platforms.NewRegistry(fakePlatformFoo, fakePlatformBar)
+
+			Expect(registry.Platforms).To(Equal(map[string]platforms.Platform{
+				"foo": fakePlatformFoo,
+				"bar": fakePlatformBar,
+			}))
+		})
+
+		Context("when two platforms report the same name", func() {
+			It("panics", func() {
+				fakePlatformFoo1 := &mock.Platform{}
+				fakePlatformFoo1.NameReturns("foo")
+				fakePlatformFoo2 := &mock.Platform{}
+				fakePlatformFoo2.NameReturns("foo")
+				Expect(func() { platforms.NewRegistry(fakePlatformFoo1, fakePlatformFoo2) }).To(Panic())
+			})
+		})
+	})
+
+	Describe("PackageWriterWrapper", func() {
+		It("calls through to the underlying function", func() {
+			pw := &mock.PackageWriter{}
+			pw.WriteReturns(errors.New("fake-error"))
+			tw := &tar.Writer{}
+			pww := platforms.PackageWriterWrapper(pw.Write)
+			err := pww.Write("name", []byte("payload"), tw)
+			Expect(err).To(MatchError(errors.New("fake-error")))
+			Expect(pw.WriteCallCount()).To(Equal(1))
+			name, payload, tw2 := pw.WriteArgsForCall(0)
+			Expect(name).To(Equal("name"))
+			Expect(payload).To(Equal([]byte("payload")))
+			Expect(tw2).To(Equal(tw))
+		})
+	})
+})

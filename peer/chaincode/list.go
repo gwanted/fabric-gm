@@ -1,5 +1,5 @@
 /*
-Copyright IBM Corp. 2017 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
 SPDX-License-Identifier: Apache-2.0
 */
@@ -8,16 +8,18 @@ package chaincode
 
 import (
 	"bytes"
+	"context"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/golang/protobuf/proto"
+	cb "github.com/hyperledger/fabric/protos/common"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 )
 
 var getInstalledChaincodes bool
@@ -41,6 +43,9 @@ func listCmd(cf *ChaincodeCmdFactory) *cobra.Command {
 		"channelID",
 		"installed",
 		"instantiated",
+		"peerAddresses",
+		"tlsRootCertFiles",
+		"connectionProfile",
 	}
 	attachFlags(chaincodeListCmd, flagList)
 
@@ -51,9 +56,12 @@ func getChaincodes(cmd *cobra.Command, cf *ChaincodeCmdFactory) error {
 	if getInstantiatedChaincodes && channelID == "" {
 		return errors.New("The required parameter 'channelID' is empty. Rerun the command with -C flag")
 	}
+	// Parsing of the command line is done so silence cmd usage
+	cmd.SilenceUsage = true
+
 	var err error
 	if cf == nil {
-		cf, err = InitCmdFactory(true, false)
+		cf, err = InitCmdFactory(cmd.Name(), true, false)
 		if err != nil {
 			return err
 		}
@@ -83,9 +91,18 @@ func getChaincodes(cmd *cobra.Command, cf *ChaincodeCmdFactory) error {
 		return fmt.Errorf("Error creating signed proposal  %s: %s", chainFuncName, err)
 	}
 
-	proposalResponse, err := cf.EndorserClient.ProcessProposal(context.Background(), signedProp)
+	// list is currently only supported for one peer
+	proposalResponse, err := cf.EndorserClients[0].ProcessProposal(context.Background(), signedProp)
 	if err != nil {
-		return fmt.Errorf("Error endorsing %s: %s", chainFuncName, err)
+		return errors.Errorf("Error endorsing %s: %s", chainFuncName, err)
+	}
+
+	if proposalResponse.Response == nil {
+		return errors.Errorf("Proposal response had nil 'response'")
+	}
+
+	if proposalResponse.Response.Status != int32(cb.Status_SUCCESS) {
+		return errors.Errorf("Bad response: %d - %s", proposalResponse.Response.Status, proposalResponse.Response.Message)
 	}
 
 	cqr := &pb.ChaincodeQueryResponse{}
@@ -120,6 +137,10 @@ func (cci ccInfo) String() string {
 			val = hex.EncodeToString(f.Bytes())
 		}
 		if len(val) == 0 {
+			continue
+		}
+		// Skip the proto-internal generated fields
+		if strings.HasPrefix(md2.Field(i).Name, "XXX") {
 			continue
 		}
 		b.WriteString(fmt.Sprintf("%s: %s, ", md2.Field(i).Name, val))

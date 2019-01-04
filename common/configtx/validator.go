@@ -9,15 +9,15 @@ package configtx
 import (
 	"regexp"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/common/policies"
 	cb "github.com/hyperledger/fabric/protos/common"
-
-	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric/protos/utils"
 	"github.com/pkg/errors"
 )
 
-var logger = flogging.MustGetLogger("common/configtx")
+var logger = flogging.MustGetLogger("common.configtx")
 
 // Constraints for valid channel and config IDs
 var (
@@ -132,7 +132,7 @@ func (vi *ValidatorImpl) ProposeConfigUpdate(configtx *cb.Envelope) (*cb.ConfigE
 }
 
 func (vi *ValidatorImpl) proposeConfigUpdate(configtx *cb.Envelope) (*cb.ConfigEnvelope, error) {
-	configUpdateEnv, err := envelopeToConfigUpdate(configtx)
+	configUpdateEnv, err := utils.EnvelopeToConfigUpdate(configtx)
 	if err != nil {
 		return nil, errors.Errorf("error converting envelope to config update: %s", err)
 	}
@@ -170,7 +170,7 @@ func (vi *ValidatorImpl) Validate(configEnv *cb.ConfigEnvelope) error {
 		return errors.Errorf("config currently at sequence %d, cannot validate config at sequence %d", vi.sequence, configEnv.Config.Sequence)
 	}
 
-	configUpdateEnv, err := envelopeToConfigUpdate(configEnv.LastUpdate)
+	configUpdateEnv, err := utils.EnvelopeToConfigUpdate(configEnv.LastUpdate)
 	if err != nil {
 		return err
 	}

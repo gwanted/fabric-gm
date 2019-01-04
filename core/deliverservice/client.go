@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package deliverclient
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -17,7 +18,6 @@ import (
 	"github.com/hyperledger/fabric/core/deliverservice/blocksprovider"
 	"github.com/hyperledger/fabric/protos/common"
 	"github.com/hyperledger/fabric/protos/orderer"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
@@ -36,16 +36,17 @@ type retryPolicy func(attemptNum int, elapsedTime time.Duration) (time.Duration,
 type clientFactory func(*grpc.ClientConn) orderer.AtomicBroadcastClient
 
 type broadcastClient struct {
-	stopFlag int32
-	sync.Mutex
+	stopFlag     int32
 	stopChan     chan struct{}
 	createClient clientFactory
 	shouldRetry  retryPolicy
 	onConnect    broadcastSetup
 	prod         comm.ConnectionProducer
-	blocksprovider.BlocksDeliverer
-	conn     *connection
-	endpoint string
+
+	mutex           sync.Mutex
+	blocksDeliverer blocksprovider.BlocksDeliverer
+	conn            *connection
+	endpoint        string
 }
 
 // NewBroadcastClient returns a broadcastClient with the given params
@@ -59,7 +60,7 @@ func (bc *broadcastClient) Recv() (*orderer.DeliverResponse, error) {
 		if bc.shouldStop() {
 			return nil, errors.New("closing")
 		}
-		return bc.BlocksDeliverer.Recv()
+		return bc.tryReceive()
 	})
 	if err != nil {
 		return nil, err
@@ -73,9 +74,29 @@ func (bc *broadcastClient) Send(msg *common.Envelope) error {
 		if bc.shouldStop() {
 			return nil, errors.New("closing")
 		}
-		return nil, bc.BlocksDeliverer.Send(msg)
+		return bc.trySend(msg)
 	})
 	return err
+}
+
+func (bc *broadcastClient) trySend(msg *common.Envelope) (interface{}, error) {
+	bc.mutex.Lock()
+	stream := bc.blocksDeliverer
+	bc.mutex.Unlock()
+	if stream == nil {
+		return nil, errors.New("client stream has been closed")
+	}
+	return nil, stream.Send(msg)
+}
+
+func (bc *broadcastClient) tryReceive() (*orderer.DeliverResponse, error) {
+	bc.mutex.Lock()
+	stream := bc.blocksDeliverer
+	bc.mutex.Unlock()
+	if stream == nil {
+		return nil, errors.New("client stream has been closed")
+	}
+	return stream.Recv()
 }
 
 func (bc *broadcastClient) try(action func() (interface{}, error)) (interface{}, error) {
@@ -83,10 +104,14 @@ func (bc *broadcastClient) try(action func() (interface{}, error)) (interface{},
 	var totalRetryTime time.Duration
 	var backoffDuration time.Duration
 	retry := true
+	resetAttemptCounter := func() {
+		attempt = 0
+		totalRetryTime = 0
+	}
 	for retry && !bc.shouldStop() {
-		attempt++
-		resp, err := bc.doAction(action)
+		resp, err := bc.doAction(action, resetAttemptCounter)
 		if err != nil {
+			attempt++
 			backoffDuration, retry = bc.shouldRetry(attempt, totalRetryTime)
 			if !retry {
 				logger.Warning("Got error:", err, "at", attempt, "attempt. Ceasing to retry")
@@ -100,17 +125,21 @@ func (bc *broadcastClient) try(action func() (interface{}, error)) (interface{},
 		return resp, nil
 	}
 	if bc.shouldStop() {
-		return nil, errors.New("Client is closing")
+		return nil, errors.New("client is closing")
 	}
-	return nil, fmt.Errorf("Attempts (%d) or elapsed time (%v) exhausted", attempt, totalRetryTime)
+	return nil, fmt.Errorf("attempts (%d) or elapsed time (%v) exhausted", attempt, totalRetryTime)
 }
 
-func (bc *broadcastClient) doAction(action func() (interface{}, error)) (interface{}, error) {
-	if bc.conn == nil {
+func (bc *broadcastClient) doAction(action func() (interface{}, error), actionOnNewConnection func()) (interface{}, error) {
+	bc.mutex.Lock()
+	conn := bc.conn
+	bc.mutex.Unlock()
+	if conn == nil {
 		err := bc.connect()
 		if err != nil {
 			return nil, err
 		}
+		actionOnNewConnection()
 	}
 	resp, err := action()
 	if err != nil {
@@ -128,7 +157,9 @@ func (bc *broadcastClient) sleep(duration time.Duration) {
 }
 
 func (bc *broadcastClient) connect() error {
+	bc.mutex.Lock()
 	bc.endpoint = ""
+	bc.mutex.Unlock()
 	conn, endpoint, err := bc.prod.NewConnection()
 	logger.Debug("Connected to", endpoint)
 	if err != nil {
@@ -141,6 +172,7 @@ func (bc *broadcastClient) connect() error {
 	if err != nil {
 		logger.Error("Connection to ", endpoint, "established but was unable to create gRPC stream:", err)
 		conn.Close()
+		cf()
 		return err
 	}
 	err = bc.afterConnect(conn, abc, cf, endpoint)
@@ -157,23 +189,23 @@ func (bc *broadcastClient) connect() error {
 func (bc *broadcastClient) afterConnect(conn *grpc.ClientConn, abc orderer.AtomicBroadcast_DeliverClient, cf context.CancelFunc, endpoint string) error {
 	logger.Debug("Entering")
 	defer logger.Debug("Exiting")
-	bc.Lock()
+	bc.mutex.Lock()
 	bc.endpoint = endpoint
 	bc.conn = &connection{ClientConn: conn, cancel: cf}
-	bc.BlocksDeliverer = abc
+	bc.blocksDeliverer = abc
 	if bc.shouldStop() {
-		bc.Unlock()
+		bc.mutex.Unlock()
 		return errors.New("closing")
 	}
-	bc.Unlock()
+	bc.mutex.Unlock()
 	// If the client is closed at this point- before onConnect,
 	// any use of this object by onConnect would return an error.
 	err := bc.onConnect(bc)
 	// If the client is closed right after onConnect, but before
 	// the following lock- this method would return an error because
 	// the client has been closed.
-	bc.Lock()
-	defer bc.Unlock()
+	bc.mutex.Lock()
+	defer bc.mutex.Unlock()
 	if bc.shouldStop() {
 		return errors.New("closing")
 	}
@@ -197,8 +229,8 @@ func (bc *broadcastClient) shouldStop() bool {
 func (bc *broadcastClient) Close() {
 	logger.Debug("Entering")
 	defer logger.Debug("Exiting")
-	bc.Lock()
-	defer bc.Unlock()
+	bc.mutex.Lock()
+	defer bc.mutex.Unlock()
 	if bc.shouldStop() {
 		return
 	}
@@ -215,8 +247,8 @@ func (bc *broadcastClient) Close() {
 func (bc *broadcastClient) Disconnect(disableEndpoint bool) {
 	logger.Debug("Entering")
 	defer logger.Debug("Exiting")
-	bc.Lock()
-	defer bc.Unlock()
+	bc.mutex.Lock()
+	defer bc.mutex.Unlock()
 	if disableEndpoint && bc.endpoint != "" {
 		bc.prod.DisableEndpoint(bc.endpoint)
 	}
@@ -226,7 +258,7 @@ func (bc *broadcastClient) Disconnect(disableEndpoint bool) {
 	}
 	bc.conn.Close()
 	bc.conn = nil
-	bc.BlocksDeliverer = nil
+	bc.blocksDeliverer = nil
 }
 
 // UpdateEndpoints update endpoints to new values

@@ -12,8 +12,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/core/ledger"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/rwsetutil"
+	privdatacommon "github.com/hyperledger/fabric/gossip/privdata/common"
 	"github.com/hyperledger/fabric/protos/common"
-	gossip2 "github.com/hyperledger/fabric/protos/gossip"
 	"github.com/hyperledger/fabric/protos/ledger/rwset"
 	"github.com/hyperledger/fabric/protos/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric/protos/msp"
@@ -226,6 +226,20 @@ func sampleCollHashedRwSet(collectionName string, hash []byte, hasWrites bool) *
 	return collHashedRwSet
 }
 
+func extractCollectionConfig(configPackage *common.CollectionConfigPackage, collectionName string) *common.CollectionConfig {
+	for _, config := range configPackage.Config {
+		switch cconf := config.Payload.(type) {
+		case *common.CollectionConfig_StaticCollectionConfig:
+			if cconf.StaticCollectionConfig.Name == collectionName {
+				return config
+			}
+		default:
+			return nil
+		}
+	}
+	return nil
+}
+
 type pvtDataFactory struct {
 	data []*ledger.TxPvtData
 }
@@ -262,10 +276,10 @@ func (df *pvtDataFactory) create() []*ledger.TxPvtData {
 
 type digestsAndSourceFactory struct {
 	d2s     dig2sources
-	lastDig *gossip2.PvtDataDigest
+	lastDig *privdatacommon.DigKey
 }
 
-func (f *digestsAndSourceFactory) mapDigest(dig *gossip2.PvtDataDigest) *digestsAndSourceFactory {
+func (f *digestsAndSourceFactory) mapDigest(dig *privdatacommon.DigKey) *digestsAndSourceFactory {
 	f.lastDig = dig
 	return f
 }
@@ -280,7 +294,7 @@ func (f *digestsAndSourceFactory) toSources(peers ...string) *digestsAndSourceFa
 			Endorser: []byte(p),
 		})
 	}
-	f.d2s[f.lastDig] = endorsements
+	f.d2s[*f.lastDig] = endorsements
 	return f
 }
 

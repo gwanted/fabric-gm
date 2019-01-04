@@ -1,17 +1,7 @@
 /*
-Copyright IBM Corp. 2016 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-                 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package fileledger
@@ -22,21 +12,9 @@ import (
 	"github.com/hyperledger/fabric/common/ledger/blockledger"
 	cb "github.com/hyperledger/fabric/protos/common"
 	ab "github.com/hyperledger/fabric/protos/orderer"
-
-	"github.com/op/go-logging"
 )
 
-const pkgLogID = "common/ledger/blockledger/file"
-
-var logger *logging.Logger
-
-var closedChan chan struct{}
-
-func init() {
-	logger = flogging.MustGetLogger(pkgLogID)
-	closedChan = make(chan struct{})
-	close(closedChan)
-}
+var logger = flogging.MustGetLogger("common.ledger.blockledger.file")
 
 // FileLedger is a struct used to interact with a node's ledger
 type FileLedger struct {
@@ -76,15 +54,6 @@ func (i *fileLedgerIterator) Next() (*cb.Block, cb.Status) {
 		return nil, cb.Status_SERVICE_UNAVAILABLE
 	}
 	return result.(*cb.Block), cb.Status_SUCCESS
-}
-
-// ReadyChan supplies a channel which will block until Next will not block
-func (i *fileLedgerIterator) ReadyChan() <-chan struct{} {
-	signal := i.ledger.signal
-	if i.blockNumber > i.ledger.Height()-1 {
-		return signal
-	}
-	return closedChan
 }
 
 // Close releases resources acquired by the Iterator

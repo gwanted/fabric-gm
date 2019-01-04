@@ -20,10 +20,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/spf13/cobra"
-
 	"github.com/hyperledger/fabric/core/common/ccpackage"
 	"github.com/hyperledger/fabric/protos/utils"
+	"github.com/spf13/cobra"
 )
 
 // signpackageCmd returns the cobra command for signing a package
@@ -45,9 +44,12 @@ func signpackageCmd(cf *ChaincodeCmdFactory) *cobra.Command {
 }
 
 func signpackage(cmd *cobra.Command, ipackageFile string, opackageFile string, cf *ChaincodeCmdFactory) error {
+	// Parsing of the command line is done so silence cmd usage
+	cmd.SilenceUsage = true
+
 	var err error
 	if cf == nil {
-		cf, err = InitCmdFactory(false, false)
+		cf, err = InitCmdFactory(cmd.Name(), false, false)
 		if err != nil {
 			return err
 		}

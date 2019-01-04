@@ -1,51 +1,49 @@
 /*
-Copyright IBM Corp. 2016 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-                 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package ramledger
 
 import (
 	"bytes"
-	"fmt"
+	"sync"
 
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/common/ledger/blockledger"
 	cb "github.com/hyperledger/fabric/protos/common"
 	ab "github.com/hyperledger/fabric/protos/orderer"
-	"github.com/op/go-logging"
+	"github.com/pkg/errors"
 )
 
-const pkgLogID = "orderer/ledger/ramledger"
-
-var logger *logging.Logger
-
-func init() {
-	logger = flogging.MustGetLogger(pkgLogID)
-}
+var logger = flogging.MustGetLogger("common.ledger.blockledger.ram")
 
 type cursor struct {
 	list *simpleList
 }
 
 type simpleList struct {
+	lock   sync.RWMutex
 	next   *simpleList
 	signal chan struct{}
 	block  *cb.Block
 }
 
+func (s *simpleList) getNext() *simpleList {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	return s.next
+}
+
+func (s *simpleList) setNext(n *simpleList) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	s.next = n
+}
+
 type ramLedger struct {
+	lock    sync.RWMutex
 	maxSize int
 	size    int
 	oldest  *simpleList
@@ -57,17 +55,13 @@ type ramLedger struct {
 func (cu *cursor) Next() (*cb.Block, cb.Status) {
 	// This only loops once, as signal reading indicates non-nil next
 	for {
-		if cu.list.next != nil {
-			cu.list = cu.list.next
+		next := cu.list.getNext()
+		if next != nil {
+			cu.list = next
 			return cu.list.block, cb.Status_SUCCESS
 		}
 		<-cu.list.signal
 	}
-}
-
-// ReadyChan supplies a channel which will block until Next will not block
-func (cu *cursor) ReadyChan() <-chan struct{} {
-	return cu.list.signal
 }
 
 // Close does nothing
@@ -76,6 +70,9 @@ func (cu *cursor) Close() {}
 // Iterator returns an Iterator, as specified by a ab.SeekInfo message, and its
 // starting block number
 func (rl *ramLedger) Iterator(startPosition *ab.SeekPosition) (blockledger.Iterator, uint64) {
+	rl.lock.RLock()
+	defer rl.lock.RUnlock()
+
 	var list *simpleList
 	switch start := startPosition.Type.(type) {
 	case *ab.SeekPosition_Oldest:
@@ -121,7 +118,7 @@ func (rl *ramLedger) Iterator(startPosition *ab.SeekPosition) (blockledger.Itera
 			if list.block.Header.Number == specified-1 {
 				break
 			}
-			list = list.next // No need for nil check, because of range check above
+			list = list.getNext() // No need for nil check, because of range check above
 		}
 	}
 	cursor := &cursor{list: list}
@@ -138,19 +135,24 @@ func (rl *ramLedger) Iterator(startPosition *ab.SeekPosition) (blockledger.Itera
 
 // Height returns the number of blocks on the ledger
 func (rl *ramLedger) Height() uint64 {
+	rl.lock.RLock()
+	defer rl.lock.RUnlock()
 	return rl.newest.block.Header.Number + 1
 }
 
 // Append appends a new block to the ledger
 func (rl *ramLedger) Append(block *cb.Block) error {
+	rl.lock.Lock()
+	defer rl.lock.Unlock()
+
 	if block.Header.Number != rl.newest.block.Header.Number+1 {
-		return fmt.Errorf("Block number should have been %d but was %d",
+		return errors.Errorf("block number should have been %d but was %d",
 			rl.newest.block.Header.Number+1, block.Header.Number)
 	}
 
 	if rl.newest.block.Header.Number+1 != 0 { // Skip this check for genesis block insertion
 		if !bytes.Equal(block.Header.PreviousHash, rl.newest.block.Header.Hash()) {
-			return fmt.Errorf("Block should have had previous hash of %x but was %x",
+			return errors.Errorf("block should have had previous hash of %x but was %x",
 				rl.newest.block.Header.Hash(), block.Header.PreviousHash)
 		}
 	}
@@ -160,14 +162,15 @@ func (rl *ramLedger) Append(block *cb.Block) error {
 }
 
 func (rl *ramLedger) appendBlock(block *cb.Block) {
-	rl.newest.next = &simpleList{
+	next := &simpleList{
 		signal: make(chan struct{}),
 		block:  block,
 	}
+	rl.newest.setNext(next)
 
 	lastSignal := rl.newest.signal
 	logger.Debugf("Sending signal that block %d has a successor", rl.newest.block.Header.Number)
-	rl.newest = rl.newest.next
+	rl.newest = rl.newest.getNext()
 	close(lastSignal)
 
 	rl.size++
@@ -175,7 +178,7 @@ func (rl *ramLedger) appendBlock(block *cb.Block) {
 	if rl.size > rl.maxSize {
 		logger.Debugf("RAM ledger max size about to be exceeded, removing oldest item: %d",
 			rl.oldest.block.Header.Number)
-		rl.oldest = rl.oldest.next
+		rl.oldest = rl.oldest.getNext()
 		rl.size--
 	}
 }

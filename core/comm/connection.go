@@ -7,6 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 package comm
 
 import (
+	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
@@ -17,10 +20,6 @@ import (
 
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/core/config"
-	"github.com/tjfoc/gmsm/sm2"
-	tls "github.com/tjfoc/gmtls"
-	"github.com/tjfoc/gmtls/gmcredentials"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -130,8 +129,7 @@ func (cs *CredentialSupport) GetDeliverServiceCredentials(channelID string) (cre
 	tlsConfig := &tls.Config{
 		Certificates: []tls.Certificate{cs.clientCert},
 	}
-	// certPool := x509.NewCertPool()
-	var certPool = sm2.NewCertPool()
+	certPool := x509.NewCertPool()
 
 	rootCACerts, exists := cs.OrdererRootCAsByChain[channelID]
 	if !exists {
@@ -142,8 +140,7 @@ func (cs *CredentialSupport) GetDeliverServiceCredentials(channelID string) (cre
 	for _, cert := range rootCACerts {
 		block, _ := pem.Decode(cert)
 		if block != nil {
-			// cert, err := x509.ParseCertificate(block.Bytes)
-			cert, err := sm2.ParseCertificate(block.Bytes)
+			cert, err := x509.ParseCertificate(block.Bytes)
 			if err == nil {
 				certPool.AddCert(cert)
 			} else {
@@ -154,7 +151,7 @@ func (cs *CredentialSupport) GetDeliverServiceCredentials(channelID string) (cre
 		}
 	}
 	tlsConfig.RootCAs = certPool
-	creds = gmcredentials.NewTLS(tlsConfig)
+	creds = credentials.NewTLS(tlsConfig)
 	return creds, nil
 }
 
@@ -165,8 +162,7 @@ func (cs *CredentialSupport) GetPeerCredentials() credentials.TransportCredentia
 	tlsConfig := &tls.Config{
 		Certificates: []tls.Certificate{cs.clientCert},
 	}
-	// certPool := x509.NewCertPool()
-	var certPool = sm2.NewCertPool()
+	certPool := x509.NewCertPool()
 	// loop through the server root CAs
 	roots, _ := cs.GetServerRootCAs()
 	for _, root := range roots {
@@ -176,7 +172,7 @@ func (cs *CredentialSupport) GetPeerCredentials() credentials.TransportCredentia
 		}
 	}
 	tlsConfig.RootCAs = certPool
-	creds = gmcredentials.NewTLS(tlsConfig)
+	creds = credentials.NewTLS(tlsConfig)
 	return creds
 }
 
@@ -198,7 +194,7 @@ func NewClientConnectionWithAddress(peerAddress string, block bool, tslEnabled b
 		opts = ClientKeepaliveOptions(ka)
 	} else {
 		// set to the default options
-		opts = ClientKeepaliveOptions(DefaultKeepaliveOptions())
+		opts = ClientKeepaliveOptions(DefaultKeepaliveOptions)
 	}
 
 	if tslEnabled {
@@ -209,10 +205,12 @@ func NewClientConnectionWithAddress(peerAddress string, block bool, tslEnabled b
 	if block {
 		opts = append(opts, grpc.WithBlock())
 	}
-	opts = append(opts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize()),
-		grpc.MaxCallSendMsgSize(MaxSendMsgSize())))
-	ctx := context.Background()
-	ctx, _ = context.WithTimeout(ctx, defaultTimeout)
+	opts = append(opts, grpc.WithDefaultCallOptions(
+		grpc.MaxCallRecvMsgSize(MaxRecvMsgSize),
+		grpc.MaxCallSendMsgSize(MaxSendMsgSize),
+	))
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
 	conn, err := grpc.DialContext(ctx, peerAddress, opts...)
 	if err != nil {
 		return nil, err
@@ -238,11 +236,11 @@ func InitTLSForShim(key, certStr string) credentials.TransportCredentials {
 	if err != nil {
 		commLogger.Panicf("failed loading root ca cert: %v", err)
 	}
-	cp := sm2.NewCertPool()
+	cp := x509.NewCertPool()
 	if !cp.AppendCertsFromPEM(b) {
 		commLogger.Panicf("failed to append certificates")
 	}
-	return gmcredentials.NewTLS(&tls.Config{
+	return credentials.NewTLS(&tls.Config{
 		Certificates: []tls.Certificate{cert},
 		RootCAs:      cp,
 		ServerName:   sn,

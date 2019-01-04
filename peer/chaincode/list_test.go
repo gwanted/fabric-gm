@@ -1,5 +1,5 @@
 /*
-Copyright IBM Corp. 2017 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
 SPDX-License-Identifier: Apache-2.0
 */
@@ -7,10 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 package chaincode
 
 import (
+	"encoding/hex"
 	"fmt"
 	"testing"
-
-	"encoding/hex"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/peer/common"
@@ -19,8 +18,6 @@ import (
 )
 
 func TestChaincodeListCmd(t *testing.T) {
-	InitMSP()
-
 	signer, err := common.GetDefaultSigner()
 	if err != nil {
 		t.Fatalf("Get default signer error: %s", err)
@@ -41,16 +38,14 @@ func TestChaincodeListCmd(t *testing.T) {
 		Response:    &pb.Response{Status: 200, Payload: installedCqrBytes},
 		Endorsement: &pb.Endorsement{},
 	}
-
-	mockEndorerClient := common.GetMockEndorserClient(mockResponse, nil)
-
+	mockEndorserClients := []pb.EndorserClient{common.GetMockEndorserClient(mockResponse, nil)}
 	mockBroadcastClient := common.GetMockBroadcastClient(nil)
-
 	mockCF := &ChaincodeCmdFactory{
-		EndorserClient:  mockEndorerClient,
+		EndorserClients: mockEndorserClients,
 		Signer:          signer,
 		BroadcastClient: mockBroadcastClient,
 	}
+
 	// reset channelID, it might have been set by previous test
 	channelID = ""
 
@@ -106,6 +101,38 @@ func TestChaincodeListCmd(t *testing.T) {
 	if err := nilCmd.Execute(); err == nil || err.Error() != expectErr.Error() {
 		t.Errorf("Expect error: %s", expectErr)
 	}
+}
+
+func TestChaincodeListFailure(t *testing.T) {
+	signer, err := common.GetDefaultSigner()
+	if err != nil {
+		t.Fatalf("Get default signer error: %s", err)
+	}
+
+	mockResponse := &pb.ProposalResponse{
+		Response:    &pb.Response{Status: 500, Message: "error message"},
+		Endorsement: &pb.Endorsement{},
+	}
+	mockEndorserClients := []pb.EndorserClient{common.GetMockEndorserClient(mockResponse, nil)}
+	mockBroadcastClient := common.GetMockBroadcastClient(nil)
+	mockCF := &ChaincodeCmdFactory{
+		EndorserClients: mockEndorserClients,
+		Signer:          signer,
+		BroadcastClient: mockBroadcastClient,
+	}
+
+	// reset channelID, it might have been set by previous test
+	channelID = ""
+
+	resetFlags()
+
+	// Get instantiated chaincodes
+	instantiatedChaincodesCmd := listCmd(mockCF)
+	args := []string{"--instantiated", "-C", "mychannel"}
+	instantiatedChaincodesCmd.SetArgs(args)
+	err = instantiatedChaincodesCmd.Execute()
+	assert.Error(t, err)
+	assert.Regexp(t, "Bad response: 500 - error message", err.Error())
 }
 
 func TestString(t *testing.T) {

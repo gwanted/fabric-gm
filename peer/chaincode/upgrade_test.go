@@ -1,17 +1,7 @@
 /*
- Copyright Digital Asset Holdings, LLC 2016 All Rights Reserved.
+Copyright Digital Asset Holdings, LLC. All Rights Reserved.
 
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package chaincode
@@ -19,32 +9,16 @@ package chaincode
 import (
 	"errors"
 	"fmt"
-	"sync"
 	"testing"
+	"time"
 
-	"github.com/hyperledger/fabric/msp/mgmt/testtools"
 	"github.com/hyperledger/fabric/peer/common"
 	pb "github.com/hyperledger/fabric/protos/peer"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
-var once sync.Once
-
-// InitMSP init MSP
-func InitMSP() {
-	once.Do(initMSP)
-}
-
-func initMSP() {
-	err := msptesttools.LoadMSPSetupForTesting()
-	if err != nil {
-		panic(fmt.Errorf("Fatal error when reading MSP config: %s\n", err))
-	}
-}
-
 func TestUpgradeCmd(t *testing.T) {
-	InitMSP()
-
 	signer, err := common.GetDefaultSigner()
 	if err != nil {
 		t.Fatalf("Get default signer error: %v", err)
@@ -54,29 +28,27 @@ func TestUpgradeCmd(t *testing.T) {
 		Response:    &pb.Response{Status: 200},
 		Endorsement: &pb.Endorsement{},
 	}
-
-	mockEndorerClient := common.GetMockEndorserClient(mockResponse, nil)
-
+	mockEndorserClients := []pb.EndorserClient{common.GetMockEndorserClient(mockResponse, nil)}
 	mockBroadcastClient := common.GetMockBroadcastClient(nil)
-
 	mockCF := &ChaincodeCmdFactory{
-		EndorserClient:  mockEndorerClient,
+		EndorserClients: mockEndorserClients,
 		Signer:          signer,
 		BroadcastClient: mockBroadcastClient,
 	}
+
 	// reset channelID, it might have been set by previous test
 	channelID = ""
 
 	cmd := upgradeCmd(mockCF)
 	addFlags(cmd)
 
-	args := []string{"-n", "example02", "-p", "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02",
+	args := []string{"-n", "example02", "-p", "github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd",
 		"-v", "anotherversion", "-c", "{\"Function\":\"init\",\"Args\": [\"param\",\"1\"]}"}
 	cmd.SetArgs(args)
 	err = cmd.Execute()
 	assert.Error(t, err, "'peer chaincode upgrade' command should have failed without -C flag")
 
-	args = []string{"-C", "mychannel", "-n", "example02", "-p", "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02",
+	args = []string{"-C", "mychannel", "-n", "example02", "-p", "github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd",
 		"-v", "anotherversion", "-c", "{\"Function\":\"init\",\"Args\": [\"param\",\"1\"]}"}
 	cmd.SetArgs(args)
 	err = cmd.Execute()
@@ -84,8 +56,6 @@ func TestUpgradeCmd(t *testing.T) {
 }
 
 func TestUpgradeCmdEndorseFail(t *testing.T) {
-	InitMSP()
-
 	signer, err := common.GetDefaultSigner()
 	if err != nil {
 		t.Fatalf("Get default signer error: %v", err)
@@ -95,12 +65,10 @@ func TestUpgradeCmdEndorseFail(t *testing.T) {
 	errMsg := "upgrade error"
 	mockResponse := &pb.ProposalResponse{Response: &pb.Response{Status: errCode, Message: errMsg}}
 
-	mockEndorerClient := common.GetMockEndorserClient(mockResponse, nil)
-
+	mockEndorserClients := []pb.EndorserClient{common.GetMockEndorserClient(mockResponse, nil)}
 	mockBroadcastClient := common.GetMockBroadcastClient(nil)
-
 	mockCF := &ChaincodeCmdFactory{
-		EndorserClient:  mockEndorerClient,
+		EndorserClients: mockEndorserClients,
 		Signer:          signer,
 		BroadcastClient: mockBroadcastClient,
 	}
@@ -108,11 +76,11 @@ func TestUpgradeCmdEndorseFail(t *testing.T) {
 	cmd := upgradeCmd(mockCF)
 	addFlags(cmd)
 
-	args := []string{"-C", "mychannel", "-n", "example02", "-p", "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02",
+	args := []string{"-C", "mychannel", "-n", "example02", "-p", "github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd",
 		"-v", "anotherversion", "-c", "{\"Function\":\"init\",\"Args\": [\"param\",\"1\"]}"}
 	cmd.SetArgs(args)
 
-	expectErrMsg := fmt.Sprintf("Could not assemble transaction, err Proposal response was not successful, error code %d, msg %s", errCode, errMsg)
+	expectErrMsg := fmt.Sprintf("could not assemble transaction, err proposal response was not successful, error code %d, msg %s", errCode, errMsg)
 	if err := cmd.Execute(); err == nil {
 		t.Errorf("Run chaincode upgrade cmd error:%v", err)
 	} else {
@@ -123,8 +91,6 @@ func TestUpgradeCmdEndorseFail(t *testing.T) {
 }
 
 func TestUpgradeCmdSendTXFail(t *testing.T) {
-	InitMSP()
-
 	signer, err := common.GetDefaultSigner()
 	if err != nil {
 		t.Fatalf("Get default signer error: %v", err)
@@ -134,14 +100,11 @@ func TestUpgradeCmdSendTXFail(t *testing.T) {
 		Response:    &pb.Response{Status: 200},
 		Endorsement: &pb.Endorsement{},
 	}
-
-	mockEndorerClient := common.GetMockEndorserClient(mockResponse, nil)
-
+	mockEndorserClients := []pb.EndorserClient{common.GetMockEndorserClient(mockResponse, nil)}
 	sendErr := errors.New("send tx failed")
 	mockBroadcastClient := common.GetMockBroadcastClient(sendErr)
-
 	mockCF := &ChaincodeCmdFactory{
-		EndorserClient:  mockEndorerClient,
+		EndorserClients: mockEndorserClients,
 		Signer:          signer,
 		BroadcastClient: mockBroadcastClient,
 	}
@@ -149,7 +112,7 @@ func TestUpgradeCmdSendTXFail(t *testing.T) {
 	cmd := upgradeCmd(mockCF)
 	addFlags(cmd)
 
-	args := []string{"-C", "mychannel", "-n", "example02", "-p", "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02", "-v", "anotherversion", "-c", "{\"Function\":\"init\",\"Args\": [\"param\",\"1\"]}"}
+	args := []string{"-C", "mychannel", "-n", "example02", "-p", "github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd", "-v", "anotherversion", "-c", "{\"Function\":\"init\",\"Args\": [\"param\",\"1\"]}"}
 	cmd.SetArgs(args)
 
 	expectErrMsg := sendErr.Error()
@@ -163,10 +126,15 @@ func TestUpgradeCmdSendTXFail(t *testing.T) {
 }
 
 func TestUpgradeCmdWithNilCF(t *testing.T) {
+	defer viper.Reset()
+	defer resetFlags()
+
+	// set timeout for failure cases
+	viper.Set("peer.client.connTimeout", 10*time.Millisecond)
 
 	// trap possible SIGSEV panic
 	defer func() {
-		var err error = nil
+		var err error
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
 		}
@@ -174,12 +142,11 @@ func TestUpgradeCmdWithNilCF(t *testing.T) {
 	}()
 
 	channelID = ""
-	InitMSP()
 
 	cmd := upgradeCmd(nil)
 	addFlags(cmd)
 
-	args := []string{"-C", "mychannel", "-n", "example02", "-p", "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02",
+	args := []string{"-C", "mychannel", "-n", "example02", "-p", "github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd",
 		"-v", "anotherversion", "-c", "{\"Function\":\"init\",\"Args\": [\"param\",\"1\"]}"}
 	cmd.SetArgs(args)
 	err := cmd.Execute()

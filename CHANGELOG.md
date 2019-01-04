@@ -1,3 +1,1681 @@
+## v1.4.0-rc2
+Thu Dec 20 08:36:43 EST 2018
+
+* [47317b2](https://github.com/hyperledger/fabric/commit/47317b2) recon: add debug logs in ledger
+* [5c54bf2](https://github.com/hyperledger/fabric/commit/5c54bf2) opt: lscc state cache in couchDB
+* [ecb8e48](https://github.com/hyperledger/fabric/commit/ecb8e48) [FAB-13271](https://jira.hyperledger.org/browse/FAB-13271) Commercial Paper Updates
+* [85802b9](https://github.com/hyperledger/fabric/commit/85802b9) [FAB-12978](https://jira.hyperledger.org/browse/FAB-12978) Develop Apps: Connection options topic
+* [e9e5ca6](https://github.com/hyperledger/fabric/commit/e9e5ca6) [FAB-13025](https://jira.hyperledger.org/browse/FAB-13025) generate rst metric tables
+* [f91e87c](https://github.com/hyperledger/fabric/commit/f91e87c) Add meter with fabric and go version
+* [863f989](https://github.com/hyperledger/fabric/commit/863f989) recon: at a time, only 1 func. can use the Cache
+* [283bb61](https://github.com/hyperledger/fabric/commit/283bb61) [FAB-12934](https://jira.hyperledger.org/browse/FAB-12934) Develop Apps: Connection profile topic
+* [728f4eb](https://github.com/hyperledger/fabric/commit/728f4eb) [FAB-13327](https://jira.hyperledger.org/browse/FAB-13327) Architecture Explained clarification
+* [df845e0](https://github.com/hyperledger/fabric/commit/df845e0) [FAB-13340](https://jira.hyperledger.org/browse/FAB-13340) Fix reconciliation CouchDB bulk load
+* [cfdb44d](https://github.com/hyperledger/fabric/commit/cfdb44d) [FAB-13303](https://jira.hyperledger.org/browse/FAB-13303) increase reconciliation test coverage
+* [44325b4](https://github.com/hyperledger/fabric/commit/44325b4) [FAB-13302](https://jira.hyperledger.org/browse/FAB-13302) check for err before report mismatches
+* [1954f36](https://github.com/hyperledger/fabric/commit/1954f36) [FAB-13301](https://jira.hyperledger.org/browse/FAB-13301) use generated mocks in pvt data tests
+* [e5b3481](https://github.com/hyperledger/fabric/commit/e5b3481) [FAB-13283](https://jira.hyperledger.org/browse/FAB-13283) Update commercial paper tutorial
+* [fb7ed54](https://github.com/hyperledger/fabric/commit/fb7ed54) [FAB-13292](https://jira.hyperledger.org/browse/FAB-13292) fix version check in bootstrap.sh
+* [158392d](https://github.com/hyperledger/fabric/commit/158392d) [FAB-13282](https://jira.hyperledger.org/browse/FAB-13282) Clarify version of node.js
+* [ba37eff](https://github.com/hyperledger/fabric/commit/ba37eff) [FAB-13269](https://jira.hyperledger.org/browse/FAB-13269) keep reconcile pvt in one pass
+* [3bcdac5](https://github.com/hyperledger/fabric/commit/3bcdac5) [FAB-13288](https://jira.hyperledger.org/browse/FAB-13288) BYFN manual step fixes
+* [02af194](https://github.com/hyperledger/fabric/commit/02af194) [FAB-13277](https://jira.hyperledger.org/browse/FAB-13277) Fix typos in doc
+* [afb2e8d](https://github.com/hyperledger/fabric/commit/afb2e8d) [FAB-11734](https://jira.hyperledger.org/browse/FAB-11734) BYFN endorsement policy
+* [da5de24](https://github.com/hyperledger/fabric/commit/da5de24) [FAB-13224](https://jira.hyperledger.org/browse/FAB-13224) fix blocksprovider unit test flakes
+* [2cda36c](https://github.com/hyperledger/fabric/commit/2cda36c) [FAB-13270](https://jira.hyperledger.org/browse/FAB-13270) fix mkdir cmd
+* [c10e00c](https://github.com/hyperledger/fabric/commit/c10e00c) [FAB-13256](https://jira.hyperledger.org/browse/FAB-13256) Fix What's New link to release notes
+* [c5abc91](https://github.com/hyperledger/fabric/commit/c5abc91) [FAB-13253](https://jira.hyperledger.org/browse/FAB-13253) Improve SDK compatibility doc
+* [a00a80b](https://github.com/hyperledger/fabric/commit/a00a80b) [FAB-13251](https://jira.hyperledger.org/browse/FAB-13251) Add nil check in ToGossipMessage
+* [ccf843c](https://github.com/hyperledger/fabric/commit/ccf843c) [FAB-11608](https://jira.hyperledger.org/browse/FAB-11608) Gossip: Optimize alive message verification
+* [3cbc5cf](https://github.com/hyperledger/fabric/commit/3cbc5cf) Remove +lifecycle enable parameter from core.yaml
+* [0b7aefd](https://github.com/hyperledger/fabric/commit/0b7aefd) [FAB-13239](https://jira.hyperledger.org/browse/FAB-13239) terminate container streaming output loop
+* [05d99ad](https://github.com/hyperledger/fabric/commit/05d99ad) regenerate ledger testdata using release-1.1
+* [e485f77](https://github.com/hyperledger/fabric/commit/e485f77) Fix bug in decoding missingdatakey
+* [5bcbbb5](https://github.com/hyperledger/fabric/commit/5bcbbb5) [FAB-13024](https://jira.hyperledger.org/browse/FAB-13024) Update fabcar doc
+* [0b07d53](https://github.com/hyperledger/fabric/commit/0b07d53) [FAB-12870](https://jira.hyperledger.org/browse/FAB-12870) fix timing flake in grpclogging tests
+* [11fa186](https://github.com/hyperledger/fabric/commit/11fa186) [FAB-13114](https://jira.hyperledger.org/browse/FAB-13114) Prepare for next rel (1.4.0 on release-1.4)
+
+## v1.4.0-rc1
+Mon Dec 10 13:09:08 EST 2018
+
+* [942052f](https://github.com/hyperledger/fabric/commit/942052f) [FAB-13214](https://jira.hyperledger.org/browse/FAB-13214) Change link in upgrade doc
+* [e58ab12](https://github.com/hyperledger/fabric/commit/e58ab12) [FAB-13213](https://jira.hyperledger.org/browse/FAB-13213) Add CA note to operations
+* [7979d31](https://github.com/hyperledger/fabric/commit/7979d31) [FAB-13210](https://jira.hyperledger.org/browse/FAB-13210) Remove unused code in orderer/.../main.go
+* [d3fda51](https://github.com/hyperledger/fabric/commit/d3fda51) [FAB-13155](https://jira.hyperledger.org/browse/FAB-13155) Update multiarch script
+* [1433a99](https://github.com/hyperledger/fabric/commit/1433a99) [FAB-13021](https://jira.hyperledger.org/browse/FAB-13021) What's new in v1.4
+* [2b6fcf4](https://github.com/hyperledger/fabric/commit/2b6fcf4) [FAB-13056](https://jira.hyperledger.org/browse/FAB-13056) Onboarding: systemchannel from boot block
+* [713dc7a](https://github.com/hyperledger/fabric/commit/713dc7a) [FAB-13055](https://jira.hyperledger.org/browse/FAB-13055) Don't close LedgerFactory in onboarding
+* [8c2afba](https://github.com/hyperledger/fabric/commit/8c2afba) [FAB-13054](https://jira.hyperledger.org/browse/FAB-13054) Prevent int overflow in IsReplicationNeeded
+* [53b33d8](https://github.com/hyperledger/fabric/commit/53b33d8) [FAB-13005](https://jira.hyperledger.org/browse/FAB-13005) Upgrade doc
+* [371dd0e](https://github.com/hyperledger/fabric/commit/371dd0e) [FAB-13025](https://jira.hyperledger.org/browse/FAB-13025) Logging, metrics, health doc
+* [8f8d8dc](https://github.com/hyperledger/fabric/commit/8f8d8dc) [FAB-13089](https://jira.hyperledger.org/browse/FAB-13089) fetch attachments in CouchDB range queries
+* [d4e2016](https://github.com/hyperledger/fabric/commit/d4e2016) [FAB-13161](https://jira.hyperledger.org/browse/FAB-13161) Tips and tricks for couchdb
+* [09fe4c3](https://github.com/hyperledger/fabric/commit/09fe4c3) [FAB-13193](https://jira.hyperledger.org/browse/FAB-13193) - Added help message to couch db metric
+* [4b75195](https://github.com/hyperledger/fabric/commit/4b75195) [FAB-13189](https://jira.hyperledger.org/browse/FAB-13189) set content-type for logspec response
+* [2eff15f](https://github.com/hyperledger/fabric/commit/2eff15f) Update sample configurations with operations
+* [9521e36](https://github.com/hyperledger/fabric/commit/9521e36) cleanup system chaincode comments in core.yaml
+* [684135e](https://github.com/hyperledger/fabric/commit/684135e) [FAB-13186](https://jira.hyperledger.org/browse/FAB-13186) Fix couchdb version cache data race
+* [5fef8bd](https://github.com/hyperledger/fabric/commit/5fef8bd) [FAB-11599](https://jira.hyperledger.org/browse/FAB-11599) Private data doc edits
+* [4f5fe21](https://github.com/hyperledger/fabric/commit/4f5fe21) [FAB-12947](https://jira.hyperledger.org/browse/FAB-12947) More edits to gossip doc
+* [2e4289e](https://github.com/hyperledger/fabric/commit/2e4289e) [FAB-11599](https://jira.hyperledger.org/browse/FAB-11599) private data remain doc
+* [5b2b561](https://github.com/hyperledger/fabric/commit/5b2b561) [FAB-13139](https://jira.hyperledger.org/browse/FAB-13139) Discard Idemix Empty Digest
+* [90f014e](https://github.com/hyperledger/fabric/commit/90f014e) [FAB-13164](https://jira.hyperledger.org/browse/FAB-13164) Revert Fix pkcs11 UT Failures
+* [a578352](https://github.com/hyperledger/fabric/commit/a578352) [FAB-13152](https://jira.hyperledger.org/browse/FAB-13152) fix make protos
+* [aabd259](https://github.com/hyperledger/fabric/commit/aabd259) [FAB-11746](https://jira.hyperledger.org/browse/FAB-11746) Return cached alive message in gossip
+* [acd9aaa](https://github.com/hyperledger/fabric/commit/acd9aaa) [FAB-13139](https://jira.hyperledger.org/browse/FAB-13139) Fix Nym Public key Marshalling
+* [42689db](https://github.com/hyperledger/fabric/commit/42689db) Fix handlers/validation UT failure on ppc64le
+* [151f76e](https://github.com/hyperledger/fabric/commit/151f76e) [FAB-13167](https://jira.hyperledger.org/browse/FAB-13167) IdemixBridgeTest Robustification
+* [8939eb5](https://github.com/hyperledger/fabric/commit/8939eb5) acquire txSim only once during endorsement
+* [3e7b2ef](https://github.com/hyperledger/fabric/commit/3e7b2ef) pvtData APIs are not allowed in chaincode Init()
+* [2ac523f](https://github.com/hyperledger/fabric/commit/2ac523f) [FAB-13129](https://jira.hyperledger.org/browse/FAB-13129) 1.4 release notes for operations
+* [e0c729e](https://github.com/hyperledger/fabric/commit/e0c729e) [FAB-13158](https://jira.hyperledger.org/browse/FAB-13158) Address data races in etcd/raft tests
+* [300e509](https://github.com/hyperledger/fabric/commit/300e509) [FAB-12926](https://jira.hyperledger.org/browse/FAB-12926) Validate hash chain when listing blocks
+* [5ef4e71](https://github.com/hyperledger/fabric/commit/5ef4e71) [FAB-12496](https://jira.hyperledger.org/browse/FAB-12496) Add disclaimer on Kafka/ZK security
+* [f3d2130](https://github.com/hyperledger/fabric/commit/f3d2130) [FAB-12973](https://jira.hyperledger.org/browse/FAB-12973) remove logging init from package init
+* [386ea3d](https://github.com/hyperledger/fabric/commit/386ea3d) [FAB-13163](https://jira.hyperledger.org/browse/FAB-13163) propagate caller environ to orderer
+* [c85e7f9](https://github.com/hyperledger/fabric/commit/c85e7f9) [FAB-12973](https://jira.hyperledger.org/browse/FAB-12973) honor FABRIC_LOGGING_SPEC in library
+* [9dea224](https://github.com/hyperledger/fabric/commit/9dea224) [FAB-13086](https://jira.hyperledger.org/browse/FAB-13086) longer wait for term in healh check
+* [fd0263c](https://github.com/hyperledger/fabric/commit/fd0263c) [FAB-13146](https://jira.hyperledger.org/browse/FAB-13146) Modify the return value of NewMCS
+* [18551c4](https://github.com/hyperledger/fabric/commit/18551c4) [FAB-13025](https://jira.hyperledger.org/browse/FAB-13025) Move namer from statsd to internal
+* [95e4cde](https://github.com/hyperledger/fabric/commit/95e4cde) [FAB-13135,FAB-13136] Idemix/Fabric-CA Integration
+* [5802053](https://github.com/hyperledger/fabric/commit/5802053) collACL: e2e test
+* [de67216](https://github.com/hyperledger/fabric/commit/de67216) recon: rename CommitPvtData() ledger API
+* [16aecd0](https://github.com/hyperledger/fabric/commit/16aecd0) Fix: Filter couchdb internal docs from query results
+* [9d87d37](https://github.com/hyperledger/fabric/commit/9d87d37) [FAB-13149](https://jira.hyperledger.org/browse/FAB-13149) Disable etcdraft for v1.4
+* [28fd96e](https://github.com/hyperledger/fabric/commit/28fd96e) [FAB-13151](https://jira.hyperledger.org/browse/FAB-13151) Fill in Length fields in attachments
+* [0cfb77b](https://github.com/hyperledger/fabric/commit/0cfb77b) [FAB-12288](https://jira.hyperledger.org/browse/FAB-12288) reduce log level extracting pvt data col.
+* [af5e9f0](https://github.com/hyperledger/fabric/commit/af5e9f0) [FAB-12670](https://jira.hyperledger.org/browse/FAB-12670) Fix pkcs11 UT Failures
+* [b4954f7](https://github.com/hyperledger/fabric/commit/b4954f7) [FAB-12944](https://jira.hyperledger.org/browse/FAB-12944) Pulling system chain failure should panic
+* [2e9fbe4](https://github.com/hyperledger/fabric/commit/2e9fbe4) [FAB-12761](https://jira.hyperledger.org/browse/FAB-12761) Attach onboarding to orderer
+* [1c3fa5e](https://github.com/hyperledger/fabric/commit/1c3fa5e) [FAB-12882](https://jira.hyperledger.org/browse/FAB-12882) Fix UT flake TestBlockPullerClone
+* [f4b1a7e](https://github.com/hyperledger/fabric/commit/f4b1a7e) [FAB-12890](https://jira.hyperledger.org/browse/FAB-12890) golint warnings in orderer/common/cluster
+* [571bdef](https://github.com/hyperledger/fabric/commit/571bdef) Fix for an empty string as a couchdb key
+* [c184b3f](https://github.com/hyperledger/fabric/commit/c184b3f) Fix error processing for runProgram
+* [7dcd45c](https://github.com/hyperledger/fabric/commit/7dcd45c) [FAB-12070](https://jira.hyperledger.org/browse/FAB-12070) - Fix typo in versionedDB interface
+* [c0c35e8](https://github.com/hyperledger/fabric/commit/c0c35e8) [FAB-13108](https://jira.hyperledger.org/browse/FAB-13108) conn never return nil
+* [73faa7c](https://github.com/hyperledger/fabric/commit/73faa7c) [FAB-13067](https://jira.hyperledger.org/browse/FAB-13067) Add blockcutter metrics
+* [c820bcb](https://github.com/hyperledger/fabric/commit/c820bcb) [FAB-12708](https://jira.hyperledger.org/browse/FAB-12708) 1/4 remove current orderer benchmark tests
+* [95eebc1](https://github.com/hyperledger/fabric/commit/95eebc1) [FAB-11755](https://jira.hyperledger.org/browse/FAB-11755) Implement rollback in pvtdatastore
+* [4f903d9](https://github.com/hyperledger/fabric/commit/4f903d9) collACL: use cache to avoid repetative ACL check
+* [fefb5a7](https://github.com/hyperledger/fabric/commit/fefb5a7) [FAB-13013](https://jira.hyperledger.org/browse/FAB-13013) fix code review comments of CR#26293
+* [85262f3](https://github.com/hyperledger/fabric/commit/85262f3) [FAB-12181](https://jira.hyperledger.org/browse/FAB-12181) rewrite pvtdata e2e tests.
+* [f01597e](https://github.com/hyperledger/fabric/commit/f01597e) [FAB-12947](https://jira.hyperledger.org/browse/FAB-12947) Add endpoint info to gossip.rst
+* [ac5c5b2](https://github.com/hyperledger/fabric/commit/ac5c5b2) [FAB-12606](https://jira.hyperledger.org/browse/FAB-12606) Remove unnecessary CC Type check
+* [6a8340e](https://github.com/hyperledger/fabric/commit/6a8340e) [FAB-13092](https://jira.hyperledger.org/browse/FAB-13092) Update hyperledger/fabric-lib-go dep
+* [2b966d1](https://github.com/hyperledger/fabric/commit/2b966d1) collACL: perform ACL on private data access
+* [50af08b](https://github.com/hyperledger/fabric/commit/50af08b) [FAB-12919](https://jira.hyperledger.org/browse/FAB-12919) Serialize `SendSubmit` invocation.
+* [eccf275](https://github.com/hyperledger/fabric/commit/eccf275) [FAB-12792](https://jira.hyperledger.org/browse/FAB-12792) Prover Peer: ExpectationRequest
+* [4e17f53](https://github.com/hyperledger/fabric/commit/4e17f53) collACL: add simpleCollectionStore to txContext
+* [64be3b0](https://github.com/hyperledger/fabric/commit/64be3b0) [FAB-12971](https://jira.hyperledger.org/browse/FAB-12971) Disable prover service and token tx
+* [a770740](https://github.com/hyperledger/fabric/commit/a770740) collACL: add `MemberOnlyRead` in collectionConf
+* [6331243](https://github.com/hyperledger/fabric/commit/6331243) Remove handler path from prometheus config
+* [cf7fa3f](https://github.com/hyperledger/fabric/commit/cf7fa3f) [FAB-13071](https://jira.hyperledger.org/browse/FAB-13071) Corrected APIs in EndorsementPolicy docs
+* [6b116aa](https://github.com/hyperledger/fabric/commit/6b116aa) [FAB-12896](https://jira.hyperledger.org/browse/FAB-12896) Developing Apps: Gateway topic
+* [e6081b5](https://github.com/hyperledger/fabric/commit/e6081b5) [FAB-12702](https://jira.hyperledger.org/browse/FAB-12702) Check trailing spaces on local build
+* [cdb1d3a](https://github.com/hyperledger/fabric/commit/cdb1d3a) [FAB-13068](https://jira.hyperledger.org/browse/FAB-13068) Refactor blockcutter tests
+* [e4e5946](https://github.com/hyperledger/fabric/commit/e4e5946) [FAB-13069](https://jira.hyperledger.org/browse/FAB-13069) BUG Master is broken
+* [b5dd7df](https://github.com/hyperledger/fabric/commit/b5dd7df) [FAB-13060](https://jira.hyperledger.org/browse/FAB-13060) minor label name updates
+* [c642274](https://github.com/hyperledger/fabric/commit/c642274) [FAB-12912](https://jira.hyperledger.org/browse/FAB-12912) Fix raft consenter.go linter warnings
+* [c0f2133](https://github.com/hyperledger/fabric/commit/c0f2133) [FAB-12354](https://jira.hyperledger.org/browse/FAB-12354) Optimistic chain creation in etcd/raft
+* [f98f7c4](https://github.com/hyperledger/fabric/commit/f98f7c4) [FAB-12576](https://jira.hyperledger.org/browse/FAB-12576) failover while handling tx type B
+* [a47ecb9](https://github.com/hyperledger/fabric/commit/a47ecb9) Update stale references to e2e_cli in eventsclient
+* [84b9d6c](https://github.com/hyperledger/fabric/commit/84b9d6c) [FAB-12804](https://jira.hyperledger.org/browse/FAB-12804) reorder labels in statsd format
+* [13952e9](https://github.com/hyperledger/fabric/commit/13952e9) [FAB-12803](https://jira.hyperledger.org/browse/FAB-12803) Add transaction level metrics
+* [4cd15d5](https://github.com/hyperledger/fabric/commit/4cd15d5) [FAB-12804](https://jira.hyperledger.org/browse/FAB-12804) - Add metrics for couchdb
+* [430e65e](https://github.com/hyperledger/fabric/commit/430e65e) [FAB-12939](https://jira.hyperledger.org/browse/FAB-12939) handleRequest signature to accept more param
+* [13927b0](https://github.com/hyperledger/fabric/commit/13927b0) Instrument deliver service
+* [c721874](https://github.com/hyperledger/fabric/commit/c721874) [FAB-11837](https://jira.hyperledger.org/browse/FAB-11837) Track membership changes
+* [017aa31](https://github.com/hyperledger/fabric/commit/017aa31) [FAB-12647](https://jira.hyperledger.org/browse/FAB-12647) Add ignore for fabric-shim links
+* [ddfadd5](https://github.com/hyperledger/fabric/commit/ddfadd5) [FAB-13012](https://jira.hyperledger.org/browse/FAB-13012) Idemix BCCSP Test Robustification
+* [d789375](https://github.com/hyperledger/fabric/commit/d789375) recon: stateDB recovery after a peer crash
+* [f8f5eac](https://github.com/hyperledger/fabric/commit/f8f5eac) [FAB-13029](https://jira.hyperledger.org/browse/FAB-13029) stringers avoid logging slice values
+* [bad7c8a](https://github.com/hyperledger/fabric/commit/bad7c8a) [FAB-13028](https://jira.hyperledger.org/browse/FAB-13028) bootstrap.sh doesn't work with options
+* [dd7b8bd](https://github.com/hyperledger/fabric/commit/dd7b8bd) CC launch failure/timeout and execute timeout metrics
+* [4cf2ff5](https://github.com/hyperledger/fabric/commit/4cf2ff5) [FAB-613](https://jira.hyperledger.org/browse/FAB-613) Add Kafka metrics for orderer
+* [a063c8a](https://github.com/hyperledger/fabric/commit/a063c8a) [FAB-9568](https://jira.hyperledger.org/browse/FAB-9568) Add metrics to Broadcast
+* [9b429c9](https://github.com/hyperledger/fabric/commit/9b429c9) Fix incorrect usage of DeployChaincode in integration
+* [226e96c](https://github.com/hyperledger/fabric/commit/226e96c) [FAB-13018](https://jira.hyperledger.org/browse/FAB-13018) Commit instead of commitment
+* [8e9d81a](https://github.com/hyperledger/fabric/commit/8e9d81a) Use getopts instead of getopt
+* [759a575](https://github.com/hyperledger/fabric/commit/759a575) [FAB-12177](https://jira.hyperledger.org/browse/FAB-12177) Add externalendpoint to discovery
+* [6da148b](https://github.com/hyperledger/fabric/commit/6da148b) recon: store the last committed BlockNum in txmgr
+* [5ace584](https://github.com/hyperledger/fabric/commit/5ace584) [FAB-13003](https://jira.hyperledger.org/browse/FAB-13003) Reimplement client test in ginkgo
+* [6702c4b](https://github.com/hyperledger/fabric/commit/6702c4b) [FAB-13002](https://jira.hyperledger.org/browse/FAB-13002) Active docker health check in peer
+* [1798b2a](https://github.com/hyperledger/fabric/commit/1798b2a) [FAB-13000](https://jira.hyperledger.org/browse/FAB-13000) Release resources in token transactor
+* [2f02a32](https://github.com/hyperledger/fabric/commit/2f02a32) Prevent verbose error reporting from grpc logging
+* [6922e14](https://github.com/hyperledger/fabric/commit/6922e14) Allow custom levelers for grpc interceptors
+* [d90a94a](https://github.com/hyperledger/fabric/commit/d90a94a) [FAB-9527](https://jira.hyperledger.org/browse/FAB-9527) Use Idemix-Based BCCSP
+* [09b1a8c](https://github.com/hyperledger/fabric/commit/09b1a8c) recon: refactor txmgr_test.go
+* [347515e](https://github.com/hyperledger/fabric/commit/347515e) [FAB-12806](https://jira.hyperledger.org/browse/FAB-12806) Developing Apps: Wallet topic
+* [346026c](https://github.com/hyperledger/fabric/commit/346026c) [FAB-12675](https://jira.hyperledger.org/browse/FAB-12675) Prover Server: TransferFrom
+* [1e23904](https://github.com/hyperledger/fabric/commit/1e23904) [FAB-12989](https://jira.hyperledger.org/browse/FAB-12989) fix super minor typo in docs
+* [b811c3f](https://github.com/hyperledger/fabric/commit/b811c3f) [FAB-12988](https://jira.hyperledger.org/browse/FAB-12988) Fix "key" to "cert"
+* [a364171](https://github.com/hyperledger/fabric/commit/a364171) [FAB-12987](https://jira.hyperledger.org/browse/FAB-12987) Fix for statedb value format check
+* [c3ba5a2](https://github.com/hyperledger/fabric/commit/c3ba5a2) [FAB-12211](https://jira.hyperledger.org/browse/FAB-12211) Add Error Handling to build script
+* [8e6db51](https://github.com/hyperledger/fabric/commit/8e6db51) [FAB-9526](https://jira.hyperledger.org/browse/FAB-9526) Idemix BCCSP
+* [3f7c1ed](https://github.com/hyperledger/fabric/commit/3f7c1ed) [FAB-12940](https://jira.hyperledger.org/browse/FAB-12940) Cleanup orderer tests
+* [c816bf0](https://github.com/hyperledger/fabric/commit/c816bf0) [FAB-12460](https://jira.hyperledger.org/browse/FAB-12460) transactor/verifier: ApproveRequest
+* [ea986cb](https://github.com/hyperledger/fabric/commit/ea986cb) [FAB-12563](https://jira.hyperledger.org/browse/FAB-12563) Prover Server: Approve
+* [28628b8](https://github.com/hyperledger/fabric/commit/28628b8) [FAB-12968](https://jira.hyperledger.org/browse/FAB-12968) Fix bug of iterator in plugin_validator
+* [f2ee26b](https://github.com/hyperledger/fabric/commit/f2ee26b) [FAB-11781](https://jira.hyperledger.org/browse/FAB-11781) enable pvtdata reconciliaition
+* [fb4aeb5](https://github.com/hyperledger/fabric/commit/fb4aeb5) [FAB-11642](https://jira.hyperledger.org/browse/FAB-11642): Fix race condition in gossip/service
+* [931ae33](https://github.com/hyperledger/fabric/commit/931ae33) [FAB-12652](https://jira.hyperledger.org/browse/FAB-12652) Idemix Bridge
+* [08d9e3d](https://github.com/hyperledger/fabric/commit/08d9e3d) recon: add collelgnot. to stateUpdates listener
+* [a2a2973](https://github.com/hyperledger/fabric/commit/a2a2973) [FAB-12963](https://jira.hyperledger.org/browse/FAB-12963) Prover Service: check token capability
+* [225a683](https://github.com/hyperledger/fabric/commit/225a683) [FAB-12013](https://jira.hyperledger.org/browse/FAB-12013) Enable prover grpc service at peer startup
+* [9d8fcbb](https://github.com/hyperledger/fabric/commit/9d8fcbb) [FAB-12801](https://jira.hyperledger.org/browse/FAB-12801) Create ledger stats with basic metrics
+* [f64434e](https://github.com/hyperledger/fabric/commit/f64434e) [FAB-12955](https://jira.hyperledger.org/browse/FAB-12955) move build time observation
+* [29db166](https://github.com/hyperledger/fabric/commit/29db166) Instrument chaincode container build
+* [bd5df09](https://github.com/hyperledger/fabric/commit/bd5df09) recon: commit pvtData of oldBlks tp StateDB
+* [e00dfcb](https://github.com/hyperledger/fabric/commit/e00dfcb) recon: update BTL bookkeeping managed by purge mgr
+* [37d0010](https://github.com/hyperledger/fabric/commit/37d0010) recon: filter stale data and construct update batch
+* [4876d88](https://github.com/hyperledger/fabric/commit/4876d88) [FAB-12941](https://jira.hyperledger.org/browse/FAB-12941) enable prometheus in integration tests
+* [a061c5d](https://github.com/hyperledger/fabric/commit/a061c5d) [FAB-12907](https://jira.hyperledger.org/browse/FAB-12907) - windows build fails because of SIGUSR1
+* [e03a372](https://github.com/hyperledger/fabric/commit/e03a372) Instrument chaincode launch
+* [1fd2134](https://github.com/hyperledger/fabric/commit/1fd2134) [FAB-12911](https://jira.hyperledger.org/browse/FAB-12911) Commercial Paper tutorial fixes
+* [a0dbe00](https://github.com/hyperledger/fabric/commit/a0dbe00) [FAB-12621](https://jira.hyperledger.org/browse/FAB-12621) Add CORS support to configtxlator
+* [87f3a96](https://github.com/hyperledger/fabric/commit/87f3a96) [FAB-12656](https://jira.hyperledger.org/browse/FAB-12656) Enable `PreVote` of etcdraft.
+* [d2f2029](https://github.com/hyperledger/fabric/commit/d2f2029) [FAB-12816](https://jira.hyperledger.org/browse/FAB-12816) cluster.RPC mapping per destination.
+* [c1ff9e6](https://github.com/hyperledger/fabric/commit/c1ff9e6) [FAB-12552](https://jira.hyperledger.org/browse/FAB-12552) Add support of type B tx for raft
+* [99a7f5e](https://github.com/hyperledger/fabric/commit/99a7f5e) [FAB-12730](https://jira.hyperledger.org/browse/FAB-12730) moderate timeout for Raft chain tests
+* [2753696](https://github.com/hyperledger/fabric/commit/2753696) [FAB-12553](https://jira.hyperledger.org/browse/FAB-12553) add ability to add nodes in Raft tests
+* [5e359fe](https://github.com/hyperledger/fabric/commit/5e359fe) [FAB-11919](https://jira.hyperledger.org/browse/FAB-11919) Towards etcdraft snapshotting 4/4
+* [5ca4428](https://github.com/hyperledger/fabric/commit/5ca4428) [FAB-11919](https://jira.hyperledger.org/browse/FAB-11919) Towards etcdraft snapshotting 3/4
+* [9b8827b](https://github.com/hyperledger/fabric/commit/9b8827b) [FAB-11919](https://jira.hyperledger.org/browse/FAB-11919) Towards etcdraft snapshotting 2/4
+* [458c627](https://github.com/hyperledger/fabric/commit/458c627) [FAB-12315](https://jira.hyperledger.org/browse/FAB-12315) Update Makefile targets
+* [d147a63](https://github.com/hyperledger/fabric/commit/d147a63) [FAB-12578](https://jira.hyperledger.org/browse/FAB-12578) Fix misspelling "appopriate"
+* [d4876ea](https://github.com/hyperledger/fabric/commit/d4876ea) [FAB-11640](https://jira.hyperledger.org/browse/FAB-11640): fix race condition in gossip/identity
+* [e7bc473](https://github.com/hyperledger/fabric/commit/e7bc473) [FAB-12910](https://jira.hyperledger.org/browse/FAB-12910) Document installation path
+* [2c795a4](https://github.com/hyperledger/fabric/commit/2c795a4) [FAB-12902](https://jira.hyperledger.org/browse/FAB-12902) update logger names in chaincode pkg
+* [2b9a816](https://github.com/hyperledger/fabric/commit/2b9a816) [FAB-12900](https://jira.hyperledger.org/browse/FAB-12900) remove fake generation to foreign dir
+* [97243c7](https://github.com/hyperledger/fabric/commit/97243c7) [FAB-12760](https://jira.hyperledger.org/browse/FAB-12760) Pull chains for onboarding
+* [0934c08](https://github.com/hyperledger/fabric/commit/0934c08) [FAB-12901](https://jira.hyperledger.org/browse/FAB-12901) regenerate fakes in core/chaincode
+* [7105f8b](https://github.com/hyperledger/fabric/commit/7105f8b) recon: commit only validTx's pvtData in pvtStore
+* [eba7e3f](https://github.com/hyperledger/fabric/commit/eba7e3f) Instrument metrics into chaincode handler
+* [4c6b89c](https://github.com/hyperledger/fabric/commit/4c6b89c) [FABCI-27] Fix: increase timeout
+* [35dea2d](https://github.com/hyperledger/fabric/commit/35dea2d) Sanitize label values for statsd
+* [a58bcd2](https://github.com/hyperledger/fabric/commit/a58bcd2) [FAB-12865](https://jira.hyperledger.org/browse/FAB-12865) address timeout flakes in grpclogging
+* [1baa041](https://github.com/hyperledger/fabric/commit/1baa041) [FAB-12863](https://jira.hyperledger.org/browse/FAB-12863) integration test for healthz endpoint
+* [42891b0](https://github.com/hyperledger/fabric/commit/42891b0) [FAB-12861](https://jira.hyperledger.org/browse/FAB-12861) fix client cert middleware logic
+* [d336029](https://github.com/hyperledger/fabric/commit/d336029) Wire the health check handler into operations
+* [db46110](https://github.com/hyperledger/fabric/commit/db46110) [FAB-12372](https://jira.hyperledger.org/browse/FAB-12372) Collect info on go routines
+* [ac63a6f](https://github.com/hyperledger/fabric/commit/ac63a6f) [FAB-12854](https://jira.hyperledger.org/browse/FAB-12854) DRY up peer/orderer operations code
+* [2c8240b](https://github.com/hyperledger/fabric/commit/2c8240b) [FAB-12784](https://jira.hyperledger.org/browse/FAB-12784) In-memory keystore for BCCSP
+* [cbe884f](https://github.com/hyperledger/fabric/commit/cbe884f) [FAB-12893](https://jira.hyperledger.org/browse/FAB-12893) Fix MSP SKI error reporting
+* [8c96636](https://github.com/hyperledger/fabric/commit/8c96636) recon: convert missingData slice to a map
+* [ed088b1](https://github.com/hyperledger/fabric/commit/ed088b1) [FAB-12651](https://jira.hyperledger.org/browse/FAB-12651) Idemix Nym Signer/Verifier
+* [91e0b0b](https://github.com/hyperledger/fabric/commit/91e0b0b) [FAB-12843](https://jira.hyperledger.org/browse/FAB-12843) wire logspec handler
+* [2ab730b](https://github.com/hyperledger/fabric/commit/2ab730b) [FAB-9838](https://jira.hyperledger.org/browse/FAB-9838) Idemix Signer/Verifier
+* [32ead68](https://github.com/hyperledger/fabric/commit/32ead68) [FAB-12598](https://jira.hyperledger.org/browse/FAB-12598) Omit trailing spaces to success CI.
+* [3430e83](https://github.com/hyperledger/fabric/commit/3430e83) [FAB-12789](https://jira.hyperledger.org/browse/FAB-12789) Token Expectation in Proposal Response
+* [1afa0f8](https://github.com/hyperledger/fabric/commit/1afa0f8) recon: construct valid/invalid set from pvt data
+* [bfb2c48](https://github.com/hyperledger/fabric/commit/bfb2c48) Nominate Alessandro Sorniotti as maintainer
+* [9620830](https://github.com/hyperledger/fabric/commit/9620830) [FAB-12802](https://jira.hyperledger.org/browse/FAB-12802) Pass metrics provider to ledgermgmt
+* [73bdfc5](https://github.com/hyperledger/fabric/commit/73bdfc5) [FAB-12866](https://jira.hyperledger.org/browse/FAB-12866) - Refactor NewProvider for ledger
+* [58fb3fe](https://github.com/hyperledger/fabric/commit/58fb3fe) [FAB-12311](https://jira.hyperledger.org/browse/FAB-12311) Developing Apps: Tutorial doc
+* [fef430f](https://github.com/hyperledger/fabric/commit/fef430f) [FAB-12842](https://jira.hyperledger.org/browse/FAB-12842) http handler to manage logspec
+* [57a91cc](https://github.com/hyperledger/fabric/commit/57a91cc) Add HealthCheck to VM implementations
+* [6e81cdb](https://github.com/hyperledger/fabric/commit/6e81cdb) [FAB-12788](https://jira.hyperledger.org/browse/FAB-12788) Protobuf Messages for Token Expectation
+* [e223d27](https://github.com/hyperledger/fabric/commit/e223d27) [FAB-12602](https://jira.hyperledger.org/browse/FAB-12602) Idemix Credential Revocation Information
+* [d23da14](https://github.com/hyperledger/fabric/commit/d23da14) [FAB-12809](https://jira.hyperledger.org/browse/FAB-12809) Log correct state key
+* [20fb9b8](https://github.com/hyperledger/fabric/commit/20fb9b8) recon: commit oldBlks' pvData to pvtStore
+* [f21d8b9](https://github.com/hyperledger/fabric/commit/f21d8b9) Remove etcd/raft fixtures from sampleconfig folder
+* [9994358](https://github.com/hyperledger/fabric/commit/9994358) [FAB-11678](https://jira.hyperledger.org/browse/FAB-11678) TX processor/verifier: redeem tokens
+* [eacbc1e](https://github.com/hyperledger/fabric/commit/eacbc1e) [FAB-11680](https://jira.hyperledger.org/browse/FAB-11680) TMS transactor: RequestRedeem
+* [6037aaa](https://github.com/hyperledger/fabric/commit/6037aaa) [FAB-12007](https://jira.hyperledger.org/browse/FAB-12007) Developing Apps: Process and Data Design
+* [08b5332](https://github.com/hyperledger/fabric/commit/08b5332) Write WAL and snapshots in temp dir when testing
+* [37b5cbe](https://github.com/hyperledger/fabric/commit/37b5cbe) [FAB-11641](https://jira.hyperledger.org/browse/FAB-11641) fix race conditions in gossip/integration
+* [307585d](https://github.com/hyperledger/fabric/commit/307585d) [FAB-11679](https://jira.hyperledger.org/browse/FAB-11679) Prover: RedeemRequest
+* [c49f827](https://github.com/hyperledger/fabric/commit/c49f827) [FAB-11372](https://jira.hyperledger.org/browse/FAB-11372) Prover Server: Transfer using TMS
+* [c07ba70](https://github.com/hyperledger/fabric/commit/c07ba70) [FAB-11371](https://jira.hyperledger.org/browse/FAB-11371) TMS transactor to transfer tokens
+* [e81d34d](https://github.com/hyperledger/fabric/commit/e81d34d) [FAB-12356](https://jira.hyperledger.org/browse/FAB-12356) Idemix Topology Info
+* [99433d1](https://github.com/hyperledger/fabric/commit/99433d1) [FAB-12814](https://jira.hyperledger.org/browse/FAB-12814) remove misleading log error msg
+* [594432d](https://github.com/hyperledger/fabric/commit/594432d) [FAB-12601](https://jira.hyperledger.org/browse/FAB-12601) Idemix Revocation Key Gen
+* [7c7f945](https://github.com/hyperledger/fabric/commit/7c7f945) Instantiate and wire metrics provider
+* [a3f79a7](https://github.com/hyperledger/fabric/commit/a3f79a7) Update logging nomenclature - s/module/logger
+* [7ce96d1](https://github.com/hyperledger/fabric/commit/7ce96d1) Update docs to reflect new logging configuration
+* [f7fa069](https://github.com/hyperledger/fabric/commit/f7fa069) [FAB-12664](https://jira.hyperledger.org/browse/FAB-12664) Return ginkgomon.Runner instead of ifrit
+* [c04eb78](https://github.com/hyperledger/fabric/commit/c04eb78) [FAB-11919](https://jira.hyperledger.org/browse/FAB-11919) Towards etcdraft snapshotting 1/4
+* [7a2d6a5](https://github.com/hyperledger/fabric/commit/7a2d6a5) [FAB-11918](https://jira.hyperledger.org/browse/FAB-11918) Add CFT integration test.
+* [858aaa9](https://github.com/hyperledger/fabric/commit/858aaa9) [FAB-11918](https://jira.hyperledger.org/browse/FAB-11918) Add WAL to persist raft log
+* [bac3310](https://github.com/hyperledger/fabric/commit/bac3310) [FAB-12725](https://jira.hyperledger.org/browse/FAB-12725) defensive treatment of info.FullMethod
+* [88e3f8f](https://github.com/hyperledger/fabric/commit/88e3f8f) Change signature of internal evaluator function
+* [ebcbd53](https://github.com/hyperledger/fabric/commit/ebcbd53) [FAB-11387](https://jira.hyperledger.org/browse/FAB-11387) Fix boundary check for cauthdsl
+* [67ed103](https://github.com/hyperledger/fabric/commit/67ed103) [FAB-12749](https://jira.hyperledger.org/browse/FAB-12749)Fix MockStub RangeQueryIterator
+* [71e975e](https://github.com/hyperledger/fabric/commit/71e975e) [FAB-12769](https://jira.hyperledger.org/browse/FAB-12769) Rename ModuleLevels to LoggerLevels
+* [1789f4f](https://github.com/hyperledger/fabric/commit/1789f4f) Add logger name validation
+* [ce5bd2c](https://github.com/hyperledger/fabric/commit/ce5bd2c) Remove logger name conversion
+* [ce54f14](https://github.com/hyperledger/fabric/commit/ce54f14) [FAB-12766](https://jira.hyperledger.org/browse/FAB-12766) increase temporal threshold in tests
+* [44a2fc6](https://github.com/hyperledger/fabric/commit/44a2fc6) [FAB-9837](https://jira.hyperledger.org/browse/FAB-9837) Idemix Credential Signer/Verifier
+* [e8b284a](https://github.com/hyperledger/fabric/commit/e8b284a) [FAB-9695](https://jira.hyperledger.org/browse/FAB-9695) Idemix Credential Request Signer/Verifier
+* [9fbbad1](https://github.com/hyperledger/fabric/commit/9fbbad1) [FAB-12763](https://jira.hyperledger.org/browse/FAB-12763) test flake in TestStreamAbort
+* [cd988c0](https://github.com/hyperledger/fabric/commit/cd988c0) [FAB-12647](https://jira.hyperledger.org/browse/FAB-12647) Broken links
+* [4b6f290](https://github.com/hyperledger/fabric/commit/4b6f290) [FAB-9694](https://jira.hyperledger.org/browse/FAB-9694) Idemix Nym Key Deriver
+* [ab5bd84](https://github.com/hyperledger/fabric/commit/ab5bd84) [FAB-12704](https://jira.hyperledger.org/browse/FAB-12704) Detect If orderer node is in channel
+* [9634185](https://github.com/hyperledger/fabric/commit/9634185) Introduce grpc interceptors for basic metrics
+* [6054cdd](https://github.com/hyperledger/fabric/commit/6054cdd) Add disabled and prometheus metric providers
+* [8222133](https://github.com/hyperledger/fabric/commit/8222133) Introduce meter options in metrics
+* [a8fc602](https://github.com/hyperledger/fabric/commit/a8fc602) [FAB-9672](https://jira.hyperledger.org/browse/FAB-9672) Idemix User Key Generator
+* [53cc657](https://github.com/hyperledger/fabric/commit/53cc657) [FAB-11043](https://jira.hyperledger.org/browse/FAB-11043) Remove "-stable" suffix in upgrade docs
+* [3dac045](https://github.com/hyperledger/fabric/commit/3dac045) Return InvalidArgument grpc code on err setting level
+* [753e187](https://github.com/hyperledger/fabric/commit/753e187) Update legacy peer CLI logging functions
+* [c209841](https://github.com/hyperledger/fabric/commit/c209841) Orderer to use new logging env variables
+* [8509e7c](https://github.com/hyperledger/fabric/commit/8509e7c) core Check() evaluate level for entry's logger name
+* [99eb596](https://github.com/hyperledger/fabric/commit/99eb596) Add SetLogSpec to CLI via Admin Service
+* [d1ec865](https://github.com/hyperledger/fabric/commit/d1ec865) Improve logging for channel update error
+* [836161a](https://github.com/hyperledger/fabric/commit/836161a) [FAB-12673](https://jira.hyperledger.org/browse/FAB-12673) Make cluster connections asynchronous
+* [541f41c](https://github.com/hyperledger/fabric/commit/541f41c) Chat not RocketChat
+* [df065ec](https://github.com/hyperledger/fabric/commit/df065ec) [FAB-11088](https://jira.hyperledger.org/browse/FAB-11088) Improve consenter error when WaitReady
+* [d484477](https://github.com/hyperledger/fabric/commit/d484477) Adjust callers of legacy viper logging variables
+* [211bb65](https://github.com/hyperledger/fabric/commit/211bb65) Add new environment variable for logging format
+* [e32e55d](https://github.com/hyperledger/fabric/commit/e32e55d) [FAB-12667](https://jira.hyperledger.org/browse/FAB-12667) Remove FAQ reference to e2e_cli
+* [7c78a24](https://github.com/hyperledger/fabric/commit/7c78a24) [FAB-12659](https://jira.hyperledger.org/browse/FAB-12659) Revert dep change made in [FAB-12634](https://jira.hyperledger.org/browse/FAB-12634)
+* [f1c5da6](https://github.com/hyperledger/fabric/commit/f1c5da6) Add GetLogSpec to CLI via Admin Service
+* [6ab3eeb](https://github.com/hyperledger/fabric/commit/6ab3eeb) [FAB-12593](https://jira.hyperledger.org/browse/FAB-12593) Wire in the stats handler
+* [b7d4c3c](https://github.com/hyperledger/fabric/commit/b7d4c3c) [FAB-11526](https://jira.hyperledger.org/browse/FAB-11526) Prover: Request Transfer
+* [59f419d](https://github.com/hyperledger/fabric/commit/59f419d) [FAB-11360](https://jira.hyperledger.org/browse/FAB-11360) Prover Server: ListTokens using tms
+* [37050be](https://github.com/hyperledger/fabric/commit/37050be) [FAB-11359](https://jira.hyperledger.org/browse/FAB-11359) tms transactor: list tokens
+* [9e682d4](https://github.com/hyperledger/fabric/commit/9e682d4) [FAB-11591](https://jira.hyperledger.org/browse/FAB-11591) new integration test for multiple channels
+* [7173857](https://github.com/hyperledger/fabric/commit/7173857) [FAB-11294](https://jira.hyperledger.org/browse/FAB-11294) Prover Service - List Tokens
+* [60f968d](https://github.com/hyperledger/fabric/commit/60f968d) [FAB-11354](https://jira.hyperledger.org/browse/FAB-11354) Process issue request with a plain issuer
+* [52be585](https://github.com/hyperledger/fabric/commit/52be585) Replace / in logger names with dots
+* [81e4983](https://github.com/hyperledger/fabric/commit/81e4983) [FAB-9671](https://jira.hyperledger.org/browse/FAB-9671) Idemix Issuer Key Generator
+* [d5c6cbc](https://github.com/hyperledger/fabric/commit/d5c6cbc) [FAB-11300](https://jira.hyperledger.org/browse/FAB-11300) Token tx client and e2e test - issue tokens
+* [20e01e2](https://github.com/hyperledger/fabric/commit/20e01e2) [FAB-12592](https://jira.hyperledger.org/browse/FAB-12592) Create a stats handler for the server
+* [f23ebd5](https://github.com/hyperledger/fabric/commit/f23ebd5) Update level evaluation to use log spec
+* [41195be](https://github.com/hyperledger/fabric/commit/41195be) [FAB-11941](https://jira.hyperledger.org/browse/FAB-11941) Commit token tx via custom processor
+* [a5ff8e9](https://github.com/hyperledger/fabric/commit/a5ff8e9) [FAB-12363](https://jira.hyperledger.org/browse/FAB-12363) grpc server logging interceptors
+* [8352c4b](https://github.com/hyperledger/fabric/commit/8352c4b) [FAB-11940](https://jira.hyperledger.org/browse/FAB-11940) Enable Token-tx validation path
+* [e7a3282](https://github.com/hyperledger/fabric/commit/e7a3282) [FAB-12006](https://jira.hyperledger.org/browse/FAB-12006) Add FabToken capability
+* [caabdbe](https://github.com/hyperledger/fabric/commit/caabdbe) [FAB-12649](https://jira.hyperledger.org/browse/FAB-12649) Address minor cosmetic issues in orderer
+* [bea950e](https://github.com/hyperledger/fabric/commit/bea950e) [FAB-12565](https://jira.hyperledger.org/browse/FAB-12565) Unify subject lines length in docs
+* [d327d30](https://github.com/hyperledger/fabric/commit/d327d30) [FAB-12301](https://jira.hyperledger.org/browse/FAB-12301) Remove e2e_cli example
+* [90ca61c](https://github.com/hyperledger/fabric/commit/90ca61c) [FAB-11180](https://jira.hyperledger.org/browse/FAB-11180) Adding docs-link to tox.ini
+* [85fc4ab](https://github.com/hyperledger/fabric/commit/85fc4ab) [FAB-12638](https://jira.hyperledger.org/browse/FAB-12638) Fix panic on passing wrong key
+* [f208ba2](https://github.com/hyperledger/fabric/commit/f208ba2) [FAB-11918](https://jira.hyperledger.org/browse/FAB-11918) Add etcd/wal dependencies.
+* [3b8445d](https://github.com/hyperledger/fabric/commit/3b8445d) [FAB-11995](https://jira.hyperledger.org/browse/FAB-11995) Add Consensus section to orderer.yaml
+* [abcc8db](https://github.com/hyperledger/fabric/commit/abcc8db) [FAB-11918](https://jira.hyperledger.org/browse/FAB-11918) Add raft index to block metadata
+* [5a27280](https://github.com/hyperledger/fabric/commit/5a27280) [FAB-12557](https://jira.hyperledger.org/browse/FAB-12557) Fix flaky test in etcdraft chain
+* [fc0c4e9](https://github.com/hyperledger/fabric/commit/fc0c4e9) [FAB-12477](https://jira.hyperledger.org/browse/FAB-12477): add etcd/raft membership message
+* [d92a41d](https://github.com/hyperledger/fabric/commit/d92a41d) [FAB-12635](https://jira.hyperledger.org/browse/FAB-12635) Inspect channels of system chain
+* [a65b055](https://github.com/hyperledger/fabric/commit/a65b055) [FAB-12591](https://jira.hyperledger.org/browse/FAB-12591) Block puller out of a config block
+* [785ebd1](https://github.com/hyperledger/fabric/commit/785ebd1) [FAB-12550](https://jira.hyperledger.org/browse/FAB-12550) OSN config block hash chain validation
+* [4609306](https://github.com/hyperledger/fabric/commit/4609306) [FAB-12634](https://jira.hyperledger.org/browse/FAB-12634) Lock in versions for gotools
+* [f995aae](https://github.com/hyperledger/fabric/commit/f995aae) [FAB-11096](https://jira.hyperledger.org/browse/FAB-11096) remove testenv related targets
+* [87a4266](https://github.com/hyperledger/fabric/commit/87a4266) [FAB-12630](https://jira.hyperledger.org/browse/FAB-12630) Improve install instructions
+* [18ae86a](https://github.com/hyperledger/fabric/commit/18ae86a) [FAB-12626](https://jira.hyperledger.org/browse/FAB-12626) Fix couchdb_test.go debug
+* [a99d8a8](https://github.com/hyperledger/fabric/commit/a99d8a8) Ledger-lscc: Remove lscc reference from Txsimulation
+* [bfdc56c](https://github.com/hyperledger/fabric/commit/bfdc56c) Ledger-lscc: Remove lscc/sccc ref from cceventmgmt
+* [256dc12](https://github.com/hyperledger/fabric/commit/256dc12) [FAB-12155](https://jira.hyperledger.org/browse/FAB-12155) IssuerValidator Impl
+* [b72d36b](https://github.com/hyperledger/fabric/commit/b72d36b) [FAB-12213](https://jira.hyperledger.org/browse/FAB-12213) Fix typos in cid/cid.go
+* [2020c6e](https://github.com/hyperledger/fabric/commit/2020c6e) [FAB-12238](https://jira.hyperledger.org/browse/FAB-12238) Fix misspelling of "specifed"
+* [c26c595](https://github.com/hyperledger/fabric/commit/c26c595) [FAB-12154](https://jira.hyperledger.org/browse/FAB-12154) Configtxgen:Fix mismatched hyphens
+* [c3d8da8](https://github.com/hyperledger/fabric/commit/c3d8da8) [FAB-12159](https://jira.hyperledger.org/browse/FAB-12159) Statecouchdb TestDebugFunctions error
+* [d99d940](https://github.com/hyperledger/fabric/commit/d99d940) [FAB-12193](https://jira.hyperledger.org/browse/FAB-12193) Fix a wrong error messages in peer
+* [0439718](https://github.com/hyperledger/fabric/commit/0439718) [FAB-12215](https://jira.hyperledger.org/browse/FAB-12215)WYFA:Remove chainId in tx proposal request
+* [85dd179](https://github.com/hyperledger/fabric/commit/85dd179) [FAB-12604](https://jira.hyperledger.org/browse/FAB-12604) configure required zap encoders
+* [b46ff00](https://github.com/hyperledger/fabric/commit/b46ff00) [FAB-12594](https://jira.hyperledger.org/browse/FAB-12594) reduce overhead of race in unit tests
+* [200ec09](https://github.com/hyperledger/fabric/commit/200ec09) [FAB-12502](https://jira.hyperledger.org/browse/FAB-12502) Deliver client support for etcdraft
+* [365a710](https://github.com/hyperledger/fabric/commit/365a710) [FAB-12522](https://jira.hyperledger.org/browse/FAB-12522) Extract TLS CA certificates from config
+* [41da334](https://github.com/hyperledger/fabric/commit/41da334) [FAB-12508](https://jira.hyperledger.org/browse/FAB-12508) Add Block(seq) to consenter support
+* [319ca36](https://github.com/hyperledger/fabric/commit/319ca36) [FAB-12501](https://jira.hyperledger.org/browse/FAB-12501) OSN cluster deliver client implementation
+* [ec72c70](https://github.com/hyperledger/fabric/commit/ec72c70) [FAB-12540](https://jira.hyperledger.org/browse/FAB-12540) fix cli install error
+* [95a57a9](https://github.com/hyperledger/fabric/commit/95a57a9) [FAB-12599](https://jira.hyperledger.org/browse/FAB-12599) Remove unused variable in peer code
+* [dd5f582](https://github.com/hyperledger/fabric/commit/dd5f582) [FAB-12214](https://jira.hyperledger.org/browse/FAB-12214)Improve private data tutorial doc
+* [bd2e316](https://github.com/hyperledger/fabric/commit/bd2e316) [FAB-12577](https://jira.hyperledger.org/browse/FAB-12577) Make UTs under cluster_test more resilient
+* [0a5d2d2](https://github.com/hyperledger/fabric/commit/0a5d2d2) [FAB-12507](https://jira.hyperledger.org/browse/FAB-12507) Doc clarifications for private data config
+* [aaea301](https://github.com/hyperledger/fabric/commit/aaea301) [FAB-12544](https://jira.hyperledger.org/browse/FAB-12544) Adapt gossip's comments to godoc syntax
+* [6fc968f](https://github.com/hyperledger/fabric/commit/6fc968f) [FAB-12545](https://jira.hyperledger.org/browse/FAB-12545) Fix mock stub PutState on empty value
+* [2cfb4bf](https://github.com/hyperledger/fabric/commit/2cfb4bf) Add new environment variable for logging spec
+* [81cd2f1](https://github.com/hyperledger/fabric/commit/81cd2f1) [FAB-12534](https://jira.hyperledger.org/browse/FAB-12534) Move Step() to its own logger
+* [8af42a5](https://github.com/hyperledger/fabric/commit/8af42a5) [FAB-12526](https://jira.hyperledger.org/browse/FAB-12526) Upgrade Chaintool version to v1.1.3
+* [db9c574](https://github.com/hyperledger/fabric/commit/db9c574) [FAB-12015](https://jira.hyperledger.org/browse/FAB-12015) Add Raft confing update validation
+* [fddc27c](https://github.com/hyperledger/fabric/commit/fddc27c) [FAB-12492](https://jira.hyperledger.org/browse/FAB-12492) run peers session with orderer usr org
+* [aa89a50](https://github.com/hyperledger/fabric/commit/aa89a50) [FAB-12524](https://jira.hyperledger.org/browse/FAB-12524) Fix wrong/missing godoc comments
+* [8a8a1c1](https://github.com/hyperledger/fabric/commit/8a8a1c1) [FAB-12500](https://jira.hyperledger.org/browse/FAB-12500) Deliver client hash chain validation
+* [d053676](https://github.com/hyperledger/fabric/commit/d053676) [FAB-11942](https://jira.hyperledger.org/browse/FAB-11942) TMS manager implementation
+* [6522fc5](https://github.com/hyperledger/fabric/commit/6522fc5) [FAB-11943](https://jira.hyperledger.org/browse/FAB-11943) TMS verifier for import
+* [d01d7e4](https://github.com/hyperledger/fabric/commit/d01d7e4) Ledger-lscc: Remove lscc reference from cceventmgmt
+* [5ee9708](https://github.com/hyperledger/fabric/commit/5ee9708) [FAB-12497](https://jira.hyperledger.org/browse/FAB-12497) Add hyperlink to fabric-samples repo text
+* [3b36b1a](https://github.com/hyperledger/fabric/commit/3b36b1a) [FAB-12516](https://jira.hyperledger.org/browse/FAB-12516) GetBlock: Close() ledger iterator
+* [77774a2](https://github.com/hyperledger/fabric/commit/77774a2) Ledger-lscc: Remove lscc ref from pvtdata BTL policy
+* [6b93396](https://github.com/hyperledger/fabric/commit/6b93396) Ledger-lscc: Remove lscc ref from confighistory pkg
+* [89132ff](https://github.com/hyperledger/fabric/commit/89132ff) [FAB-12506](https://jira.hyperledger.org/browse/FAB-12506) pick up data race fix in go-metrics
+* [916a59b](https://github.com/hyperledger/fabric/commit/916a59b) [FAB-12484](https://jira.hyperledger.org/browse/FAB-12484) implement runtime metrics with go-kit
+* [21cf5c6](https://github.com/hyperledger/fabric/commit/21cf5c6) [FAB-12484](https://jira.hyperledger.org/browse/FAB-12484) remove previous metrics package
+* [cb5ee6b](https://github.com/hyperledger/fabric/commit/cb5ee6b) [FAB-12440](https://jira.hyperledger.org/browse/FAB-12440) run goimports on tree and re-enable
+* [a1be265](https://github.com/hyperledger/fabric/commit/a1be265) [FAB-12481](https://jira.hyperledger.org/browse/FAB-12481) Update proto generated files
+* [5470aaa](https://github.com/hyperledger/fabric/commit/5470aaa) [FAB-12486](https://jira.hyperledger.org/browse/FAB-12486) Use dot naming convention for zap loggers
+* [199769c](https://github.com/hyperledger/fabric/commit/199769c) [FAB-12454](https://jira.hyperledger.org/browse/FAB-12454) Document collection policy details
+* [8619c8c](https://github.com/hyperledger/fabric/commit/8619c8c) [FAB-12377](https://jira.hyperledger.org/browse/FAB-12377) Multinode etcd/raft integration test
+* [5a51534](https://github.com/hyperledger/fabric/commit/5a51534) [FAB-11703](https://jira.hyperledger.org/browse/FAB-11703) Support multi-node Raft cluster
+* [2bdd187](https://github.com/hyperledger/fabric/commit/2bdd187) [FAB-12476](https://jira.hyperledger.org/browse/FAB-12476) Remove bccsp dependency
+* [99c0a64](https://github.com/hyperledger/fabric/commit/99c0a64) [FAB-11539](https://jira.hyperledger.org/browse/FAB-11539) Prover Client: RequestTransfer
+* [891291b](https://github.com/hyperledger/fabric/commit/891291b) [FAB-11527](https://jira.hyperledger.org/browse/FAB-11527) Transfer functions
+* [218b508](https://github.com/hyperledger/fabric/commit/218b508) [FAB-11500](https://jira.hyperledger.org/browse/FAB-11500) Prover Client: RequestImport
+* [87cb53a](https://github.com/hyperledger/fabric/commit/87cb53a) [FAB-11498](https://jira.hyperledger.org/browse/FAB-11498) Issue functions
+* [ea9ff02](https://github.com/hyperledger/fabric/commit/ea9ff02) [FAB-11597](https://jira.hyperledger.org/browse/FAB-11597) Token Processor
+* [de8d93e](https://github.com/hyperledger/fabric/commit/de8d93e) [FAB-12295](https://jira.hyperledger.org/browse/FAB-12295) updates to use 1.11.1
+* [abbb65e](https://github.com/hyperledger/fabric/commit/abbb65e) Minor CreateAndJoinChannel cleanup in nwo.Network
+* [4b6e89a](https://github.com/hyperledger/fabric/commit/4b6e89a) This fixes #FAB-12453.
+* [eaf62f5](https://github.com/hyperledger/fabric/commit/eaf62f5) [FAB-11981](https://jira.hyperledger.org/browse/FAB-11981) etcdraft OSN support for integration tests
+* [30a70b7](https://github.com/hyperledger/fabric/commit/30a70b7) [FAB-11996](https://jira.hyperledger.org/browse/FAB-11996) Enable creation of raft based channels
+* [9d3f4f2](https://github.com/hyperledger/fabric/commit/9d3f4f2) [FAB-12437](https://jira.hyperledger.org/browse/FAB-12437) fix data race in peer/node/start test
+* [a79ac3c](https://github.com/hyperledger/fabric/commit/a79ac3c) [FAB-11630](https://jira.hyperledger.org/browse/FAB-11630) differentiate between error and nil policy
+* [33d9934](https://github.com/hyperledger/fabric/commit/33d9934) [FAB-11990](https://jira.hyperledger.org/browse/FAB-11990) create raft chain with channel configs
+* [c8401e4](https://github.com/hyperledger/fabric/commit/c8401e4) [FAB-12443](https://jira.hyperledger.org/browse/FAB-12443) Tolerate CouchDB 2.2 Changes
+* [bd576c5](https://github.com/hyperledger/fabric/commit/bd576c5) [FAB-12371](https://jira.hyperledger.org/browse/FAB-12371)Fix the doc to use new cid package
+* [d767856](https://github.com/hyperledger/fabric/commit/d767856) Fixes data race in ledger test
+* [9b6ae1c](https://github.com/hyperledger/fabric/commit/9b6ae1c) [FAB-12438](https://jira.hyperledger.org/browse/FAB-12438) Fix NPE at deliverSupport.GetChain
+* [b6218b1](https://github.com/hyperledger/fabric/commit/b6218b1) [FAB-12440](https://jira.hyperledger.org/browse/FAB-12440) disable goimports in linting
+* [2647afe](https://github.com/hyperledger/fabric/commit/2647afe) [FAB-11840](https://jira.hyperledger.org/browse/FAB-11840) Developing Apps: Transaction Handlers
+* [5db8539](https://github.com/hyperledger/fabric/commit/5db8539) [FAB-12349](https://jira.hyperledger.org/browse/FAB-12349) Improve code documentation
+* [5a25acc](https://github.com/hyperledger/fabric/commit/5a25acc) [FAB-12413](https://jira.hyperledger.org/browse/FAB-12413) Cleanup rc1 references in doc
+* [0340b1e](https://github.com/hyperledger/fabric/commit/0340b1e) [FAB-12340](https://jira.hyperledger.org/browse/FAB-12340) response status >=200 && <400 success
+* [9478b8e](https://github.com/hyperledger/fabric/commit/9478b8e) [FAB-12423](https://jira.hyperledger.org/browse/FAB-12423) use correct target for go lint
+* [bef5e81](https://github.com/hyperledger/fabric/commit/bef5e81) [FAB-12419](https://jira.hyperledger.org/browse/FAB-12419) Fix error mesage in peer command
+* [959ad50](https://github.com/hyperledger/fabric/commit/959ad50) [FAB-12413](https://jira.hyperledger.org/browse/FAB-12413) Release fabric 1.3.0 (master cleanup)
+* [9d91ef3](https://github.com/hyperledger/fabric/commit/9d91ef3) [FAB-12345](https://jira.hyperledger.org/browse/FAB-12345) Remove unused variable in shim_test.go
+* [2e1118b](https://github.com/hyperledger/fabric/commit/2e1118b) [FAB-11863](https://jira.hyperledger.org/browse/FAB-11863) Remove redudant return value in GetChain
+* [626950a](https://github.com/hyperledger/fabric/commit/626950a) [FAB-12353](https://jira.hyperledger.org/browse/FAB-12353) Delete an unused parameter
+* [97fa913](https://github.com/hyperledger/fabric/commit/97fa913) [FAB-12350](https://jira.hyperledger.org/browse/FAB-12350) Update the bootstrap script url
+* [3caffff](https://github.com/hyperledger/fabric/commit/3caffff) [FAB-12343](https://jira.hyperledger.org/browse/FAB-12343) Update fabric to baseimage 0.4.13
+* [3ec8eca](https://github.com/hyperledger/fabric/commit/3ec8eca) [FAB-11861](https://jira.hyperledger.org/browse/FAB-11861) Add etcdraft config defaults
+* [635cd8c](https://github.com/hyperledger/fabric/commit/635cd8c) [FAB-11897](https://jira.hyperledger.org/browse/FAB-11897) Enable Type A etcd/raft config updates
+* [500fc21](https://github.com/hyperledger/fabric/commit/500fc21) [FAB-12237](https://jira.hyperledger.org/browse/FAB-12237) Remove use of experimental tag
+* [96735d2](https://github.com/hyperledger/fabric/commit/96735d2) [FAB-11833](https://jira.hyperledger.org/browse/FAB-11833) Say hello to Raft OSN
+* [41c8f12](https://github.com/hyperledger/fabric/commit/41c8f12) [FAB-11864](https://jira.hyperledger.org/browse/FAB-11864) Add orderer client TLS cert
+* [c2ece91](https://github.com/hyperledger/fabric/commit/c2ece91) [FAB-12332](https://jira.hyperledger.org/browse/FAB-12332) add a space
+* [85d6664](https://github.com/hyperledger/fabric/commit/85d6664) [FAB-12324](https://jira.hyperledger.org/browse/FAB-12324) increase timeout for real couch term
+* [4f40ad1](https://github.com/hyperledger/fabric/commit/4f40ad1) [FAB-12303](https://jira.hyperledger.org/browse/FAB-12303) info logging for chaincode invokes
+* [d5b815f](https://github.com/hyperledger/fabric/commit/d5b815f) specifiec -> specified
+* [855a9d0](https://github.com/hyperledger/fabric/commit/855a9d0) [FAB-11852](https://jira.hyperledger.org/browse/FAB-11852) use Fabric logger in orderer cluster
+* [60cab9c](https://github.com/hyperledger/fabric/commit/60cab9c) [FAB-12327](https://jira.hyperledger.org/browse/FAB-12327) Return regular envelopes in gossip support
+* [6375843](https://github.com/hyperledger/fabric/commit/6375843) [FAB-12121](https://jira.hyperledger.org/browse/FAB-12121) Invoke to return useful CLI error response
+* [69cecd0](https://github.com/hyperledger/fabric/commit/69cecd0) [FAB-12323](https://jira.hyperledger.org/browse/FAB-12323) remove java chaincode int tests
+* [968d1ef](https://github.com/hyperledger/fabric/commit/968d1ef) [FAB-12182](https://jira.hyperledger.org/browse/FAB-12182) remove old pvtdata e2e tests
+* [7f523f0](https://github.com/hyperledger/fabric/commit/7f523f0) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update miscellaneous depenencies
+* [a567616](https://github.com/hyperledger/fabric/commit/a567616) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update davecgh/go-spew
+* [3ff4b8c](https://github.com/hyperledger/fabric/commit/3ff4b8c) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update onsi/gomega
+* [59e5f0b](https://github.com/hyperledger/fabric/commit/59e5f0b) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update miekg/pkcs11 deps
+* [2535bea](https://github.com/hyperledger/fabric/commit/2535bea) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update golang.org/x/net deps
+* [865bf52](https://github.com/hyperledger/fabric/commit/865bf52) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update golang.org/x/crypto deps
+* [e3f3733](https://github.com/hyperledger/fabric/commit/e3f3733) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update spf13/{cobra,pflag} deps
+* [e09abaa](https://github.com/hyperledger/fabric/commit/e09abaa) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update testify deps
+* [ce9b4a9](https://github.com/hyperledger/fabric/commit/ce9b4a9) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update protobuf deps
+* [cbd917c](https://github.com/hyperledger/fabric/commit/cbd917c) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update kafka client (sarama) deps
+* [a666d9f](https://github.com/hyperledger/fabric/commit/a666d9f) [FAB-12307](https://jira.hyperledger.org/browse/FAB-12307) test flake due to short timeout
+* [8ca350e](https://github.com/hyperledger/fabric/commit/8ca350e) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update go-version deps
+* [7551ac6](https://github.com/hyperledger/fabric/commit/7551ac6) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update mapstructure deps
+* [b2e27f0](https://github.com/hyperledger/fabric/commit/b2e27f0) [FAB-12304](https://jira.hyperledger.org/browse/FAB-12304) race: don't modify caller's config
+* [1fb4dfe](https://github.com/hyperledger/fabric/commit/1fb4dfe) [FAB-12091](https://jira.hyperledger.org/browse/FAB-12091) SBE E2E test with private data
+* [0b6cde6](https://github.com/hyperledger/fabric/commit/0b6cde6) [FAB-12300](https://jira.hyperledger.org/browse/FAB-12300) Fix misspelling of “crytographic"
+* [31cb4e3](https://github.com/hyperledger/fabric/commit/31cb4e3) [FAB-12275](https://jira.hyperledger.org/browse/FAB-12275) Fix missing channelID of the genesis block
+* [6a32f28](https://github.com/hyperledger/fabric/commit/6a32f28) [FAB-12296](https://jira.hyperledger.org/browse/FAB-12296) remove short timeout in TestTLSClient
+* [4b13ef5](https://github.com/hyperledger/fabric/commit/4b13ef5) [FAB-8062](https://jira.hyperledger.org/browse/FAB-8062) update go-dockerclient dependencies
+* [357ae56](https://github.com/hyperledger/fabric/commit/357ae56) [FAB-12290](https://jira.hyperledger.org/browse/FAB-12290) data race in blocksprovider mock
+* [5d4bdc0](https://github.com/hyperledger/fabric/commit/5d4bdc0) [FAB-12269](https://jira.hyperledger.org/browse/FAB-12269) FAQ Update
+* [5cf3596](https://github.com/hyperledger/fabric/commit/5cf3596) [FAB-12287](https://jira.hyperledger.org/browse/FAB-12287) handle successful decode of bad data
+* [51ec113](https://github.com/hyperledger/fabric/commit/51ec113) [FAB-12158](https://jira.hyperledger.org/browse/FAB-12158) UT under privacyenabledstate fails
+* [89f2542](https://github.com/hyperledger/fabric/commit/89f2542) Minor cleanup in kvledger/coll_elg_notifier.go
+* [71a7713](https://github.com/hyperledger/fabric/commit/71a7713) [FAB-12274](https://jira.hyperledger.org/browse/FAB-12274) Increase CouchDB maxRetriesOnStartup
+* [a160aea](https://github.com/hyperledger/fabric/commit/a160aea) [FAB-12255](https://jira.hyperledger.org/browse/FAB-12255) set testing.T needed by testify
+* [340d14b](https://github.com/hyperledger/fabric/commit/340d14b) Missingdata-recon: Detect coll eligibility change event
+* [f37beaa](https://github.com/hyperledger/fabric/commit/f37beaa) Missingdata-recon: Handle coll eligibility change
+* [87f6a3e](https://github.com/hyperledger/fabric/commit/87f6a3e) [FAB-11041](https://jira.hyperledger.org/browse/FAB-11041) Fix bootstrap.sh messages
+* [d8b1e74](https://github.com/hyperledger/fabric/commit/d8b1e74) [FAB-12229](https://jira.hyperledger.org/browse/FAB-12229) Return closed err chan until Kafka start
+* [4131bd7](https://github.com/hyperledger/fabric/commit/4131bd7) [FAB-12236](https://jira.hyperledger.org/browse/FAB-12236) only use race detector on x86_64
+* [d6e982f](https://github.com/hyperledger/fabric/commit/d6e982f) [FAB-12230](https://jira.hyperledger.org/browse/FAB-12230) reduce go routines used by test
+* [629f8ed](https://github.com/hyperledger/fabric/commit/629f8ed) [FAB-11908](https://jira.hyperledger.org/browse/FAB-11908) Upgrade to grpc-go 1.15
+* [9841315](https://github.com/hyperledger/fabric/commit/9841315) [FAB-12222](https://jira.hyperledger.org/browse/FAB-12222)fix duplicate words in the document
+* [2263d7d](https://github.com/hyperledger/fabric/commit/2263d7d) [FAB-11663](https://jira.hyperledger.org/browse/FAB-11663) Dynamic ports for core/comm tests
+* [1c6efc2](https://github.com/hyperledger/fabric/commit/1c6efc2) [FAB-12234](https://jira.hyperledger.org/browse/FAB-12234) Fix duplicate words in the document
+* [fa5d50f](https://github.com/hyperledger/fabric/commit/fa5d50f) [FAB-12233](https://jira.hyperledger.org/browse/FAB-12233) Fix article issues about "a actor"
+* [39b2220](https://github.com/hyperledger/fabric/commit/39b2220) [FAB-12231](https://jira.hyperledger.org/browse/FAB-12231) pull javaenv docker image at bootstrap
+* [06be986](https://github.com/hyperledger/fabric/commit/06be986) [FAB-12224](https://jira.hyperledger.org/browse/FAB-12224) race detector on for all but gossip
+* [3f45107](https://github.com/hyperledger/fabric/commit/3f45107) [FAB-12218](https://jira.hyperledger.org/browse/FAB-12218) cache config to avoid racing in test
+* [c7b784e](https://github.com/hyperledger/fabric/commit/c7b784e) [FAB-12217](https://jira.hyperledger.org/browse/FAB-12217) fix data race in kafka logger test
+* [674bb56](https://github.com/hyperledger/fabric/commit/674bb56) [FAB-12205](https://jira.hyperledger.org/browse/FAB-12205) fix data race creating fs blocksItr
+* [6e7eef1](https://github.com/hyperledger/fabric/commit/6e7eef1) [FAB-12200](https://jira.hyperledger.org/browse/FAB-12200) address data races in metrics
+* [940fd0f](https://github.com/hyperledger/fabric/commit/940fd0f) [FAB-12167](https://jira.hyperledger.org/browse/FAB-12167) build scc plugins with race as needed
+* [b0dc46c](https://github.com/hyperledger/fabric/commit/b0dc46c) [FAB-12097](https://jira.hyperledger.org/browse/FAB-12097) address data race in kafka/chain.go
+* [ddee7d0](https://github.com/hyperledger/fabric/commit/ddee7d0) [FAB-12163](https://jira.hyperledger.org/browse/FAB-12163) fix test flake in etcdraft/chain_test
+* [9d9f0c6](https://github.com/hyperledger/fabric/commit/9d9f0c6) [FAB-12162](https://jira.hyperledger.org/browse/FAB-12162) fix data race in etcdraft/chain_test
+* [e193798](https://github.com/hyperledger/fabric/commit/e193798) [FAB-12180](https://jira.hyperledger.org/browse/FAB-12180) use network.EventuallyTimeout
+* [7f0ea80](https://github.com/hyperledger/fabric/commit/7f0ea80) [FAB-12127](https://jira.hyperledger.org/browse/FAB-12127) fix serialization bug in deliver test
+* [ccaebff](https://github.com/hyperledger/fabric/commit/ccaebff) [FAB-12209](https://jira.hyperledger.org/browse/FAB-12209) Speedup TestShuffle in discovery
+* [56914c8](https://github.com/hyperledger/fabric/commit/56914c8) [FAB-12083](https://jira.hyperledger.org/browse/FAB-12083) Appease go vet with cancel in cluster
+* [c362c85](https://github.com/hyperledger/fabric/commit/c362c85) [FAB-12082](https://jira.hyperledger.org/browse/FAB-12082) Appease go vet with cancelations in gossip
+* [cfc3d83](https://github.com/hyperledger/fabric/commit/cfc3d83) [FAB-12199](https://jira.hyperledger.org/browse/FAB-12199) update Contributing Guide
+* [3536c50](https://github.com/hyperledger/fabric/commit/3536c50) [FAB-12196](https://jira.hyperledger.org/browse/FAB-12196) Fix incorrect doc in network topic
+* [12d0a78](https://github.com/hyperledger/fabric/commit/12d0a78) [FAB-12194](https://jira.hyperledger.org/browse/FAB-12194) Fix typos in two UT files
+* [a9d431d](https://github.com/hyperledger/fabric/commit/a9d431d) [FAB-12132](https://jira.hyperledger.org/browse/FAB-12132) update goleveldb
+* [8f3288e](https://github.com/hyperledger/fabric/commit/8f3288e) [FAB-12188](https://jira.hyperledger.org/browse/FAB-12188) One more link in What's New
+* [f28477c](https://github.com/hyperledger/fabric/commit/f28477c) Rename package and merge related files
+* [ecd0b31](https://github.com/hyperledger/fabric/commit/ecd0b31) [FAB-12188](https://jira.hyperledger.org/browse/FAB-12188) Broken links in Whats new doc
+* [c15bef5](https://github.com/hyperledger/fabric/commit/c15bef5) [FAB-12186](https://jira.hyperledger.org/browse/FAB-12186) fix error in network.md
+* [e6a852e](https://github.com/hyperledger/fabric/commit/e6a852e) [FAB-11523](https://jira.hyperledger.org/browse/FAB-11523) Lifecycle SCC QueryInstalledChaincode
+* [eb42d21](https://github.com/hyperledger/fabric/commit/eb42d21) [FAB-10725](https://jira.hyperledger.org/browse/FAB-10725) Add lifecycle SCC InstallChaincode func
+* [a02124e](https://github.com/hyperledger/fabric/commit/a02124e) [FAB-11780](https://jira.hyperledger.org/browse/FAB-11780) added membership provider to ledger
+* [46546b3](https://github.com/hyperledger/fabric/commit/46546b3) [FAB-12176](https://jira.hyperledger.org/browse/FAB-12176) Private data and metadata writes
+* [dbc79eb](https://github.com/hyperledger/fabric/commit/dbc79eb) [FAB-12139](https://jira.hyperledger.org/browse/FAB-12139) Prepare for next release (1.4.0 on master)
+* [4a066be](https://github.com/hyperledger/fabric/commit/4a066be) [FAB-12156](https://jira.hyperledger.org/browse/FAB-12156) Fix broken images in sub-pages
+* [4ff8e91](https://github.com/hyperledger/fabric/commit/4ff8e91) [FAB-11847](https://jira.hyperledger.org/browse/FAB-11847) Developing Apps: Application SDK
+* [964424e](https://github.com/hyperledger/fabric/commit/964424e) [FAB-12003](https://jira.hyperledger.org/browse/FAB-12003) set cut timer on pending envelope
+* [9390c70](https://github.com/hyperledger/fabric/commit/9390c70) [FAB-11835](https://jira.hyperledger.org/browse/FAB-11835) Add Step() to etcdraft.Chain
+* [555ddbc](https://github.com/hyperledger/fabric/commit/555ddbc) [FAB-11832](https://jira.hyperledger.org/browse/FAB-11832) Extract registrar initialization logic
+* [e7f1cff](https://github.com/hyperledger/fabric/commit/e7f1cff) [FAB-11163](https://jira.hyperledger.org/browse/FAB-11163) Implement barebones etcdraft consenter
+* [e29637f](https://github.com/hyperledger/fabric/commit/e29637f) [FAB-11459](https://jira.hyperledger.org/browse/FAB-11459) Developing Applications Topic
+
+## v1.3.0-rc1
+Mon Sep 24 22:45:10 EDT 2018
+
+* [8e9d36c](https://github.com/hyperledger/fabric/commit/8e9d36c) [FAB-12138](https://jira.hyperledger.org/browse/FAB-12138) Release v1.3.0-rc1
+* [f9803b4](https://github.com/hyperledger/fabric/commit/f9803b4) [FAB-12153](https://jira.hyperledger.org/browse/FAB-12153) Disable javaenv-docker from tests
+* [0098d47](https://github.com/hyperledger/fabric/commit/0098d47) [FAB-11828](https://jira.hyperledger.org/browse/FAB-11828) add whatsnew page for 1.3
+* [f1b1d42](https://github.com/hyperledger/fabric/commit/f1b1d42) [FAB-12133](https://jira.hyperledger.org/browse/FAB-12133) Disable java cc tests in fabric
+* [95b4906](https://github.com/hyperledger/fabric/commit/95b4906) Revert "[FAB-11828](https://jira.hyperledger.org/browse/FAB-11828) Add "what's new" doc for v1.3"
+* [17b9da8](https://github.com/hyperledger/fabric/commit/17b9da8) [FAB-11828](https://jira.hyperledger.org/browse/FAB-11828) Add "what's new" doc for v1.3
+* [eae6bd9](https://github.com/hyperledger/fabric/commit/eae6bd9) [FAB-11333](https://jira.hyperledger.org/browse/FAB-11333) Remove old event hub reference
+* [c592f15](https://github.com/hyperledger/fabric/commit/c592f15) [FAB-12099](https://jira.hyperledger.org/browse/FAB-12099) build plugins with race when needed
+* [2c2f65d](https://github.com/hyperledger/fabric/commit/2c2f65d) [FAB-12102](https://jira.hyperledger.org/browse/FAB-12102) use raw strings where appropriate
+* [5f14fb6](https://github.com/hyperledger/fabric/commit/5f14fb6) [FAB-11689](https://jira.hyperledger.org/browse/FAB-11689) address race from repeated InitMSP
+* [2edc1a0](https://github.com/hyperledger/fabric/commit/2edc1a0) [FAB-12081](https://jira.hyperledger.org/browse/FAB-12081) Fix misspelling "Singed" to "Signed"
+* [c45c199](https://github.com/hyperledger/fabric/commit/c45c199) [FAB-11949](https://jira.hyperledger.org/browse/FAB-11949) Block-level SBE validation unit test
+* [6c285e9](https://github.com/hyperledger/fabric/commit/6c285e9) [FAB-11706](https://jira.hyperledger.org/browse/FAB-11706) Fix broken link to unit test doc
+* [dd459c0](https://github.com/hyperledger/fabric/commit/dd459c0) [FAB-12116](https://jira.hyperledger.org/browse/FAB-12116) Fix groupId in test data uses java shim
+* [ce1cad6](https://github.com/hyperledger/fabric/commit/ce1cad6) [FAB-12114](https://jira.hyperledger.org/browse/FAB-12114) Upgrade doc note about enough peers
+* [a807159](https://github.com/hyperledger/fabric/commit/a807159) Change pvtdata store purger log level to debug
+* [cf4e674](https://github.com/hyperledger/fabric/commit/cf4e674) [FAB-12113](https://jira.hyperledger.org/browse/FAB-12113) Reduce gossip Info messages
+* [8e2640f](https://github.com/hyperledger/fabric/commit/8e2640f) [FAB-11879](https://jira.hyperledger.org/browse/FAB-11879) Update app capabilities for V1_3
+* [a18f1ea](https://github.com/hyperledger/fabric/commit/a18f1ea) [FAB-12030](https://jira.hyperledger.org/browse/FAB-12030) Improve INFO log for block processing
+* [07ae8af](https://github.com/hyperledger/fabric/commit/07ae8af) [FAB-12104](https://jira.hyperledger.org/browse/FAB-12104) log right error for SB validaiton failure
+* [ed707bd](https://github.com/hyperledger/fabric/commit/ed707bd) [FAB-12103](https://jira.hyperledger.org/browse/FAB-12103) Improve ledger debug
+* [650a5e6](https://github.com/hyperledger/fabric/commit/650a5e6) [FAB-12085](https://jira.hyperledger.org/browse/FAB-12085) lint out golang.org/x/net/context
+* [a6a07ce](https://github.com/hyperledger/fabric/commit/a6a07ce) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) remove ledger assert functions
+* [d82dffb](https://github.com/hyperledger/fabric/commit/d82dffb) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify container,committer
+* [8a5961d](https://github.com/hyperledger/fabric/commit/8a5961d) [FAB-12084](https://jira.hyperledger.org/browse/FAB-12084) address simple lostcancel vet issues
+* [84c8115](https://github.com/hyperledger/fabric/commit/84c8115) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify core/ledger
+* [6223621](https://github.com/hyperledger/fabric/commit/6223621) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify protos/ledger
+* [f80782b](https://github.com/hyperledger/fabric/commit/f80782b) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify kvledger/txmgmt
+* [6f8622c](https://github.com/hyperledger/fabric/commit/6f8622c) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify txmgr/lockbasedtxmgr
+* [e32bbda](https://github.com/hyperledger/fabric/commit/e32bbda) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify txmgmt/statedb
+* [96a606f](https://github.com/hyperledger/fabric/commit/96a606f) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify txmgmt/rwsetutil
+* [218bc06](https://github.com/hyperledger/fabric/commit/218bc06) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify txmgmt/validator
+* [d5cee29](https://github.com/hyperledger/fabric/commit/d5cee29) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify kvledger/history
+* [58aef40](https://github.com/hyperledger/fabric/commit/58aef40) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify core/ledger/util
+* [6409c4d](https://github.com/hyperledger/fabric/commit/6409c4d) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify common/ledger/util
+* [ef92892](https://github.com/hyperledger/fabric/commit/ef92892) [FAB-10686](https://jira.hyperledger.org/browse/FAB-10686) testutil->testify fsblkstorage
+* [0fcdcdc](https://github.com/hyperledger/fabric/commit/0fcdcdc) [FAB-12060](https://jira.hyperledger.org/browse/FAB-12060) payload buf don't signal ready if empty
+* [dac4434](https://github.com/hyperledger/fabric/commit/dac4434) [FAB-12090](https://jira.hyperledger.org/browse/FAB-12090) Retrieve SBEP for private data by key hash
+* [ef0bf29](https://github.com/hyperledger/fabric/commit/ef0bf29) [FAB-10025](https://jira.hyperledger.org/browse/FAB-10025) Simplify test env clean up for statecouchdb
+* [38411a6](https://github.com/hyperledger/fabric/commit/38411a6) [FAB-11756](https://jira.hyperledger.org/browse/FAB-11756) Upgrade from v1.2 to v1.3 doc
+* [4b78799](https://github.com/hyperledger/fabric/commit/4b78799) [FAB-12093](https://jira.hyperledger.org/browse/FAB-12093) Fix Priv Data Tut
+* [209e053](https://github.com/hyperledger/fabric/commit/209e053) [FAB-12098](https://jira.hyperledger.org/browse/FAB-12098) Use context WithTimeout in gossip handshake
+* [6fefc68](https://github.com/hyperledger/fabric/commit/6fefc68) [FAB-12076](https://jira.hyperledger.org/browse/FAB-12076) Use raw string literals for JSON
+* [69a8128](https://github.com/hyperledger/fabric/commit/69a8128) [FAB-12076](https://jira.hyperledger.org/browse/FAB-12076) correct invalid JSON in test
+* [d4beab0](https://github.com/hyperledger/fabric/commit/d4beab0) [FAB-12089](https://jira.hyperledger.org/browse/FAB-12089) Add private metadata getter by hash
+* [303fa80](https://github.com/hyperledger/fabric/commit/303fa80) [FAB-12002](https://jira.hyperledger.org/browse/FAB-12002) Fix comment typo
+* [d770fcb](https://github.com/hyperledger/fabric/commit/d770fcb) [FAB-11905](https://jira.hyperledger.org/browse/FAB-11905) Provide full set of endorsers in filter
+* [e5547f2](https://github.com/hyperledger/fabric/commit/e5547f2) Add function to get pvtdata metadata by keyhash
+* [945138e](https://github.com/hyperledger/fabric/commit/945138e) Fix perf issue by key-endorsement to regular chaincode
+* [78c827c](https://github.com/hyperledger/fabric/commit/78c827c) FABCI-106 Ignore pulling javaenv from s390x
+* [ed1e1c9](https://github.com/hyperledger/fabric/commit/ed1e1c9) [FAB-12049](https://jira.hyperledger.org/browse/FAB-12049) Update Doc Idemix in Fabric 1.3
+* [b33bc2b](https://github.com/hyperledger/fabric/commit/b33bc2b) [FAB-11973](https://jira.hyperledger.org/browse/FAB-11973) failing test in statebased validation
+* [e53629d](https://github.com/hyperledger/fabric/commit/e53629d) [FAB-11989](https://jira.hyperledger.org/browse/FAB-11989) Clarify error handling for plugins
+* [73a8f45](https://github.com/hyperledger/fabric/commit/73a8f45) [FAB-12069](https://jira.hyperledger.org/browse/FAB-12069) Fix vet issues flagged by go 1.11
+* [ff0d37f](https://github.com/hyperledger/fabric/commit/ff0d37f) [FAB-12064](https://jira.hyperledger.org/browse/FAB-12064) s,golang.org/x/net/context,context,g
+* [7414074](https://github.com/hyperledger/fabric/commit/7414074) [FAB-11998](https://jira.hyperledger.org/browse/FAB-11998) Adding java docs to build_network
+* [bcf8736](https://github.com/hyperledger/fabric/commit/bcf8736) [FAB-12054](https://jira.hyperledger.org/browse/FAB-12054) Retry Operation in TestInvalidChannel
+* [7648d9c](https://github.com/hyperledger/fabric/commit/7648d9c) [FAB-12050](https://jira.hyperledger.org/browse/FAB-12050) add round to generate ca notBefore time
+* [d4fa156](https://github.com/hyperledger/fabric/commit/d4fa156) [FAB-12044](https://jira.hyperledger.org/browse/FAB-12044) javaenv-docker to pull javaenv images
+* [f2b16af](https://github.com/hyperledger/fabric/commit/f2b16af) [FAB-11595](https://jira.hyperledger.org/browse/FAB-11595) minor JavaCC e2e test cleanup
+* [33ed567](https://github.com/hyperledger/fabric/commit/33ed567) [FAB-12020](https://jira.hyperledger.org/browse/FAB-12020) Update chaincode sections with Java cc
+* [e668bb3](https://github.com/hyperledger/fabric/commit/e668bb3) [FAB-12042](https://jira.hyperledger.org/browse/FAB-12042) update baseimage to 0.4.12
+* [df84d9a](https://github.com/hyperledger/fabric/commit/df84d9a) Add javaenv to pull_build_artifacts.sh
+* [aa4f276](https://github.com/hyperledger/fabric/commit/aa4f276) code hygiene: rm marble examples from ledger
+* [1af2dad](https://github.com/hyperledger/fabric/commit/1af2dad) [FAB-12034](https://jira.hyperledger.org/browse/FAB-12034) Fix data races in pull_test.go
+* [161e760](https://github.com/hyperledger/fabric/commit/161e760) Add check for verifying block.Header.PreviousHash field
+* [3c418c5](https://github.com/hyperledger/fabric/commit/3c418c5) [FAB-11595](https://jira.hyperledger.org/browse/FAB-11595) Java cc pvtdata integration test
+* [623eaa9](https://github.com/hyperledger/fabric/commit/623eaa9) [FAB-11572](https://jira.hyperledger.org/browse/FAB-11572) Re-enable test
+* [238668d](https://github.com/hyperledger/fabric/commit/238668d) FIX [FAB-11601](https://jira.hyperledger.org/browse/FAB-11601) idemix role from boolean to int
+* [af57f97](https://github.com/hyperledger/fabric/commit/af57f97) [FAB-12010](https://jira.hyperledger.org/browse/FAB-12010) Upgrade go version to 1.10.4
+* [5816af0](https://github.com/hyperledger/fabric/commit/5816af0) [FAB-11162](https://jira.hyperledger.org/browse/FAB-11162) Simplify clock management in chain.
+* [20cbe44](https://github.com/hyperledger/fabric/commit/20cbe44) code hygiene: disable missingData recon upfront
+* [ee81a3d](https://github.com/hyperledger/fabric/commit/ee81a3d) [FAB-12018](https://jira.hyperledger.org/browse/FAB-12018) fix wrong description
+* [10b5eff](https://github.com/hyperledger/fabric/commit/10b5eff) recon: disable by not storing the missing data entries
+* [5a3d110](https://github.com/hyperledger/fabric/commit/5a3d110) [FAB-12000](https://jira.hyperledger.org/browse/FAB-12000) have pvt reconciliation disabled
+* [d631b54](https://github.com/hyperledger/fabric/commit/d631b54) [FAB-10804](https://jira.hyperledger.org/browse/FAB-10804) remove HasLaunched from registry
+* [57ad85c](https://github.com/hyperledger/fabric/commit/57ad85c) [FAB-11915](https://jira.hyperledger.org/browse/FAB-11915) Continue doc work on state endorsement
+* [921b896](https://github.com/hyperledger/fabric/commit/921b896) Fix historydb issue for keys containing nil bytes
+* [08aabe9](https://github.com/hyperledger/fabric/commit/08aabe9) Wait for goroutine to finish before db close
+* [38430ad](https://github.com/hyperledger/fabric/commit/38430ad) [FAB-12014](https://jira.hyperledger.org/browse/FAB-12014) Log warning for missing index
+* [a800648](https://github.com/hyperledger/fabric/commit/a800648) [FAB-11960](https://jira.hyperledger.org/browse/FAB-11960) make CACertsBundlePath a method
+* [a864726](https://github.com/hyperledger/fabric/commit/a864726) [FAB-8740](https://jira.hyperledger.org/browse/FAB-8740) State database Document pagination
+* [5769cc3](https://github.com/hyperledger/fabric/commit/5769cc3) [FAB-11976](https://jira.hyperledger.org/browse/FAB-11976) hex encoding for binary keys in collection
+* [8a7737d](https://github.com/hyperledger/fabric/commit/8a7737d) [FAB-10804](https://jira.hyperledger.org/browse/FAB-10804) queue chaincode tx on container start
+* [944adf2](https://github.com/hyperledger/fabric/commit/944adf2) [FAB-11960](https://jira.hyperledger.org/browse/FAB-11960) Introduce TLS to integration tests
+* [2baf7f9](https://github.com/hyperledger/fabric/commit/2baf7f9) [FAB-11958](https://jira.hyperledger.org/browse/FAB-11958) Fix minor issues in pvt data tutorial
+* [a828f47](https://github.com/hyperledger/fabric/commit/a828f47) [FAB-11966](https://jira.hyperledger.org/browse/FAB-11966) TestShutdown intermittent failure
+* [70307a0](https://github.com/hyperledger/fabric/commit/70307a0) [FAB-11961](https://jira.hyperledger.org/browse/FAB-11961) properly release resource
+* [fdc4889](https://github.com/hyperledger/fabric/commit/fdc4889) Skip failing test in statebased validation
+* [9894396](https://github.com/hyperledger/fabric/commit/9894396) [FAB-11972](https://jira.hyperledger.org/browse/FAB-11972) remove dead field added in [FAB-11455](https://jira.hyperledger.org/browse/FAB-11455)
+* [7093ca0](https://github.com/hyperledger/fabric/commit/7093ca0) [FAB-11972](https://jira.hyperledger.org/browse/FAB-11972) fix mocks and fakes from [FAB-11455](https://jira.hyperledger.org/browse/FAB-11455)
+* [807b7ae](https://github.com/hyperledger/fabric/commit/807b7ae) [FAB-11706](https://jira.hyperledger.org/browse/FAB-11706) Add Interoperability Test Info
+* [5687311](https://github.com/hyperledger/fabric/commit/5687311) [FAB-11953](https://jira.hyperledger.org/browse/FAB-11953) Resolve items in marbles sample chaincode
+* [b2941b5](https://github.com/hyperledger/fabric/commit/b2941b5) [FAB-11928](https://jira.hyperledger.org/browse/FAB-11928) Idemix attributes in chaincode
+* [3adfdbf](https://github.com/hyperledger/fabric/commit/3adfdbf) [FAB-11959](https://jira.hyperledger.org/browse/FAB-11959) improve unit tests for confighistory
+* [88949f3](https://github.com/hyperledger/fabric/commit/88949f3) [FAB-11954](https://jira.hyperledger.org/browse/FAB-11954) Rmv state based endorse from pluggable doc
+* [bf71b46](https://github.com/hyperledger/fabric/commit/bf71b46) [FAB-11955](https://jira.hyperledger.org/browse/FAB-11955) Enhanced error message for SB validation
+* [8e9d930](https://github.com/hyperledger/fabric/commit/8e9d930) [FAB-11948](https://jira.hyperledger.org/browse/FAB-11948) check collection exists before meta put
+* [d01247c](https://github.com/hyperledger/fabric/commit/d01247c) [FAB-11907](https://jira.hyperledger.org/browse/FAB-11907) Lock and BlocksDeliverer are fields
+* [fb12372](https://github.com/hyperledger/fabric/commit/fb12372) [FAB-11583](https://jira.hyperledger.org/browse/FAB-11583) Fix erroneous anchor peer output
+* [c3445f1](https://github.com/hyperledger/fabric/commit/c3445f1) [FAB-11906](https://jira.hyperledger.org/browse/FAB-11906) thread-safe mocks for SBE
+* [7357202](https://github.com/hyperledger/fabric/commit/7357202) [FAB-11947](https://jira.hyperledger.org/browse/FAB-11947) Delete useless code
+* [2b0cc33](https://github.com/hyperledger/fabric/commit/2b0cc33) [FAB-11945](https://jira.hyperledger.org/browse/FAB-11945) fix minor issues in pvt data tutorial
+* [5392132](https://github.com/hyperledger/fabric/commit/5392132) [FAB-11896](https://jira.hyperledger.org/browse/FAB-11896) Exercise v1.2 and v1.3 validation in tests
+* [1f08eaa](https://github.com/hyperledger/fabric/commit/1f08eaa) [FAB-11938](https://jira.hyperledger.org/browse/FAB-11938) Retries in cluster test to stabilize UT
+* [b20ab81](https://github.com/hyperledger/fabric/commit/b20ab81) Fix peer logging setlevel regex matching
+* [4818921](https://github.com/hyperledger/fabric/commit/4818921) [FAB-11925](https://jira.hyperledger.org/browse/FAB-11925) Code hygiene: remove unused functions
+* [8b3cbda](https://github.com/hyperledger/fabric/commit/8b3cbda) [FAB-11916](https://jira.hyperledger.org/browse/FAB-11916) Fix remaining comments for pagination
+* [f565b5b](https://github.com/hyperledger/fabric/commit/f565b5b) [FAB-11764](https://jira.hyperledger.org/browse/FAB-11764) Add test for endorsement plugin
+* [65769fa](https://github.com/hyperledger/fabric/commit/65769fa) [FAB-11607](https://jira.hyperledger.org/browse/FAB-11607) State-based endorsement E2E
+* [190982e](https://github.com/hyperledger/fabric/commit/190982e) [FAB-11503](https://jira.hyperledger.org/browse/FAB-11503) upd. marbles cc with pagination APIs
+* [0ee45ac](https://github.com/hyperledger/fabric/commit/0ee45ac) [FAB-11455](https://jira.hyperledger.org/browse/FAB-11455) peer side changes to support pagination
+* [fef54c2](https://github.com/hyperledger/fabric/commit/fef54c2) [FAB-11907](https://jira.hyperledger.org/browse/FAB-11907) Data races in deliver client
+* [b4c223a](https://github.com/hyperledger/fabric/commit/b4c223a) [FAB-11911](https://jira.hyperledger.org/browse/FAB-11911) address review comments for statebased
+* [35b3e2f](https://github.com/hyperledger/fabric/commit/35b3e2f) [FAB-11310](https://jira.hyperledger.org/browse/FAB-11310) implement the def cc APIs for pagination
+* [805cf94](https://github.com/hyperledger/fabric/commit/805cf94) [FAB-11307](https://jira.hyperledger.org/browse/FAB-11307) define new chaincode APIs for pagination
+* [666b8c2](https://github.com/hyperledger/fabric/commit/666b8c2) [FAB-11306](https://jira.hyperledger.org/browse/FAB-11306) update shim proto to support pagination
+* [b894012](https://github.com/hyperledger/fabric/commit/b894012) [FAB-11410](https://jira.hyperledger.org/browse/FAB-11410) Add paging for transaction simulation
+* [ca152f2](https://github.com/hyperledger/fabric/commit/ca152f2) [FAB-9840](https://jira.hyperledger.org/browse/FAB-9840) CouchDB safe pagination - statecouchdb
+* [f21d769](https://github.com/hyperledger/fabric/commit/f21d769) [FAB-8823](https://jira.hyperledger.org/browse/FAB-8823) State-based endorsement documentation
+* [a98a739](https://github.com/hyperledger/fabric/commit/a98a739) [FAB-11902](https://jira.hyperledger.org/browse/FAB-11902) fix deadlock in key-level validation
+* [41ee9d0](https://github.com/hyperledger/fabric/commit/41ee9d0) [FAB-11892](https://jira.hyperledger.org/browse/FAB-11892) Improve the flake fix for TestCreds
+* [6478442](https://github.com/hyperledger/fabric/commit/6478442) Fix flakiness with TestCreds
+* [c858fee](https://github.com/hyperledger/fabric/commit/c858fee) Fix TestGoodChannelCreateConfigUpdate
+* [e7631f2](https://github.com/hyperledger/fabric/commit/e7631f2) [FAB-11441](https://jira.hyperledger.org/browse/FAB-11441) Remove ESCC, VSCC from doc
+* [b012829](https://github.com/hyperledger/fabric/commit/b012829) [FAB-11880](https://jira.hyperledger.org/browse/FAB-11880) Update Baseimage version 0.4.11
+* [81687a7](https://github.com/hyperledger/fabric/commit/81687a7) [FAB-11876](https://jira.hyperledger.org/browse/FAB-11876) reduce logging noise from msp
+* [7f12d1b](https://github.com/hyperledger/fabric/commit/7f12d1b) [FAB-11162](https://jira.hyperledger.org/browse/FAB-11162) Implement bare minimum Raft-based chain
+* [ec77fc5](https://github.com/hyperledger/fabric/commit/ec77fc5) [FAB-11894](https://jira.hyperledger.org/browse/FAB-11894) State request to request open range
+* [ea5db25](https://github.com/hyperledger/fabric/commit/ea5db25) [FAB-11895](https://jira.hyperledger.org/browse/FAB-11895) Retry Operation in cluster_test
+* [67b8b06](https://github.com/hyperledger/fabric/commit/67b8b06) [FAB-11869](https://jira.hyperledger.org/browse/FAB-11869) Revendor amcl library in fabric.
+* [6ca8f54](https://github.com/hyperledger/fabric/commit/6ca8f54) [FAB-11893](https://jira.hyperledger.org/browse/FAB-11893) Code hygiene: remove unused const
+* [acf74f8](https://github.com/hyperledger/fabric/commit/acf74f8) [FAB-10735](https://jira.hyperledger.org/browse/FAB-10735) Script to pull images from Nexus
+* [a920cad](https://github.com/hyperledger/fabric/commit/a920cad) Fix broken master
+* [f2a3ed6](https://github.com/hyperledger/fabric/commit/f2a3ed6) [FAB-10094](https://jira.hyperledger.org/browse/FAB-10094) Add tests for rebuilding ledger components
+* [072a43e](https://github.com/hyperledger/fabric/commit/072a43e) [FAB-11878](https://jira.hyperledger.org/browse/FAB-11878) fix go 1.11 test failures in msp
+* [7c4311f](https://github.com/hyperledger/fabric/commit/7c4311f) [FAB-8824](https://jira.hyperledger.org/browse/FAB-8824) CC sample for state-based endorsement
+* [63c34a6](https://github.com/hyperledger/fabric/commit/63c34a6) [FAB-9111](https://jira.hyperledger.org/browse/FAB-9111) CC convenience layer for state-based EP
+* [386870e](https://github.com/hyperledger/fabric/commit/386870e) [FAB-11874](https://jira.hyperledger.org/browse/FAB-11874) fix local test failure with go1.11
+* [a8ea43f](https://github.com/hyperledger/fabric/commit/a8ea43f) [FAB-8815](https://jira.hyperledger.org/browse/FAB-8815) Interface for cc convenience layer
+* [2a12ea5](https://github.com/hyperledger/fabric/commit/2a12ea5) [FAB-9747](https://jira.hyperledger.org/browse/FAB-9747) check capabilities for cc metadata put/get
+* [ba89a79](https://github.com/hyperledger/fabric/commit/ba89a79) [FAB-9748](https://jira.hyperledger.org/browse/FAB-9748) cc handler support to retrieve capabilities
+* [491d576](https://github.com/hyperledger/fabric/commit/491d576) [FAB-9784](https://jira.hyperledger.org/browse/FAB-9784) Chaincode handler f. key-level metadata
+* [70ef63c](https://github.com/hyperledger/fabric/commit/70ef63c) [FAB-9107](https://jira.hyperledger.org/browse/FAB-9107) Chaincode protos for key-level metadata
+* [db39ab0](https://github.com/hyperledger/fabric/commit/db39ab0) [FAB-9676](https://jira.hyperledger.org/browse/FAB-9676) Chaincode shim for key-level EPs
+* [cf77c77](https://github.com/hyperledger/fabric/commit/cf77c77) [FAB-11857](https://jira.hyperledger.org/browse/FAB-11857) ValidateCodePackage to java platform
+* [8feec79](https://github.com/hyperledger/fabric/commit/8feec79) [FAB-11872](https://jira.hyperledger.org/browse/FAB-11872) Decouple MetadataLifecycle from 1.3 release
+* [2a2cbe9](https://github.com/hyperledger/fabric/commit/2a2cbe9) [FAB-11860](https://jira.hyperledger.org/browse/FAB-11860) KeyLevelEndorsement cap. for 1.3 peers only
+* [c7da428](https://github.com/hyperledger/fabric/commit/c7da428) [FAB-11171](https://jira.hyperledger.org/browse/FAB-11171) TMS issuer and verifier for import
+* [eccd7a4](https://github.com/hyperledger/fabric/commit/eccd7a4) [FAB-11795](https://jira.hyperledger.org/browse/FAB-11795) Import etcdraft in configtxlator
+* [0b50539](https://github.com/hyperledger/fabric/commit/0b50539) [FAB-11868](https://jira.hyperledger.org/browse/FAB-11868) Documentation Enhancement
+* [90b9ac2](https://github.com/hyperledger/fabric/commit/90b9ac2) [FAB-11866](https://jira.hyperledger.org/browse/FAB-11866) remove duplicated code in unit-test
+* [dd02975](https://github.com/hyperledger/fabric/commit/dd02975) Log TLS connection errors
+* [edd4a57](https://github.com/hyperledger/fabric/commit/edd4a57) [FAB-11862](https://jira.hyperledger.org/browse/FAB-11862) Retry operation in cluster UT
+* [09daead](https://github.com/hyperledger/fabric/commit/09daead) [FAB-11812](https://jira.hyperledger.org/browse/FAB-11812) update suite description
+* [45492de](https://github.com/hyperledger/fabric/commit/45492de) [FAB-11815](https://jira.hyperledger.org/browse/FAB-11815) allow META-INF during validation
+* [556ab7f](https://github.com/hyperledger/fabric/commit/556ab7f) [FAB-11524](https://jira.hyperledger.org/browse/FAB-11524) Prover: Request Import
+* [ca5b143](https://github.com/hyperledger/fabric/commit/ca5b143) [FAB-11838](https://jira.hyperledger.org/browse/FAB-11838) Add INFO logging for anchor peers
+* [111ae61](https://github.com/hyperledger/fabric/commit/111ae61) [FAB-11826](https://jira.hyperledger.org/browse/FAB-11826) TestTxOpsPreparationMetadataUpdates fail
+* [9a13227](https://github.com/hyperledger/fabric/commit/9a13227) [FAB-11301](https://jira.hyperledger.org/browse/FAB-11301) private data reconciliation
+* [c417075](https://github.com/hyperledger/fabric/commit/c417075) [FAB-11827](https://jira.hyperledger.org/browse/FAB-11827) Rename package names/dirs for validator
+* [cca4004](https://github.com/hyperledger/fabric/commit/cca4004) [FAB-11321](https://jira.hyperledger.org/browse/FAB-11321) Alleviating lock contention of MSP cache
+* [2d67d38](https://github.com/hyperledger/fabric/commit/2d67d38) [FAB-11830](https://jira.hyperledger.org/browse/FAB-11830) Code hygiene for key-level validation tests
+* [2f246ad](https://github.com/hyperledger/fabric/commit/2f246ad) [FAB-11829](https://jira.hyperledger.org/browse/FAB-11829) Log discovery requests/responses
+* [1170869](https://github.com/hyperledger/fabric/commit/1170869) [FAB-11804](https://jira.hyperledger.org/browse/FAB-11804) CC access control readme
+* [73bdef8](https://github.com/hyperledger/fabric/commit/73bdef8) [FAB-11820](https://jira.hyperledger.org/browse/FAB-11820) Fix typo in the document.
+* [ded84c2](https://github.com/hyperledger/fabric/commit/ded84c2) [FAB-11803](https://jira.hyperledger.org/browse/FAB-11803) Fix typo in the document
+* [1fde4a8](https://github.com/hyperledger/fabric/commit/1fde4a8) [FAB-11821](https://jira.hyperledger.org/browse/FAB-11821): Decrease log level of a normal behaviour
+* [472ef92](https://github.com/hyperledger/fabric/commit/472ef92) [FAB-11814](https://jira.hyperledger.org/browse/FAB-11814) swimlane anchor
+* [02c7f78](https://github.com/hyperledger/fabric/commit/02c7f78) [FAB-11794](https://jira.hyperledger.org/browse/FAB-11794) test 1.3 validation logic in validator test
+* [5388376](https://github.com/hyperledger/fabric/commit/5388376) [FAB-11802](https://jira.hyperledger.org/browse/FAB-11802) State-based val. must at least check CCEP
+* [b8a08bc](https://github.com/hyperledger/fabric/commit/b8a08bc) [FAB-11801](https://jira.hyperledger.org/browse/FAB-11801) Fix duplicate words in the document
+* [2ed5537](https://github.com/hyperledger/fabric/commit/2ed5537) TestChaincodeInvokeChaincode intermittent fail ppc64le
+* [d6987ff](https://github.com/hyperledger/fabric/commit/d6987ff) [FAB-11769](https://jira.hyperledger.org/browse/FAB-11769) validate cc ns change for meta writes
+* [05ac04d](https://github.com/hyperledger/fabric/commit/05ac04d) [FAB-9860](https://jira.hyperledger.org/browse/FAB-9860) use key-lvl validation in 1.3 validator
+* [93d8f04](https://github.com/hyperledger/fabric/commit/93d8f04) [FAB-9844](https://jira.hyperledger.org/browse/FAB-9844) Validator for key-level validation
+* [bc3d405](https://github.com/hyperledger/fabric/commit/bc3d405) [FAB-11747](https://jira.hyperledger.org/browse/FAB-11747) Stop() thread safe
+* [54462cd](https://github.com/hyperledger/fabric/commit/54462cd) [FAB-9857](https://jira.hyperledger.org/browse/FAB-9857) key-level validation parm retrieval
+* [8e9c018](https://github.com/hyperledger/fabric/commit/8e9c018) [FAB-11744](https://jira.hyperledger.org/browse/FAB-11744) Raft Dispatcher
+* [3fba27c](https://github.com/hyperledger/fabric/commit/3fba27c) [FAB-11793](https://jira.hyperledger.org/browse/FAB-11793) Fix java cc API in integration
+* [fcbd525](https://github.com/hyperledger/fabric/commit/fcbd525) [FAB-11278](https://jira.hyperledger.org/browse/FAB-11278) Removing DATA RACES
+* [8f811f8](https://github.com/hyperledger/fabric/commit/8f811f8) [FAB-11783](https://jira.hyperledger.org/browse/FAB-11783) define SBE validator iface where used
+* [7c02b03](https://github.com/hyperledger/fabric/commit/7c02b03) [FAB-9286](https://jira.hyperledger.org/browse/FAB-9286) Fix index out of range error
+* [d8a9a09](https://github.com/hyperledger/fabric/commit/d8a9a09) [FAB-11536](https://jira.hyperledger.org/browse/FAB-11536) Improve chaincode service start
+* [137bfcb](https://github.com/hyperledger/fabric/commit/137bfcb) [FAB-10095](https://jira.hyperledger.org/browse/FAB-10095) Add pvt data related tests
+* [4c38b4f](https://github.com/hyperledger/fabric/commit/4c38b4f) Declare ledger dependency for coll membership info
+* [38ad642](https://github.com/hyperledger/fabric/commit/38ad642) [FAB-11115](https://jira.hyperledger.org/browse/FAB-11115) add idemixgen to fabric-tools Dockerfile
+* [e2b9366](https://github.com/hyperledger/fabric/commit/e2b9366) Store & ret. missingDataInfo in pvtstore
+* [d738643](https://github.com/hyperledger/fabric/commit/d738643) [FAB-11763](https://jira.hyperledger.org/browse/FAB-11763) Improve unit tests for channel_test
+* [1dd91c8](https://github.com/hyperledger/fabric/commit/1dd91c8) Run pkcs11 tests for bccsp pkg
+* [c1d722e](https://github.com/hyperledger/fabric/commit/c1d722e) Add ability to package chaincode to nwo
+* [75c36eb](https://github.com/hyperledger/fabric/commit/75c36eb) [FAB-11759](https://jira.hyperledger.org/browse/FAB-11759) log 'Obtaining identity' at debug
+* [446c26d](https://github.com/hyperledger/fabric/commit/446c26d) [FAB-11758](https://jira.hyperledger.org/browse/FAB-11758) Remove XXXDefaultChannelMSPID const
+* [6ebf096](https://github.com/hyperledger/fabric/commit/6ebf096) [FAB-11751](https://jira.hyperledger.org/browse/FAB-11751) Java shim version 1.3.0
+* [e013011](https://github.com/hyperledger/fabric/commit/e013011) [FAB-10390](https://jira.hyperledger.org/browse/FAB-10390) Set PKCS11 CKA_MODIFIABLE to false
+* [546360b](https://github.com/hyperledger/fabric/commit/546360b) Improve error message when private data is disabled
+* [0e8eedd](https://github.com/hyperledger/fabric/commit/0e8eedd) [FAB-11586](https://jira.hyperledger.org/browse/FAB-11586) Raft communication layer, part 2
+* [a5847ad](https://github.com/hyperledger/fabric/commit/a5847ad) [FAB-11736](https://jira.hyperledger.org/browse/FAB-11736) Fixing javaenv image references
+* [f42a5f9](https://github.com/hyperledger/fabric/commit/f42a5f9) [FAB-11584](https://jira.hyperledger.org/browse/FAB-11584) Make java cc not experimental
+* [289d6d3](https://github.com/hyperledger/fabric/commit/289d6d3) Fix broken BCCSP PKCS11 test
+* [f56a24a](https://github.com/hyperledger/fabric/commit/f56a24a) [FAB-11688](https://jira.hyperledger.org/browse/FAB-11688) serialize access to Registrar.chains
+* [4616c21](https://github.com/hyperledger/fabric/commit/4616c21) [FAB-11684](https://jira.hyperledger.org/browse/FAB-11684) serialization in ram ledger simpleList
+* [c454413](https://github.com/hyperledger/fabric/commit/c454413) [FAB-11683](https://jira.hyperledger.org/browse/FAB-11683) fix data race in GenerateDockerBuild
+* [5cc0dea](https://github.com/hyperledger/fabric/commit/5cc0dea) [FAB-11685](https://jira.hyperledger.org/browse/FAB-11685) avoid data races in shim tests
+* [8db4c58](https://github.com/hyperledger/fabric/commit/8db4c58) [FAB-9131](https://jira.hyperledger.org/browse/FAB-9131) use flogging in docker controller
+* [50aec3f](https://github.com/hyperledger/fabric/commit/50aec3f) [FAB-9131](https://jira.hyperledger.org/browse/FAB-9131) Update peer logging doc and examples
+* [97215fa](https://github.com/hyperledger/fabric/commit/97215fa) [FAB-9131](https://jira.hyperledger.org/browse/FAB-9131) wire zap based fabric logger
+* [bb90ac4](https://github.com/hyperledger/fabric/commit/bb90ac4) [FAB-11046](https://jira.hyperledger.org/browse/FAB-11046) Increase test coverage for cauthdsl
+* [aec2ab9](https://github.com/hyperledger/fabric/commit/aec2ab9) Ledger-lscc: Implement 'DeployedChaincodeInfoProvider'
+* [aa5534f](https://github.com/hyperledger/fabric/commit/aa5534f) [FAB-11721](https://jira.hyperledger.org/browse/FAB-11721) Improve unit tests for pullstore
+* [3d3b4a7](https://github.com/hyperledger/fabric/commit/3d3b4a7) Ledger-lscc: Interface for decoupling ledger and lscc
+* [080f1af](https://github.com/hyperledger/fabric/commit/080f1af) [FAB-11404](https://jira.hyperledger.org/browse/FAB-11404) Fix panic on illegal policy str
+* [e00035f](https://github.com/hyperledger/fabric/commit/e00035f) [FAB-11719](https://jira.hyperledger.org/browse/FAB-11719) Better Markup of Document
+* [b2bf181](https://github.com/hyperledger/fabric/commit/b2bf181) Fix broken build
+* [84629f0](https://github.com/hyperledger/fabric/commit/84629f0) [FAB-9657](https://jira.hyperledger.org/browse/FAB-9657)  Ledger: Metadata - E2E support
+* [bc0d4cf](https://github.com/hyperledger/fabric/commit/bc0d4cf) [FAB-10041](https://jira.hyperledger.org/browse/FAB-10041) Ledger: Metadata - pvt data updates
+* [0cc9874](https://github.com/hyperledger/fabric/commit/0cc9874) [FAB-9681](https://jira.hyperledger.org/browse/FAB-9681)  Ledger: Metadata - couch-statedb support
+* [843d926](https://github.com/hyperledger/fabric/commit/843d926) [FAB-10036](https://jira.hyperledger.org/browse/FAB-10036) Ledger: Metadata - Commit-path enhancements
+* [2d3d042](https://github.com/hyperledger/fabric/commit/2d3d042) [FAB-11554](https://jira.hyperledger.org/browse/FAB-11554) Remove deduplicateIdentity
+* [701cb44](https://github.com/hyperledger/fabric/commit/701cb44) [FAB-11553](https://jira.hyperledger.org/browse/FAB-11553) Split LSCC validation
+* [d8f8675](https://github.com/hyperledger/fabric/commit/d8f8675) [FAB-11552](https://jira.hyperledger.org/browse/FAB-11552) Call right validator given the capability
+* [dbc194a](https://github.com/hyperledger/fabric/commit/dbc194a) [FAB-11551](https://jira.hyperledger.org/browse/FAB-11551) Clone v1.2 validation logic
+* [2178e6e](https://github.com/hyperledger/fabric/commit/2178e6e) [FAB-11550](https://jira.hyperledger.org/browse/FAB-11550) Expose 1.3 validation capability
+* [3d56023](https://github.com/hyperledger/fabric/commit/3d56023) [FAB-11549](https://jira.hyperledger.org/browse/FAB-11549) Split validation logic into own package
+* [4d649c5](https://github.com/hyperledger/fabric/commit/4d649c5) [FAB-11548](https://jira.hyperledger.org/browse/FAB-11548) Change TransactionValidator interface
+* [4abc690](https://github.com/hyperledger/fabric/commit/4abc690) Ledger-lscc: Enhance StateListener with QueryExecutors
+* [923afec](https://github.com/hyperledger/fabric/commit/923afec) [FAB-11705](https://jira.hyperledger.org/browse/FAB-11705) Fix deduplicateIdentity slice appending
+* [0bc7d3e](https://github.com/hyperledger/fabric/commit/0bc7d3e) Nominate Matthew Sykes as Fabric maintainer
+* [cf1b9c5](https://github.com/hyperledger/fabric/commit/cf1b9c5) [FAB-11701](https://jira.hyperledger.org/browse/FAB-11701) Prover Peer proto (with import request)
+* [bd1fa1b](https://github.com/hyperledger/fabric/commit/bd1fa1b) Ledger-lscc: Introduce queriabilty on to-be state
+* [c66b2c6](https://github.com/hyperledger/fabric/commit/c66b2c6) [FAB-11521](https://jira.hyperledger.org/browse/FAB-11521) Have chaincode store return hash on save
+* [d360f22](https://github.com/hyperledger/fabric/commit/d360f22) [FAB-11520](https://jira.hyperledger.org/browse/FAB-11520) Add implementation for ChaincodeInstall
+* [0294774](https://github.com/hyperledger/fabric/commit/0294774) [FAB-11588](https://jira.hyperledger.org/browse/FAB-11588) Have package-provider parse fs bytes
+* [d54d863](https://github.com/hyperledger/fabric/commit/d54d863) [FAB-11587](https://jira.hyperledger.org/browse/FAB-11587) Add new tar gz chaincode package format
+* [6c851f6](https://github.com/hyperledger/fabric/commit/6c851f6) [FAB-11657](https://jira.hyperledger.org/browse/FAB-11657) Fix Testviewer URL in docs Readme
+* [8de6434](https://github.com/hyperledger/fabric/commit/8de6434) Encode block number in reverse order
+* [7d26784](https://github.com/hyperledger/fabric/commit/7d26784) [FAB-11682](https://jira.hyperledger.org/browse/FAB-11682) log 'Loading NodeOUs' at debug level
+* [88112d8](https://github.com/hyperledger/fabric/commit/88112d8) [FAB-11317](https://jira.hyperledger.org/browse/FAB-11317) construct inelg. missing pvt data
+* [b540d55](https://github.com/hyperledger/fabric/commit/b540d55) [FAB-11661](https://jira.hyperledger.org/browse/FAB-11661) fix wrong description
+* [ddb03c7](https://github.com/hyperledger/fabric/commit/ddb03c7) [FAB-11646](https://jira.hyperledger.org/browse/FAB-11646) Add interceptors to comm.GRPCServer
+* [208606d](https://github.com/hyperledger/fabric/commit/208606d) [FAB-11660](https://jira.hyperledger.org/browse/FAB-11660) issue in if statement
+* [c47bcd5](https://github.com/hyperledger/fabric/commit/c47bcd5) [FAB-11659](https://jira.hyperledger.org/browse/FAB-11659) Fabric UT Failure
+* [8580381](https://github.com/hyperledger/fabric/commit/8580381) [FAB-11571](https://jira.hyperledger.org/browse/FAB-11571) Improve peer gossip init
+* [bb311c5](https://github.com/hyperledger/fabric/commit/bb311c5) [FAB-11585](https://jira.hyperledger.org/browse/FAB-11585) Raft communication layer, part 1
+* [1cbb8c9](https://github.com/hyperledger/fabric/commit/1cbb8c9) Enhance ledger apis for missing data
+* [bbf5c78](https://github.com/hyperledger/fabric/commit/bbf5c78) [FAB-10778](https://jira.hyperledger.org/browse/FAB-10778) Increase default timeout
+* [00859b0](https://github.com/hyperledger/fabric/commit/00859b0) [FAB-11636](https://jira.hyperledger.org/browse/FAB-11636) Typos in warn messages at configtxgen
+* [e53a0be](https://github.com/hyperledger/fabric/commit/e53a0be) [FAB-11483](https://jira.hyperledger.org/browse/FAB-11483) Validation Parameter const
+* [73bd919](https://github.com/hyperledger/fabric/commit/73bd919) [FAB-11606](https://jira.hyperledger.org/browse/FAB-11606) Fix duplicate word in sentence
+* [1ed1dea](https://github.com/hyperledger/fabric/commit/1ed1dea) [FAB-11574](https://jira.hyperledger.org/browse/FAB-11574) Use AdminClient to create topics
+* [5749920](https://github.com/hyperledger/fabric/commit/5749920) [FAB-11172](https://jira.hyperledger.org/browse/FAB-11172) Token transaction proto message
+* [75fac16](https://github.com/hyperledger/fabric/commit/75fac16) [FAB-11519](https://jira.hyperledger.org/browse/FAB-11519) Create new SCC for new lifecycle
+* [3aa6009](https://github.com/hyperledger/fabric/commit/3aa6009) [FAB-11211](https://jira.hyperledger.org/browse/FAB-11211) Utilize old and new cc pkg in cclifecycle
+* [a9e8cd7](https://github.com/hyperledger/fabric/commit/a9e8cd7) [FAB-7382](https://jira.hyperledger.org/browse/FAB-7382) Remove ReadyChan() from  Deliver ledgers
+* [42b6b4b](https://github.com/hyperledger/fabric/commit/42b6b4b) [FABC-702] Remove TCert code from BCCSP
+* [8cfb9ed](https://github.com/hyperledger/fabric/commit/8cfb9ed) [FAB-11573](https://jira.hyperledger.org/browse/FAB-11573) Update Kafka library
+* [543270c](https://github.com/hyperledger/fabric/commit/543270c) [FAB-11525](https://jira.hyperledger.org/browse/FAB-11525) TMS token implementation
+* [d441f26](https://github.com/hyperledger/fabric/commit/d441f26) [FAB-11329](https://jira.hyperledger.org/browse/FAB-11329) disable failing pvtdata e2e tests
+* [02358c3](https://github.com/hyperledger/fabric/commit/02358c3) [FAB-11196](https://jira.hyperledger.org/browse/FAB-11196) idemixmsp supports roles client, peer
+* [85e3482](https://github.com/hyperledger/fabric/commit/85e3482) [FAB-11289](https://jira.hyperledger.org/browse/FAB-11289) Java cc integration tests
+* [b766b28](https://github.com/hyperledger/fabric/commit/b766b28) [FAB-11303](https://jira.hyperledger.org/browse/FAB-11303) Java cc build update
+* [12a5795](https://github.com/hyperledger/fabric/commit/12a5795) [FAB-11575](https://jira.hyperledger.org/browse/FAB-11575) Fix collection config error msg
+* [ab2e23e](https://github.com/hyperledger/fabric/commit/ab2e23e) [FAB-11569](https://jira.hyperledger.org/browse/FAB-11569) Fix public/sideDB updates final commit
+* [474f9d2](https://github.com/hyperledger/fabric/commit/474f9d2) [FAB-11174](https://jira.hyperledger.org/browse/FAB-11174) FabToken Transaction Processors
+* [7858d63](https://github.com/hyperledger/fabric/commit/7858d63) [FAB-11462](https://jira.hyperledger.org/browse/FAB-11462) SASL/PLAIN auth for Kafka
+* [808093b](https://github.com/hyperledger/fabric/commit/808093b) [FAB-11478](https://jira.hyperledger.org/browse/FAB-11478) Enable etcd/raft configuration in channel
+* [e1fff80](https://github.com/hyperledger/fabric/commit/e1fff80) [FAB-11487](https://jira.hyperledger.org/browse/FAB-11487) always propagate send fail errors
+* [c8a8261](https://github.com/hyperledger/fabric/commit/c8a8261) [FAB-11487](https://jira.hyperledger.org/browse/FAB-11487) provide error response when send fails
+* [33a4e1c](https://github.com/hyperledger/fabric/commit/33a4e1c) [FAB-11502](https://jira.hyperledger.org/browse/FAB-11502) disable pvt e2e tests
+* [b9be659](https://github.com/hyperledger/fabric/commit/b9be659) [FAB-11323](https://jira.hyperledger.org/browse/FAB-11323) added pvtdata membership info provider
+* [56c8913](https://github.com/hyperledger/fabric/commit/56c8913) [FAB-11506](https://jira.hyperledger.org/browse/FAB-11506) configtxlator do not deeply encode nil
+* [4c4b4f1](https://github.com/hyperledger/fabric/commit/4c4b4f1) [FAB-11484 #done] Update testing documentation
+* [96492eb](https://github.com/hyperledger/fabric/commit/96492eb) [FAB-11508](https://jira.hyperledger.org/browse/FAB-11508) Add consenter metadata to channel config
+* [fcec1b0](https://github.com/hyperledger/fabric/commit/fcec1b0) [FAB-9131](https://jira.hyperledger.org/browse/FAB-9131) create FabricLogger around zap logging
+* [3751fbd](https://github.com/hyperledger/fabric/commit/3751fbd) [FAB-11247](https://jira.hyperledger.org/browse/FAB-11247) Add configuration to create _global_changes
+* [0b3e8c9](https://github.com/hyperledger/fabric/commit/0b3e8c9) [FAB-11327](https://jira.hyperledger.org/browse/FAB-11327) fix wrong error msg in pvtdata e2e test
+* [3838d1b](https://github.com/hyperledger/fabric/commit/3838d1b) [FAB-11329](https://jira.hyperledger.org/browse/FAB-11329) fix flakes in pvtdata e2e tests
+* [b2923ca](https://github.com/hyperledger/fabric/commit/b2923ca) [FAB-11214](https://jira.hyperledger.org/browse/FAB-11214) remove dead logger initialization
+* [7ce40f9](https://github.com/hyperledger/fabric/commit/7ce40f9) [FAB-11332](https://jira.hyperledger.org/browse/FAB-11332) update dep to v0.5
+* [8896069](https://github.com/hyperledger/fabric/commit/8896069) [FAB-11468](https://jira.hyperledger.org/browse/FAB-11468) Print error upon peer cmd failure
+* [63e90ec](https://github.com/hyperledger/fabric/commit/63e90ec) [FAB-11335](https://jira.hyperledger.org/browse/FAB-11335) Fix bootstrap.sh args handling
+* [aeb5377](https://github.com/hyperledger/fabric/commit/aeb5377) [FAB-10487](https://jira.hyperledger.org/browse/FAB-10487): Blockchain Network concept - updates
+* [f10cd75](https://github.com/hyperledger/fabric/commit/f10cd75) Revert "[FAB-11380](https://jira.hyperledger.org/browse/FAB-11380) Add state-based to SD protobuf"
+* [851cb6a](https://github.com/hyperledger/fabric/commit/851cb6a) [FAB-11308](https://jira.hyperledger.org/browse/FAB-11308) Allow use of + char in namespace
+* [9822fd0](https://github.com/hyperledger/fabric/commit/9822fd0) [FAB-11403](https://jira.hyperledger.org/browse/FAB-11403) Fix Typo in the document.
+* [679a32e](https://github.com/hyperledger/fabric/commit/679a32e) [FAB-11201](https://jira.hyperledger.org/browse/FAB-11201) shim pkg. provider to support both cc pkgs
+* [75d1824](https://github.com/hyperledger/fabric/commit/75d1824) [FAB-11412](https://jira.hyperledger.org/browse/FAB-11412) Define orderer intracluster protobuf
+* [3d72b63](https://github.com/hyperledger/fabric/commit/3d72b63) [FAB-10569](https://jira.hyperledger.org/browse/FAB-10569) don't create index on non-existent col
+* [78f45ba](https://github.com/hyperledger/fabric/commit/78f45ba) [FAB-11414](https://jira.hyperledger.org/browse/FAB-11414) Revert [FAB-11377](https://jira.hyperledger.org/browse/FAB-11377)
+* [c7d2158](https://github.com/hyperledger/fabric/commit/c7d2158) [FAB-11405](https://jira.hyperledger.org/browse/FAB-11405) Fixed fileBasedKeyStore never open
+* [f44cc7c](https://github.com/hyperledger/fabric/commit/f44cc7c) [FAB-11406](https://jira.hyperledger.org/browse/FAB-11406) Fix unused named result parameters
+* [d8e27eb](https://github.com/hyperledger/fabric/commit/d8e27eb) [FAB-10650](https://jira.hyperledger.org/browse/FAB-10650) retrieve collections configurations
+* [d77dd4c](https://github.com/hyperledger/fabric/commit/d77dd4c) [FAB-10724](https://jira.hyperledger.org/browse/FAB-10724) Retrieve hash of persisted cc install pkg
+* [4f6600a](https://github.com/hyperledger/fabric/commit/4f6600a) [FAB-11401](https://jira.hyperledger.org/browse/FAB-11401) Fixed broken link
+* [86a0a63](https://github.com/hyperledger/fabric/commit/86a0a63) [FAB-11380](https://jira.hyperledger.org/browse/FAB-11380) Add state-based to discovery protobuf
+* [c90b5fa](https://github.com/hyperledger/fabric/commit/c90b5fa) [FAB-11386](https://jira.hyperledger.org/browse/FAB-11386) Sync protobuf with proto1.1
+* [9ec119e](https://github.com/hyperledger/fabric/commit/9ec119e) [FAB-11217](https://jira.hyperledger.org/browse/FAB-11217) Increase test coverage for signer.go
+* [dfe213b](https://github.com/hyperledger/fabric/commit/dfe213b) [FAB-11320](https://jira.hyperledger.org/browse/FAB-11320) Add application v1.3 capability
+* [0e845ce](https://github.com/hyperledger/fabric/commit/0e845ce) [FAB-11377](https://jira.hyperledger.org/browse/FAB-11377) fix docker-clean failed
+* [7721fd3](https://github.com/hyperledger/fabric/commit/7721fd3) [FAB-11127](https://jira.hyperledger.org/browse/FAB-11127) Add UT for kvledger
+* [d149d17](https://github.com/hyperledger/fabric/commit/d149d17) [FAB-10155](https://jira.hyperledger.org/browse/FAB-10155) Add unit test for gossip/pvtdata
+* [7134f6e](https://github.com/hyperledger/fabric/commit/7134f6e) [FAB-11325](https://jira.hyperledger.org/browse/FAB-11325) VerifyPeerCertificate in SecureOptions
+* [8a22a27](https://github.com/hyperledger/fabric/commit/8a22a27) [FAB-11385](https://jira.hyperledger.org/browse/FAB-11385) Disable pvt integration tests
+* [79bd397](https://github.com/hyperledger/fabric/commit/79bd397) [FAB-11376](https://jira.hyperledger.org/browse/FAB-11376) Update anchor peer section in gossip.rst
+* [8d7de02](https://github.com/hyperledger/fabric/commit/8d7de02) [FAB-11146](https://jira.hyperledger.org/browse/FAB-11146) Putting key concepts above getting started
+* [3bf58eb](https://github.com/hyperledger/fabric/commit/3bf58eb) [FAB-11363](https://jira.hyperledger.org/browse/FAB-11363) Link to Kafka config sample
+* [a0002d5](https://github.com/hyperledger/fabric/commit/a0002d5) Minor edits to anchor peer glossary entry
+* [c88c02f](https://github.com/hyperledger/fabric/commit/c88c02f) [FAB-11338](https://jira.hyperledger.org/browse/FAB-11338) fix channel name in "Using dev mode"
+* [681ebe1](https://github.com/hyperledger/fabric/commit/681ebe1) [FAB-11338](https://jira.hyperledger.org/browse/FAB-11338) fix code block in "using dev mode"
+* [29de39d](https://github.com/hyperledger/fabric/commit/29de39d) [FAB-11305](https://jira.hyperledger.org/browse/FAB-11305) Channel v1.3 capability for idemix
+* [0c38243](https://github.com/hyperledger/fabric/commit/0c38243) [FAB-11331](https://jira.hyperledger.org/browse/FAB-11331) Fix copyright year in docs
+* [617d614](https://github.com/hyperledger/fabric/commit/617d614) [FAB-11123](https://jira.hyperledger.org/browse/FAB-11123) Remove EventHub from peer
+* [2df4a80](https://github.com/hyperledger/fabric/commit/2df4a80) [FAB-11313](https://jira.hyperledger.org/browse/FAB-11313) Rewrite glossary anchor peer definition
+* [dbc37ca](https://github.com/hyperledger/fabric/commit/dbc37ca) Add discover binary to fabric-tools image
+* [2d2a248](https://github.com/hyperledger/fabric/commit/2d2a248) [FAB-11314](https://jira.hyperledger.org/browse/FAB-11314) Fix link to Kafka design document
+* [c6d067f](https://github.com/hyperledger/fabric/commit/c6d067f) [FAB-11173](https://jira.hyperledger.org/browse/FAB-11173) FabToken Validation Plugin
+* [fc8bd9d](https://github.com/hyperledger/fabric/commit/fc8bd9d) [FAB-11277](https://jira.hyperledger.org/browse/FAB-11277) Split ExtractCerteHashFromContext to 2
+* [6d10709](https://github.com/hyperledger/fabric/commit/6d10709) [FAB-11272](https://jira.hyperledger.org/browse/FAB-11272) Retire dormant fabric maintainers
+* [b372a56](https://github.com/hyperledger/fabric/commit/b372a56) [FAB-10391](https://jira.hyperledger.org/browse/FAB-10391) Set CKA_EXTRACTABLE to false
+* [5acb4b4](https://github.com/hyperledger/fabric/commit/5acb4b4) [FAB-11233](https://jira.hyperledger.org/browse/FAB-11233) Increase timeout for closing processes
+* [fc388e7](https://github.com/hyperledger/fabric/commit/fc388e7) [FAB-11269](https://jira.hyperledger.org/browse/FAB-11269) Improve configtx.yaml batch descriptions
+* [7a70ea2](https://github.com/hyperledger/fabric/commit/7a70ea2) [FAB-11242](https://jira.hyperledger.org/browse/FAB-11242) Add `build/` into gitignore
+* [c211e5e](https://github.com/hyperledger/fabric/commit/c211e5e) [FAB-10157](https://jira.hyperledger.org/browse/FAB-10157) pvtdata e2e w/ network partition
+* [6e17b23](https://github.com/hyperledger/fabric/commit/6e17b23) [FAB-10484](https://jira.hyperledger.org/browse/FAB-10484) - added e2e pvtdata btl tests
+* [fd76467](https://github.com/hyperledger/fabric/commit/fd76467) [FAB-11170](https://jira.hyperledger.org/browse/FAB-11170) Refactor discovery client cache
+* [e7583c2](https://github.com/hyperledger/fabric/commit/e7583c2) [FAB-10859](https://jira.hyperledger.org/browse/FAB-10859) Improve UT for common/capabilities/
+* [59a753d](https://github.com/hyperledger/fabric/commit/59a753d) [FAB-10807](https://jira.hyperledger.org/browse/FAB-10807) Update fabric version in metadata
+* [41db6d4](https://github.com/hyperledger/fabric/commit/41db6d4) [FAB-11106](https://jira.hyperledger.org/browse/FAB-11106) Fix chaincode name checking
+* [9d938b8](https://github.com/hyperledger/fabric/commit/9d938b8) [FAB-6676](https://jira.hyperledger.org/browse/FAB-6676) Serviceability - update protos/utils errors
+* [7ce5c87](https://github.com/hyperledger/fabric/commit/7ce5c87) [FAB-11234](https://jira.hyperledger.org/browse/FAB-11234) Import etcd/raft
+* [3045bf4](https://github.com/hyperledger/fabric/commit/3045bf4) [FAB-9746](https://jira.hyperledger.org/browse/FAB-9746)  Ledger: Metadata - level-statedb support
+* [fa0d1e2](https://github.com/hyperledger/fabric/commit/fa0d1e2) [FAB-9656](https://jira.hyperledger.org/browse/FAB-9656)  Ledger: Metadata - Enhance RWSet builder
+* [312eda8](https://github.com/hyperledger/fabric/commit/312eda8) [FAB-11136](https://jira.hyperledger.org/browse/FAB-11136) Increase peer CLI timeout for successful UTs
+* [2a3ebd5](https://github.com/hyperledger/fabric/commit/2a3ebd5) [FAB-11215](https://jira.hyperledger.org/browse/FAB-11215) Enable vetting of more print/printf fncs
+* [9992c41](https://github.com/hyperledger/fabric/commit/9992c41) [FAB-11219](https://jira.hyperledger.org/browse/FAB-11219) pvtdata int. tests failing after recent CR
+* [6aeb59c](https://github.com/hyperledger/fabric/commit/6aeb59c) [FAB-10523](https://jira.hyperledger.org/browse/FAB-10523) Fix peer command
+* [8ae94b0](https://github.com/hyperledger/fabric/commit/8ae94b0) [FAB-11198](https://jira.hyperledger.org/browse/FAB-11198) protolator to understand RWSets, events
+* [ab1b9ee](https://github.com/hyperledger/fabric/commit/ab1b9ee) [FAB-5766](https://jira.hyperledger.org/browse/FAB-5766) Error handling improvement for ledger (part 3)
+* [0f8446e](https://github.com/hyperledger/fabric/commit/0f8446e) [FAB-11120](https://jira.hyperledger.org/browse/FAB-11120) move legacy world to the last user
+* [6e29649](https://github.com/hyperledger/fabric/commit/6e29649) [FAB-11191](https://jira.hyperledger.org/browse/FAB-11191) Fix invalid security link in docs
+* [010f5dc](https://github.com/hyperledger/fabric/commit/010f5dc) [FAB-11151](https://jira.hyperledger.org/browse/FAB-11151) test auto-transitions in Jira
+* [5ac11d2](https://github.com/hyperledger/fabric/commit/5ac11d2) [FAB-11038](https://jira.hyperledger.org/browse/FAB-11038) Disable chaincode lookup cache swizzling
+* [1fe243f](https://github.com/hyperledger/fabric/commit/1fe243f) [FAB-11037](https://jira.hyperledger.org/browse/FAB-11037) Remove InvocationSpec from chaincode pkg
+* [354c924](https://github.com/hyperledger/fabric/commit/354c924) [FAB-11036](https://jira.hyperledger.org/browse/FAB-11036) Remove the transaction parms from cccid
+* [00ff8f9](https://github.com/hyperledger/fabric/commit/00ff8f9) [FAB-11035](https://jira.hyperledger.org/browse/FAB-11035) Remove unused ccprovider pieces
+* [4645c3a](https://github.com/hyperledger/fabric/commit/4645c3a) [FAB-11034](https://jira.hyperledger.org/browse/FAB-11034) Replace context with explicit params
+* [b7157a4](https://github.com/hyperledger/fabric/commit/b7157a4) [FAB-11033](https://jira.hyperledger.org/browse/FAB-11033) Complete removing spec from Launch
+* [d72773e](https://github.com/hyperledger/fabric/commit/d72773e) [FAB-11031](https://jira.hyperledger.org/browse/FAB-11031) Remove 'Syscc' from CCContext
+* [e67a85f](https://github.com/hyperledger/fabric/commit/e67a85f) [FAB-11030](https://jira.hyperledger.org/browse/FAB-11030) Remove skipped tests from chaincode
+* [4f10a14](https://github.com/hyperledger/fabric/commit/4f10a14) [FAB-11029](https://jira.hyperledger.org/browse/FAB-11029) Make stop take container info
+* [83fc11a](https://github.com/hyperledger/fabric/commit/83fc11a) [FAB-11131](https://jira.hyperledger.org/browse/FAB-11131) lint all code, enable all vet checks
+* [620dffe](https://github.com/hyperledger/fabric/commit/620dffe) [FAB-11026](https://jira.hyperledger.org/browse/FAB-11026) Remove lifecycle shim and use LSCC inst
+* [8f0ca0d](https://github.com/hyperledger/fabric/commit/8f0ca0d) [FAB-11039](https://jira.hyperledger.org/browse/FAB-11039) getChaincodes omits collection config
+* [8ec2ffa](https://github.com/hyperledger/fabric/commit/8ec2ffa) [FAB-10997](https://jira.hyperledger.org/browse/FAB-10997) Add ChaincodeDefinition function to LSCC
+* [03aabd7](https://github.com/hyperledger/fabric/commit/03aabd7) [FAB-10995](https://jira.hyperledger.org/browse/FAB-10995) runtime_launcher chaincode spec removal
+* [2fffd02](https://github.com/hyperledger/fabric/commit/2fffd02) [FAB-10994](https://jira.hyperledger.org/browse/FAB-10994) Remove chaincode spec from Launch
+* [f5182d4](https://github.com/hyperledger/fabric/commit/f5182d4) [FAB-11024](https://jira.hyperledger.org/browse/FAB-11024) ChaincodeContainerInfo to ccprovider
+* [0e578a8](https://github.com/hyperledger/fabric/commit/0e578a8) [FAB-10996](https://jira.hyperledger.org/browse/FAB-10996) Cleanup runtime launcher interface
+* [5f9de08](https://github.com/hyperledger/fabric/commit/5f9de08) [FAB-11023](https://jira.hyperledger.org/browse/FAB-11023) Unhide system chaincode provider
+* [3eebcf3](https://github.com/hyperledger/fabric/commit/3eebcf3) [FAB-11000](https://jira.hyperledger.org/browse/FAB-11000) Remove unnecessary context
+* [aa52af1](https://github.com/hyperledger/fabric/commit/aa52af1) [FAB-10999](https://jira.hyperledger.org/browse/FAB-10999) Inject explicit chaincode_support to ipc
+* [d861bbf](https://github.com/hyperledger/fabric/commit/d861bbf) [FAB-10998](https://jira.hyperledger.org/browse/FAB-10998) GetChaincodeData to use LSCC directly
+* [1160b11](https://github.com/hyperledger/fabric/commit/1160b11) [FAB-10992](https://jira.hyperledger.org/browse/FAB-10992) Lifecycle abstraction to return ccci
+* [f4ed742](https://github.com/hyperledger/fabric/commit/f4ed742) [FAB-10987](https://jira.hyperledger.org/browse/FAB-10987) GetChaincodeDeploymentSpec direct call
+* [be01b7e](https://github.com/hyperledger/fabric/commit/be01b7e) [FAB-10986](https://jira.hyperledger.org/browse/FAB-10986) Remove one runtime_launcher.go CDS ref
+* [bb64b0a](https://github.com/hyperledger/fabric/commit/bb64b0a) [FAB-10985](https://jira.hyperledger.org/browse/FAB-10985) Have LSCC etc. describe themselves
+* [18091ad](https://github.com/hyperledger/fabric/commit/18091ad) [FAB-10984](https://jira.hyperledger.org/browse/FAB-10984) Prepare to move SCC attributes into SCC
+* [c9e3904](https://github.com/hyperledger/fabric/commit/c9e3904) [FAB-10283](https://jira.hyperledger.org/browse/FAB-10283) Make configtxlator handle maps correctly
+* [563374a](https://github.com/hyperledger/fabric/commit/563374a) [FAB-10723](https://jira.hyperledger.org/browse/FAB-10723) Retrieve persisted cc install pkg by hash
+* [e34dac4](https://github.com/hyperledger/fabric/commit/e34dac4) [FAB-10141](https://jira.hyperledger.org/browse/FAB-10141) Fix bug in genesis block persistence
+* [a2ea1ef](https://github.com/hyperledger/fabric/commit/a2ea1ef) [FAB-11047](https://jira.hyperledger.org/browse/FAB-11047) Enlarge discovery client memoization cache
+* [03104e7](https://github.com/hyperledger/fabric/commit/03104e7) [FAB-10292](https://jira.hyperledger.org/browse/FAB-10292) Update protobuf to v1.1.0
+* [6be352a](https://github.com/hyperledger/fabric/commit/6be352a) [FAB-11130](https://jira.hyperledger.org/browse/FAB-11130) add keys to unkeyed struct literals
+* [f193887](https://github.com/hyperledger/fabric/commit/f193887) [FAB-11121](https://jira.hyperledger.org/browse/FAB-11121) remove recursion flag (-r) from ginkgo
+* [3e591f6](https://github.com/hyperledger/fabric/commit/3e591f6) [FAB-10866](https://jira.hyperledger.org/browse/FAB-10866) Build fails license header check pptx
+* [86d7ccb](https://github.com/hyperledger/fabric/commit/86d7ccb) [FAB-11133](https://jira.hyperledger.org/browse/FAB-11133) ConfigUpdate supports variadic signers
+* [a45c3bf](https://github.com/hyperledger/fabric/commit/a45c3bf) [FAB-10957](https://jira.hyperledger.org/browse/FAB-10957) use 0 as bad port for connect fail
+* [6e9ad4b](https://github.com/hyperledger/fabric/commit/6e9ad4b) [FAB-10968](https://jira.hyperledger.org/browse/FAB-10968) Fix race in discovery integration test
+* [09ddf97](https://github.com/hyperledger/fabric/commit/09ddf97) [FAB-11097](https://jira.hyperledger.org/browse/FAB-11097) discover: No channel info in local peers
+* [f71a380](https://github.com/hyperledger/fabric/commit/f71a380) [FAB-11028](https://jira.hyperledger.org/browse/FAB-11028) discover: Remove nil chaincodes from output
+* [1d3bd84](https://github.com/hyperledger/fabric/commit/1d3bd84) [FAB-11129](https://jira.hyperledger.org/browse/FAB-11129) Ensure v1.3  digests are parsed by v1.2
+* [36a4a8f](https://github.com/hyperledger/fabric/commit/36a4a8f) [FAB-10720](https://jira.hyperledger.org/browse/FAB-10720) Persistence for new cc install package
+* [4a73894](https://github.com/hyperledger/fabric/commit/4a73894) [FAB-11138](https://jira.hyperledger.org/browse/FAB-11138) replace gogo import with golang/proto
+* [d2d5bef](https://github.com/hyperledger/fabric/commit/d2d5bef) [FAB-11112](https://jira.hyperledger.org/browse/FAB-11112) Functions to convert CDS to cc install pkg
+* [7893ab3](https://github.com/hyperledger/fabric/commit/7893ab3) [FAB-11058](https://jira.hyperledger.org/browse/FAB-11058) use correct logging method ..
+* [4150a69](https://github.com/hyperledger/fabric/commit/4150a69) [FAB-10662](https://jira.hyperledger.org/browse/FAB-10662) eventually timeout added to nwo
+* [5df24f0](https://github.com/hyperledger/fabric/commit/5df24f0) [FAB-11054](https://jira.hyperledger.org/browse/FAB-11054) move discovery to nwo
+* [6e8d556](https://github.com/hyperledger/fabric/commit/6e8d556) [FAB-11053](https://jira.hyperledger.org/browse/FAB-11053) extract config block helpers to nwo
+* [5d80844](https://github.com/hyperledger/fabric/commit/5d80844) [FAB-11052](https://jira.hyperledger.org/browse/FAB-11052) begin adding nwo support for discovery
+* [edec005](https://github.com/hyperledger/fabric/commit/edec005) [FAB-11051](https://jira.hyperledger.org/browse/FAB-11051) refactor install/instantiate/upgrade
+* [7416112](https://github.com/hyperledger/fabric/commit/7416112) [FAB-10967](https://jira.hyperledger.org/browse/FAB-10967) SideDB video link
+* [fa490c2](https://github.com/hyperledger/fabric/commit/fa490c2) [FAB-10982](https://jira.hyperledger.org/browse/FAB-10982) Add direct accessor for LSCC to get CDS
+* [ea6b468](https://github.com/hyperledger/fabric/commit/ea6b468) [FAB-10981](https://jira.hyperledger.org/browse/FAB-10981) Unhide LSCC impl details
+* [954f350](https://github.com/hyperledger/fabric/commit/954f350) [FAB-10979](https://jira.hyperledger.org/browse/FAB-10979) PackageProvider provides code package
+* [e3d7051](https://github.com/hyperledger/fabric/commit/e3d7051) [FAB-10978](https://jira.hyperledger.org/browse/FAB-10978) Remove spec from container_runtime
+* [b1dd84b](https://github.com/hyperledger/fabric/commit/b1dd84b) [FAB-10977](https://jira.hyperledger.org/browse/FAB-10977) Extract lifecycle to interface
+* [305c5ad](https://github.com/hyperledger/fabric/commit/305c5ad) [FAB-10976](https://jira.hyperledger.org/browse/FAB-10976) Move lifecycle to its own package
+* [5918252](https://github.com/hyperledger/fabric/commit/5918252) [FAB-10975](https://jira.hyperledger.org/browse/FAB-10975) Split Execute into Execute/ExecuteInit
+* [881fc85](https://github.com/hyperledger/fabric/commit/881fc85) [FAB-10974](https://jira.hyperledger.org/browse/FAB-10974) Remove cc-spec from core/controller
+* [5d34c6a](https://github.com/hyperledger/fabric/commit/5d34c6a) [FAB-10835](https://jira.hyperledger.org/browse/FAB-10835) Remove chaincode spec from platforms
+* [62d8145](https://github.com/hyperledger/fabric/commit/62d8145) [FAB-10834](https://jira.hyperledger.org/browse/FAB-10834) GetMetadataProvider to accept code bytes
+* [39a1a8c](https://github.com/hyperledger/fabric/commit/39a1a8c) [FAB-10833](https://jira.hyperledger.org/browse/FAB-10833) Fix ccmetadata package structure
+* [fe3bbe2](https://github.com/hyperledger/fabric/commit/fe3bbe2) [FAB-10832](https://jira.hyperledger.org/browse/FAB-10832) GenerateDockerBuild to accept path, code
+* [b2db32a](https://github.com/hyperledger/fabric/commit/b2db32a) [FAB-10831](https://jira.hyperledger.org/browse/FAB-10831) Remove unused GenerateDockerfile parm
+* [aff080c](https://github.com/hyperledger/fabric/commit/aff080c) [FAB-10830](https://jira.hyperledger.org/browse/FAB-10830) GetDeploymentPackage to take string
+* [5d6fe7d](https://github.com/hyperledger/fabric/commit/5d6fe7d) [FAB-10829](https://jira.hyperledger.org/browse/FAB-10829) Remove unused java hash file/function
+* [77d4b81](https://github.com/hyperledger/fabric/commit/77d4b81) [FAB-10828](https://jira.hyperledger.org/browse/FAB-10828) ValidateDepSpec to ValidateCodePackage
+* [9e47bf2](https://github.com/hyperledger/fabric/commit/9e47bf2) [FAB-10827](https://jira.hyperledger.org/browse/FAB-10827) Remove meaningless file write from test
+* [adca953](https://github.com/hyperledger/fabric/commit/adca953) [FAB-10826](https://jira.hyperledger.org/browse/FAB-10826) Change ValidateSpec to ValidatePath
+* [33bcc43](https://github.com/hyperledger/fabric/commit/33bcc43) [FAB-11073](https://jira.hyperledger.org/browse/FAB-11073) Fix linter checking
+* [613e845](https://github.com/hyperledger/fabric/commit/613e845) [FAB-10899](https://jira.hyperledger.org/browse/FAB-10899) ignore context in VMController
+* [eb06008](https://github.com/hyperledger/fabric/commit/eb06008) [FAB-5766](https://jira.hyperledger.org/browse/FAB-5766) Error handling improvement for ledger (part 1)
+* [26c6b79](https://github.com/hyperledger/fabric/commit/26c6b79) [FAB-5766](https://jira.hyperledger.org/browse/FAB-5766) Error handling improvement for ledger (part 2)
+* [6d4bf4e](https://github.com/hyperledger/fabric/commit/6d4bf4e) [FAB-11102](https://jira.hyperledger.org/browse/FAB-11102) Visual Vocab
+* [c4fe7e6](https://github.com/hyperledger/fabric/commit/c4fe7e6) [FAB-11055](https://jira.hyperledger.org/browse/FAB-11055) add UpdateChannelAnchors to network
+* [375995e](https://github.com/hyperledger/fabric/commit/375995e) [FAB-11094](https://jira.hyperledger.org/browse/FAB-11094) Fix deadlock in block iterator
+* [9c77fe5](https://github.com/hyperledger/fabric/commit/9c77fe5) [FAB-10302](https://jira.hyperledger.org/browse/FAB-10302) Don't use protobuf as map keys
+* [20b7c22](https://github.com/hyperledger/fabric/commit/20b7c22) Release Hyperledger Fabric v1.1.1
+* [95837c9](https://github.com/hyperledger/fabric/commit/95837c9) [FAB-10970](https://jira.hyperledger.org/browse/FAB-10970) Make connection refusal more lenient
+* [24078df](https://github.com/hyperledger/fabric/commit/24078df) [FAB-10742](https://jira.hyperledger.org/browse/FAB-10742) Batch retrive of pvt data from ledger
+* [54ead35](https://github.com/hyperledger/fabric/commit/54ead35) [FAB-10486](https://jira.hyperledger.org/browse/FAB-10486) e2e test pvtdata remove and add
+* [42eed58](https://github.com/hyperledger/fabric/commit/42eed58) Fix install.md instructions
+* [57a4cc6](https://github.com/hyperledger/fabric/commit/57a4cc6) [FAB-11062](https://jira.hyperledger.org/browse/FAB-11062) Update README and bootstrap.sh for 1.2.0
+* [17de263](https://github.com/hyperledger/fabric/commit/17de263) [FAB-10156](https://jira.hyperledger.org/browse/FAB-10156) added e2e test for private data
+* [a95aa6b](https://github.com/hyperledger/fabric/commit/a95aa6b) [FAB-10708](https://jira.hyperledger.org/browse/FAB-10708) add docker-tag-stable target/recipe
+* [388f541](https://github.com/hyperledger/fabric/commit/388f541) [FAB-11050](https://jira.hyperledger.org/browse/FAB-11050) Add OutputAnchorPeersUpdate command
+* [505fb6a](https://github.com/hyperledger/fabric/commit/505fb6a) [FAB-11049](https://jira.hyperledger.org/browse/FAB-11049) add {Read,Write}{Orderer,Peer}Config
+* [7ec6c61](https://github.com/hyperledger/fabric/commit/7ec6c61) [FAB-10993](https://jira.hyperledger.org/browse/FAB-10993) Extraneous capabilities in configtx.yaml
+* [80861b1](https://github.com/hyperledger/fabric/commit/80861b1) [FAB-11004](https://jira.hyperledger.org/browse/FAB-11004) fix flakes in discovery service e2e test
+* [eb84de6](https://github.com/hyperledger/fabric/commit/eb84de6) [FAB-11001](https://jira.hyperledger.org/browse/FAB-11001) Direct errors to stderr, not stdout
+* [1a2d8be](https://github.com/hyperledger/fabric/commit/1a2d8be) [FAB-11042](https://jira.hyperledger.org/browse/FAB-11042) Fix broken links in documents
+* [54d4e37](https://github.com/hyperledger/fabric/commit/54d4e37) [FAB-10719](https://jira.hyperledger.org/browse/FAB-10719) New message to serialize cc install package
+* [83f18e7](https://github.com/hyperledger/fabric/commit/83f18e7) [FAB-10885](https://jira.hyperledger.org/browse/FAB-10885) Upgrade grpc-go
+* [9112ebf](https://github.com/hyperledger/fabric/commit/9112ebf) [FAB-10825](https://jira.hyperledger.org/browse/FAB-10825) Make platform latent dependency explicit
+* [9c774de](https://github.com/hyperledger/fabric/commit/9c774de) [FAB-10824](https://jira.hyperledger.org/browse/FAB-10824) Add ginkgo tests for platforms
+* [8726745](https://github.com/hyperledger/fabric/commit/8726745) [FAB-11021](https://jira.hyperledger.org/browse/FAB-11021) Fix goimports error
+* [db58767](https://github.com/hyperledger/fabric/commit/db58767) Prepare fabric for 1.3 development
+* [ae9237f](https://github.com/hyperledger/fabric/commit/ae9237f) [FAB-10963](https://jira.hyperledger.org/browse/FAB-10963) Discovery: filtering in membership queries
+* [8fd6f14](https://github.com/hyperledger/fabric/commit/8fd6f14) [FAB-10857](https://jira.hyperledger.org/browse/FAB-10857) Extract discovery endorsement filtering
+* [bc88414](https://github.com/hyperledger/fabric/commit/bc88414) [FAB-9152](https://jira.hyperledger.org/browse/FAB-9152) fix data race in TestManagerImpl
+* [c6d8edd](https://github.com/hyperledger/fabric/commit/c6d8edd) [FAB-9150](https://jira.hyperledger.org/browse/FAB-9150) race in TestRegister_ExpiredIdentity
+* [f48cf5c](https://github.com/hyperledger/fabric/commit/f48cf5c) [FAB-10924](https://jira.hyperledger.org/browse/FAB-10924) data race during event handler cleanup
+* [19883c4](https://github.com/hyperledger/fabric/commit/19883c4) [FAB-9134](https://jira.hyperledger.org/browse/FAB-9134) Fix data race in DockerBuild
+* [4af2b13](https://github.com/hyperledger/fabric/commit/4af2b13) [FAB-10951](https://jira.hyperledger.org/browse/FAB-10951) race in TestUpdateRootsFromConfigBlock
+* [a06dd35](https://github.com/hyperledger/fabric/commit/a06dd35) [FAB-10952](https://jira.hyperledger.org/browse/FAB-10952) data race running core/comm tests
+* [9dcaed6](https://github.com/hyperledger/fabric/commit/9dcaed6) [FAB-10954](https://jira.hyperledger.org/browse/FAB-10954) data race core/comm/producer
+* [7a3001a](https://github.com/hyperledger/fabric/commit/7a3001a) [FAB-10942](https://jira.hyperledger.org/browse/FAB-10942) fix data race in core/committer tests
+* [003566e](https://github.com/hyperledger/fabric/commit/003566e) [FAB-9160](https://jira.hyperledger.org/browse/FAB-9160) fix data race in TestRecoverFromError
+* [a72b7fd](https://github.com/hyperledger/fabric/commit/a72b7fd) [FAB-9146](https://jira.hyperledger.org/browse/FAB-9146) fix TestCreateChainFromBlock data race
+* [6dd7353](https://github.com/hyperledger/fabric/commit/6dd7353) [FAB-9149](https://jira.hyperledger.org/browse/FAB-9149) fix data race in TestRegister_MutualTLS
+* [1e04fe8](https://github.com/hyperledger/fabric/commit/1e04fe8) [FAB-10912](https://jira.hyperledger.org/browse/FAB-10912) fix TestPluginLoadingFailure on mac
+* [f8af130](https://github.com/hyperledger/fabric/commit/f8af130) [FAB-9157](https://jira.hyperledger.org/browse/FAB-9157) serialize channel manipulation in kafka
+* [a444aa6](https://github.com/hyperledger/fabric/commit/a444aa6) [FAB-10949](https://jira.hyperledger.org/browse/FAB-10949) fix race in TestResubmission
+* [635bce5](https://github.com/hyperledger/fabric/commit/635bce5) [FAB-9132](https://jira.hyperledger.org/browse/FAB-9132) Fix data race in core/chaincode/shim
+* [0a95252](https://github.com/hyperledger/fabric/commit/0a95252) [FAB-10938](https://jira.hyperledger.org/browse/FAB-10938) Remove go file because of deadcode
+* [ff96935](https://github.com/hyperledger/fabric/commit/ff96935) [FAB-10823](https://jira.hyperledger.org/browse/FAB-10823) Refactor platforms to instance
+* [16b41a5](https://github.com/hyperledger/fabric/commit/16b41a5) [FAB-9524](https://jira.hyperledger.org/browse/FAB-9524) Discovery Service e2e tests
+* [32c05bd](https://github.com/hyperledger/fabric/commit/32c05bd) [FAB-10689](https://jira.hyperledger.org/browse/FAB-10689) add collection config to peer runner
+* [74ee0ff](https://github.com/hyperledger/fabric/commit/74ee0ff) [FAB-10687](https://jira.hyperledger.org/browse/FAB-10687) create sd runner for e2e tests
+* [d1c39f9](https://github.com/hyperledger/fabric/commit/d1c39f9) [FAB-10722](https://jira.hyperledger.org/browse/FAB-10722) fix data race on MockLedgerInfo
+* [b7fbc81](https://github.com/hyperledger/fabric/commit/b7fbc81) [FAB-9144](https://jira.hyperledger.org/browse/FAB-9144) fix data race in TestDisconnect
+* [c561eb2](https://github.com/hyperledger/fabric/commit/c561eb2) [FAB-10718](https://jira.hyperledger.org/browse/FAB-10718) fix config read/write race in Test..
+* [ff89f3e](https://github.com/hyperledger/fabric/commit/ff89f3e) [FAB-9143](https://jira.hyperledger.org/browse/FAB-9143) fix data race in TestOrderingService...
+* [80558c5](https://github.com/hyperledger/fabric/commit/80558c5) [FAB-10714](https://jira.hyperledger.org/browse/FAB-10714) fix data race on grpc.EnableTracing
+* [7e1d5b4](https://github.com/hyperledger/fabric/commit/7e1d5b4) [FAB-9141](https://jira.hyperledger.org/browse/FAB-9141) Data race in TestGenerateDockerBuild2
+* [1aa4d88](https://github.com/hyperledger/fabric/commit/1aa4d88) [FAB-9133](https://jira.hyperledger.org/browse/FAB-9133) Data race in TestGenerateDockerBuild2
+* [a751f15](https://github.com/hyperledger/fabric/commit/a751f15) [FAB-9159](https://jira.hyperledger.org/browse/FAB-9159) fix data race in kafka logger test
+* [b2c1a08](https://github.com/hyperledger/fabric/commit/b2c1a08) [FAB-10960](https://jira.hyperledger.org/browse/FAB-10960) Clarify doc for private data limitations
+* [91567fe](https://github.com/hyperledger/fabric/commit/91567fe) [FAB-10922](https://jira.hyperledger.org/browse/FAB-10922)Remove "-m" from byfn.sh in tutorials
+* [b37b14d](https://github.com/hyperledger/fabric/commit/b37b14d) [FAB-10747](https://jira.hyperledger.org/browse/FAB-10747) Fix endorsedAt block in transientstore
+* [cb27109](https://github.com/hyperledger/fabric/commit/cb27109) [FAB-10888](https://jira.hyperledger.org/browse/FAB-10888) Turn skipped pvt due BTL log to WARN
+* [ee1ec2f](https://github.com/hyperledger/fabric/commit/ee1ec2f) [FAB-10860](https://jira.hyperledger.org/browse/FAB-10860) Fix nil pointer access by broken cert
+* [9660e5a](https://github.com/hyperledger/fabric/commit/9660e5a) [FAB-10847](https://jira.hyperledger.org/browse/FAB-10847) Update peer channel docs
+* [67ca4c6](https://github.com/hyperledger/fabric/commit/67ca4c6) [FAB-10854](https://jira.hyperledger.org/browse/FAB-10854) Update bootstrap script
+* [f2c1a47](https://github.com/hyperledger/fabric/commit/f2c1a47) [FAB-10855](https://jira.hyperledger.org/browse/FAB-10855) Cleanup unsupported capabilities panic msgs
+* [6149c08](https://github.com/hyperledger/fabric/commit/6149c08) [FAB-10836](https://jira.hyperledger.org/browse/FAB-10836) Fix releases in README
+* [56f49c7](https://github.com/hyperledger/fabric/commit/56f49c7) [FAB-10843](https://jira.hyperledger.org/browse/FAB-10843) Properly detect validation execution errors
+* [5d23bb6](https://github.com/hyperledger/fabric/commit/5d23bb6) [FAB-10837](https://jira.hyperledger.org/browse/FAB-10837) Fix links on releases
+* [149447b](https://github.com/hyperledger/fabric/commit/149447b) [FAB-10818](https://jira.hyperledger.org/browse/FAB-10818) Minor edit to Intro
+* [2cd704a](https://github.com/hyperledger/fabric/commit/2cd704a) [FAB-10548](https://jira.hyperledger.org/browse/FAB-10548) MockStub implements GetDecorations
+* [8cdfcc2](https://github.com/hyperledger/fabric/commit/8cdfcc2) [FAB-10815](https://jira.hyperledger.org/browse/FAB-10815) remove javaenv from get-images.sh
+* [28d0a9d](https://github.com/hyperledger/fabric/commit/28d0a9d) [FAB-10788](https://jira.hyperledger.org/browse/FAB-10788) Fix range query info in simulation results
+* [ed2ade2](https://github.com/hyperledger/fabric/commit/ed2ade2) [FAB-10783](https://jira.hyperledger.org/browse/FAB-10783) Fix wrong pkg/lib name in devenv.rst
+* [e86f02c](https://github.com/hyperledger/fabric/commit/e86f02c) [FAB-10751](https://jira.hyperledger.org/browse/FAB-10751) prepare for next release
+* [ad753d4](https://github.com/hyperledger/fabric/commit/ad753d4) [FAB-9444](https://jira.hyperledger.org/browse/FAB-9444) Glossary icons
+* [5d8a35e](https://github.com/hyperledger/fabric/commit/5d8a35e) [FAB-10617](https://jira.hyperledger.org/browse/FAB-10617) Add writeset validation check during commit
+* [7e16a81](https://github.com/hyperledger/fabric/commit/7e16a81) [FAB-10701](https://jira.hyperledger.org/browse/FAB-10701) Remove "ppc64le" from release_platform
+* [427a7bb](https://github.com/hyperledger/fabric/commit/427a7bb) [FAB-10663](https://jira.hyperledger.org/browse/FAB-10663) Config can include custom templates
+* [418f266](https://github.com/hyperledger/fabric/commit/418f266) [FAB-9751](https://jira.hyperledger.org/browse/FAB-9751) address flakes in dockercontroller_test
+* [46cf17f](https://github.com/hyperledger/fabric/commit/46cf17f) [FAB-10163](https://jira.hyperledger.org/browse/FAB-10163) Detect trailing args for 'peer version'
+* [c78e90d](https://github.com/hyperledger/fabric/commit/c78e90d) [FAB-10169](https://jira.hyperledger.org/browse/FAB-10169) add support to retrieve metadata
+
+## v1.2.0
+Thu Jun 21 17:17:37 EDT 2018
+
+* [7aff3f7a6](https://github.com/hyperledger/fabric/commit/7aff3f7a6) [FAB-10799](https://jira.hyperledger.org/browse/FAB-10799) Cancel iterator with context
+* [e96e80100](https://github.com/hyperledger/fabric/commit/e96e80100) [FAB-10802](https://jira.hyperledger.org/browse/FAB-10802) Fix links in README
+* [9df3ff5f8](https://github.com/hyperledger/fabric/commit/9df3ff5f8) [FAB-10750](https://jira.hyperledger.org/browse/FAB-10750) prepare release v1.2.0-rc1
+* [13cad524e](https://github.com/hyperledger/fabric/commit/13cad524e) [FAB-10768](https://jira.hyperledger.org/browse/FAB-10768) Fix a bug in couchdb version cache
+* [a014f39b2](https://github.com/hyperledger/fabric/commit/a014f39b2) [FAB-10655](https://jira.hyperledger.org/browse/FAB-10655)Problematic client conn stops eventhub evts
+* [1ec2d81e3](https://github.com/hyperledger/fabric/commit/1ec2d81e3) [FAB-10738](https://jira.hyperledger.org/browse/FAB-10738) Fix typo in some rst files
+* [186ad004a](https://github.com/hyperledger/fabric/commit/186ad004a) [FAB-10688](https://jira.hyperledger.org/browse/FAB-10688) CouchDB key cannot begin with underscore
+* [af02c34dd](https://github.com/hyperledger/fabric/commit/af02c34dd) [FAB-9198](https://jira.hyperledger.org/browse/FAB-9198)[FAB-10727] BYFN update
+* [880d2352e](https://github.com/hyperledger/fabric/commit/880d2352e) [FAB-10715](https://jira.hyperledger.org/browse/FAB-10715) Timeout error in CI
+* [e873e938f](https://github.com/hyperledger/fabric/commit/e873e938f) [FAB-10716](https://jira.hyperledger.org/browse/FAB-10716) Link/formatting in Pvt Data Tutorial
+* [0bc3781ef](https://github.com/hyperledger/fabric/commit/0bc3781ef) [FAB-10699](https://jira.hyperledger.org/browse/FAB-10699) Change other upgrade text to 1.2
+* [222bd57b3](https://github.com/hyperledger/fabric/commit/222bd57b3) [FAB-10709](https://jira.hyperledger.org/browse/FAB-10709) fix flake in inproccontroller_test
+* [a5d1da644](https://github.com/hyperledger/fabric/commit/a5d1da644) [FAB-10654](https://jira.hyperledger.org/browse/FAB-10654) Enhance eventhub logging with client IP
+* [69bb25d67](https://github.com/hyperledger/fabric/commit/69bb25d67) [FAB-10537](https://jira.hyperledger.org/browse/FAB-10537) Reject CONFIG/ORDERER_TRANSACTION messages
+* [5dbbcfdb4](https://github.com/hyperledger/fabric/commit/5dbbcfdb4) [FAB-10693](https://jira.hyperledger.org/browse/FAB-10693) Fix private data doc links
+* [ec398ed96](https://github.com/hyperledger/fabric/commit/ec398ed96) [FAB-10645](https://jira.hyperledger.org/browse/FAB-10645) Migrate pluggable escc/vscc e2e to nwo
+* [1c16d7465](https://github.com/hyperledger/fabric/commit/1c16d7465) [FAB-10644](https://jira.hyperledger.org/browse/FAB-10644) change integration/e2e to use nwo
+* [10f292528](https://github.com/hyperledger/fabric/commit/10f292528) [FAB-9978](https://jira.hyperledger.org/browse/FAB-9978) Correct CouchDB Error Return
+* [9b987f0ed](https://github.com/hyperledger/fabric/commit/9b987f0ed) [FAB-10641](https://jira.hyperledger.org/browse/FAB-10641) improve error log message gossip/state
+* [947f32196](https://github.com/hyperledger/fabric/commit/947f32196) [FAB-10659](https://jira.hyperledger.org/browse/FAB-10659) Fix typo in end-to-end.rst
+* [e400067ab](https://github.com/hyperledger/fabric/commit/e400067ab) [FAB-10658](https://jira.hyperledger.org/browse/FAB-10658) Fix typo in uild_network.rst
+* [53c94e331](https://github.com/hyperledger/fabric/commit/53c94e331) [FAB-10657](https://jira.hyperledger.org/browse/FAB-10657) Fix typos in logging-control.rst
+* [51051d498](https://github.com/hyperledger/fabric/commit/51051d498) [FAB-9306](https://jira.hyperledger.org/browse/FAB-9306) SideDB Tutorial
+* [9429e17ca](https://github.com/hyperledger/fabric/commit/9429e17ca) [FAB-10450](https://jira.hyperledger.org/browse/FAB-10450) Private Data Architecture
+* [a488dbbcb](https://github.com/hyperledger/fabric/commit/a488dbbcb) [FAB-10653](https://jira.hyperledger.org/browse/FAB-10653) Cleanup ZooKeeper and Kafka names
+* [26c5857a2](https://github.com/hyperledger/fabric/commit/26c5857a2) [FAB-10447](https://jira.hyperledger.org/browse/FAB-10447) Private data key concept
+* [b2a0aba8d](https://github.com/hyperledger/fabric/commit/b2a0aba8d) [FAB-10683](https://jira.hyperledger.org/browse/FAB-10683) Discovery: Document mutual TLS requirement
+* [a26a2119a](https://github.com/hyperledger/fabric/commit/a26a2119a) [FAB-10679](https://jira.hyperledger.org/browse/FAB-10679) Add chaincode printing to discover CLI
+* [db1a30e16](https://github.com/hyperledger/fabric/commit/db1a30e16) [FAB-8877](https://jira.hyperledger.org/browse/FAB-8877) Validate Reserved Fields Name in CouchDB
+* [b32e652dc](https://github.com/hyperledger/fabric/commit/b32e652dc) [FAB-10670](https://jira.hyperledger.org/browse/FAB-10670) fix image label
+* [55d5daa45](https://github.com/hyperledger/fabric/commit/55d5daa45) [FAB-10643](https://jira.hyperledger.org/browse/FAB-10643) implement a new world
+* [5c61aa62c](https://github.com/hyperledger/fabric/commit/5c61aa62c) [FAB-7443](https://jira.hyperledger.org/browse/FAB-7443) Use t.Name() to get test name
+* [db3d76f63](https://github.com/hyperledger/fabric/commit/db3d76f63) [FAB-9641](https://jira.hyperledger.org/browse/FAB-9641) add CommitSHA metadata
+* [449a18b12](https://github.com/hyperledger/fabric/commit/449a18b12) [FAB-10559](https://jira.hyperledger.org/browse/FAB-10559) fix iter in GetPrivateDataQueryResult
+* [fb61d7683](https://github.com/hyperledger/fabric/commit/fb61d7683) [FAB-10540](https://jira.hyperledger.org/browse/FAB-10540) stop getting tx sim for qscc/cscc
+* [b45294d31](https://github.com/hyperledger/fabric/commit/b45294d31) [FAB-9639](https://jira.hyperledger.org/browse/FAB-9639) restore test for docker pull
+* [e01cf5b61](https://github.com/hyperledger/fabric/commit/e01cf5b61) [FAB-10294](https://jira.hyperledger.org/browse/FAB-10294) script to publish multiarch manifest
+* [8b19d4e07](https://github.com/hyperledger/fabric/commit/8b19d4e07) [FAB-10614](https://jira.hyperledger.org/browse/FAB-10614) link discovery doc to TOC
+* [f42abacbb](https://github.com/hyperledger/fabric/commit/f42abacbb) [FAB-10590](https://jira.hyperledger.org/browse/FAB-10590) Discovery CLI documentation
+* [36a1cf0d5](https://github.com/hyperledger/fabric/commit/36a1cf0d5) [FAB-10430](https://jira.hyperledger.org/browse/FAB-10430) Add make target for discovery cli
+* [528dc46b4](https://github.com/hyperledger/fabric/commit/528dc46b4) [FAB-10459](https://jira.hyperledger.org/browse/FAB-10459) Discovery CLI
+* [b73d94ce8](https://github.com/hyperledger/fabric/commit/b73d94ce8) [FAB-9816](https://jira.hyperledger.org/browse/FAB-9816) JSON Unmarshal special case
+* [5d9d96d89](https://github.com/hyperledger/fabric/commit/5d9d96d89) [FAB-10546](https://jira.hyperledger.org/browse/FAB-10546) fix broken image links
+* [e6118f623](https://github.com/hyperledger/fabric/commit/e6118f623) [FAB-9655](https://jira.hyperledger.org/browse/FAB-9655) Function test for LSCC GetInstantiatedCCs
+* [469dd2f7b](https://github.com/hyperledger/fabric/commit/469dd2f7b) [FAB-10466](https://jira.hyperledger.org/browse/FAB-10466) Function test for syscc ACL via query
+* [6c58c507a](https://github.com/hyperledger/fabric/commit/6c58c507a) [FAB-9595](https://jira.hyperledger.org/browse/FAB-9595) Add BCCSP.PKCS11 section to core.yaml
+* [bfb4b0f49](https://github.com/hyperledger/fabric/commit/bfb4b0f49) [FAB-10572](https://jira.hyperledger.org/browse/FAB-10572) Add LSCC function aliases for consistency
+* [37c65aadb](https://github.com/hyperledger/fabric/commit/37c65aadb) [FAB-10558](https://jira.hyperledger.org/browse/FAB-10558) Fix bug for bulkupdates of write-only keys
+* [ff4748674](https://github.com/hyperledger/fabric/commit/ff4748674) [FAB-10570](https://jira.hyperledger.org/browse/FAB-10570) Correct CouchDB index error logging
+* [8b87d88de](https://github.com/hyperledger/fabric/commit/8b87d88de) [FAB-10571](https://jira.hyperledger.org/browse/FAB-10571) Documentation for CouchDB field names
+* [8cbe57a4b](https://github.com/hyperledger/fabric/commit/8cbe57a4b) [FAB-10594](https://jira.hyperledger.org/browse/FAB-10594) nhance pull test
+* [96adc8520](https://github.com/hyperledger/fabric/commit/96adc8520) [FAB-10458](https://jira.hyperledger.org/browse/FAB-10458) Common CLI infrastructure
+* [bce2b2b45](https://github.com/hyperledger/fabric/commit/bce2b2b45) [FAB-10576](https://jira.hyperledger.org/browse/FAB-10576): Check if puller got valid pvt rwset
+* [270f26256](https://github.com/hyperledger/fabric/commit/270f26256) [FAB-10578](https://jira.hyperledger.org/browse/FAB-10578) Poll for cc instantiation on all org peers
+* [db83887ef](https://github.com/hyperledger/fabric/commit/db83887ef) [FAB-10577](https://jira.hyperledger.org/browse/FAB-10577) User supplied code-package has priority
+* [f7b37457b](https://github.com/hyperledger/fabric/commit/f7b37457b) [FAB-9305](https://jira.hyperledger.org/browse/FAB-9305) CouchDB tutorial
+* [f6c97e0f5](https://github.com/hyperledger/fabric/commit/f6c97e0f5) [FAB-8557](https://jira.hyperledger.org/browse/FAB-8557) Fix overwriting txid in block index
+* [d14d89b9e](https://github.com/hyperledger/fabric/commit/d14d89b9e) [FAB-10574](https://jira.hyperledger.org/browse/FAB-10574) txmgr: rel lock only if it was acquir.
+* [c832f7ae3](https://github.com/hyperledger/fabric/commit/c832f7ae3) [FAB-10512](https://jira.hyperledger.org/browse/FAB-10512) collection Upgrade: fix err msg
+* [08887b26c](https://github.com/hyperledger/fabric/commit/08887b26c) [FAB-10545](https://jira.hyperledger.org/browse/FAB-10545) extended peer runner for some e2e tests
+* [8b94a56ca](https://github.com/hyperledger/fabric/commit/8b94a56ca) [FAB-10565](https://jira.hyperledger.org/browse/FAB-10565) Poll for container deletion in test
+* [8ba2bafbf](https://github.com/hyperledger/fabric/commit/8ba2bafbf) [FAB-10564](https://jira.hyperledger.org/browse/FAB-10564) Edit Fabric Model topic
+* [7e1f09a81](https://github.com/hyperledger/fabric/commit/7e1f09a81) [FAB-10446](https://jira.hyperledger.org/browse/FAB-10446) Fabric model update
+* [98d2747d0](https://github.com/hyperledger/fabric/commit/98d2747d0) [FAB-10381](https://jira.hyperledger.org/browse/FAB-10381) Purge orphaned private keys
+* [7c815d26b](https://github.com/hyperledger/fabric/commit/7c815d26b) [FAB-6546](https://jira.hyperledger.org/browse/FAB-6546) Document ACL
+* [c0cb011d1](https://github.com/hyperledger/fabric/commit/c0cb011d1) [FAB-10521](https://jira.hyperledger.org/browse/FAB-10521) Block-cutter should refetch config
+* [0115d5bb2](https://github.com/hyperledger/fabric/commit/0115d5bb2) [FAB-10528](https://jira.hyperledger.org/browse/FAB-10528) collection config validation tests
+* [ef1a51c3d](https://github.com/hyperledger/fabric/commit/ef1a51c3d) [FAB-10501](https://jira.hyperledger.org/browse/FAB-10501) Log VSCCValidateTxForCC message at debug
+* [f57500d81](https://github.com/hyperledger/fabric/commit/f57500d81) [FAB-10531](https://jira.hyperledger.org/browse/FAB-10531) BYFN - consistency for better clarity
+* [33c474dae](https://github.com/hyperledger/fabric/commit/33c474dae) [FAB-10536](https://jira.hyperledger.org/browse/FAB-10536) Mis-spelled word in configtx.rst
+* [9bf450b43](https://github.com/hyperledger/fabric/commit/9bf450b43) [FAB-10272](https://jira.hyperledger.org/browse/FAB-10272): Add more test cases to TestSatisfiedBy
+* [e63f0e932](https://github.com/hyperledger/fabric/commit/e63f0e932) [FAB-10539](https://jira.hyperledger.org/browse/FAB-10539): Fix misplaced log print out
+* [436d4830f](https://github.com/hyperledger/fabric/commit/436d4830f) [FAB-10538](https://jira.hyperledger.org/browse/FAB-10538): Fix gossip scatter of pvt data
+* [3672fa8b9](https://github.com/hyperledger/fabric/commit/3672fa8b9) [FAB-10431](https://jira.hyperledger.org/browse/FAB-10431) Glossary update
+* [63231a088](https://github.com/hyperledger/fabric/commit/63231a088) [FAB-10172](https://jira.hyperledger.org/browse/FAB-10172) Extended Unit test for discovery
+* [0b681b1b9](https://github.com/hyperledger/fabric/commit/0b681b1b9) [FAB-10533](https://jira.hyperledger.org/browse/FAB-10533) Regenerate mocks accoring to latest mockery
+* [8d2f2bb9d](https://github.com/hyperledger/fabric/commit/8d2f2bb9d) [FAB-10529](https://jira.hyperledger.org/browse/FAB-10529) Removes update call from QueryInvoke func
+* [f21ec451b](https://github.com/hyperledger/fabric/commit/f21ec451b) [FAB-10513](https://jira.hyperledger.org/browse/FAB-10513) Support pvtdata store from v1.1
+* [ab1d16a6a](https://github.com/hyperledger/fabric/commit/ab1d16a6a) [FAB-10514](https://jira.hyperledger.org/browse/FAB-10514) Remove IdeMix documentation from TOC
+* [d689f798d](https://github.com/hyperledger/fabric/commit/d689f798d) [FAB-6526](https://jira.hyperledger.org/browse/FAB-6526) Collection membership policy checks
+* [8811a3e5d](https://github.com/hyperledger/fabric/commit/8811a3e5d) [FAB-10376](https://jira.hyperledger.org/browse/FAB-10376) Rename core files to match peer names
+* [ad8f4c4cb](https://github.com/hyperledger/fabric/commit/ad8f4c4cb) [FAB-10506](https://jira.hyperledger.org/browse/FAB-10506) change endoremsent policy for e2e
+* [aa8875d98](https://github.com/hyperledger/fabric/commit/aa8875d98) [FAB-10377](https://jira.hyperledger.org/browse/FAB-10377) Extract copyFile to helpers.CopyFile
+* [578c7db15](https://github.com/hyperledger/fabric/commit/578c7db15) [FAB-10505](https://jira.hyperledger.org/browse/FAB-10505) Memory coherent channel.Resources fetching
+* [60a340a54](https://github.com/hyperledger/fabric/commit/60a340a54) [FAB-10490](https://jira.hyperledger.org/browse/FAB-10490) Add gotools to integration-test target
+* [1964bfe42](https://github.com/hyperledger/fabric/commit/1964bfe42) [FAB-10501](https://jira.hyperledger.org/browse/FAB-10501) Log EndorseWithPlugin messages at debug
+* [2a6e2255d](https://github.com/hyperledger/fabric/commit/2a6e2255d) [FAB-10493](https://jira.hyperledger.org/browse/FAB-10493) run waits for container termination
+* [fe34feb44](https://github.com/hyperledger/fabric/commit/fe34feb44) [FAB-10475](https://jira.hyperledger.org/browse/FAB-10475) DRY up e2e suite and fix minor issues
+* [8f79ea1ae](https://github.com/hyperledger/fabric/commit/8f79ea1ae) [FAB-10336](https://jira.hyperledger.org/browse/FAB-10336) assertions & validation in instantiate
+* [aa9150ab5](https://github.com/hyperledger/fabric/commit/aa9150ab5) [FAB-10489](https://jira.hyperledger.org/browse/FAB-10489) Fix compilation errors from acc027adb5
+* [59d29f8ff](https://github.com/hyperledger/fabric/commit/59d29f8ff) [FAB-10335](https://jira.hyperledger.org/browse/FAB-10335) InstallChaincode installs and verifies
+* [3f1feaee0](https://github.com/hyperledger/fabric/commit/3f1feaee0) [FAB-10366](https://jira.hyperledger.org/browse/FAB-10366): Prevent pulling form peer purged data
+* [b76931160](https://github.com/hyperledger/fabric/commit/b76931160) [FAB-10436](https://jira.hyperledger.org/browse/FAB-10436) Help text for peer chaincode
+* [c428dbd3e](https://github.com/hyperledger/fabric/commit/c428dbd3e) [FAB-10462](https://jira.hyperledger.org/browse/FAB-10462) Discovery: use ChannelWriters, not Readers
+* [2453c27d9](https://github.com/hyperledger/fabric/commit/2453c27d9) [FAB-10471](https://jira.hyperledger.org/browse/FAB-10471) Cleanup configtx.yaml defaults
+* [1b15b6be2](https://github.com/hyperledger/fabric/commit/1b15b6be2) [FAB-10470](https://jira.hyperledger.org/browse/FAB-10470) remove idemix revocation pk check
+* [f9e47ada6](https://github.com/hyperledger/fabric/commit/f9e47ada6) [FAB-10469](https://jira.hyperledger.org/browse/FAB-10469) Gossip: Don't lock when sending
+* [50527ed80](https://github.com/hyperledger/fabric/commit/50527ed80) [FAB-10012](https://jira.hyperledger.org/browse/FAB-10012) Reset attempt counter on connect success
+* [f388cd974](https://github.com/hyperledger/fabric/commit/f388cd974) [FAB-10451](https://jira.hyperledger.org/browse/FAB-10451) discovery config uses MSP IDs
+* [442f30b6e](https://github.com/hyperledger/fabric/commit/442f30b6e) [FAB-9779](https://jira.hyperledger.org/browse/FAB-9779) Cleanup CLI invoke error processing
+* [12baaccd0](https://github.com/hyperledger/fabric/commit/12baaccd0) [FAB-10445](https://jira.hyperledger.org/browse/FAB-10445) configtxgen bad check on channel id
+* [452dcb964](https://github.com/hyperledger/fabric/commit/452dcb964) [FAB-10444](https://jira.hyperledger.org/browse/FAB-10444) Dynamic capabilities for plugg' validation
+* [10f1177c5](https://github.com/hyperledger/fabric/commit/10f1177c5) [FAB-10442](https://jira.hyperledger.org/browse/FAB-10442) Missing SimulateConfigTreeUpdate tests
+* [12c609c1c](https://github.com/hyperledger/fabric/commit/12c609c1c) [FAB-10441](https://jira.hyperledger.org/browse/FAB-10441) Add missing GetConfigTree tests
+* [ed371f0a5](https://github.com/hyperledger/fabric/commit/ed371f0a5) [FAB-7614](https://jira.hyperledger.org/browse/FAB-7614) CombinedPrincipal and Anonymity impl
+* [1db0518d9](https://github.com/hyperledger/fabric/commit/1db0518d9) [FAB-10403](https://jira.hyperledger.org/browse/FAB-10403) Fix in txmgr related to  purgemgr
+* [be76ebe4f](https://github.com/hyperledger/fabric/commit/be76ebe4f) [FAB-10433](https://jira.hyperledger.org/browse/FAB-10433) Run gossip related test serialized
+* [2be2d008e](https://github.com/hyperledger/fabric/commit/2be2d008e) [FAB-10370](https://jira.hyperledger.org/browse/FAB-10370) change format for storing revocationpk
+* [0b66d99fc](https://github.com/hyperledger/fabric/commit/0b66d99fc) [FAB-10426](https://jira.hyperledger.org/browse/FAB-10426) jq missing from fabric-tools image
+* [e53554de8](https://github.com/hyperledger/fabric/commit/e53554de8) [FAB-10425](https://jira.hyperledger.org/browse/FAB-10425) fix incorrect license header
+* [a9e91b487](https://github.com/hyperledger/fabric/commit/a9e91b487) [FAB-7615](https://jira.hyperledger.org/browse/FAB-7615) hide anon+combined principals pre v1_3
+* [27bc1b965](https://github.com/hyperledger/fabric/commit/27bc1b965) [FAB-10420](https://jira.hyperledger.org/browse/FAB-10420) Always print peer node status
+* [8d8251f86](https://github.com/hyperledger/fabric/commit/8d8251f86) [FAB-10415](https://jira.hyperledger.org/browse/FAB-10415) Update Makefile to support custom DOCKER_NS
+* [e310be3b5](https://github.com/hyperledger/fabric/commit/e310be3b5) [FAB-10383](https://jira.hyperledger.org/browse/FAB-10383) Add support v1.3 MSP
+* [1ff007769](https://github.com/hyperledger/fabric/commit/1ff007769) [FAB-10408](https://jira.hyperledger.org/browse/FAB-10408) Avoid delays while pulling pvt data
+* [c6f9e0292](https://github.com/hyperledger/fabric/commit/c6f9e0292) [FAB-10396](https://jira.hyperledger.org/browse/FAB-10396) Move chaincode tls keygen to core/common
+* [ab8317430](https://github.com/hyperledger/fabric/commit/ab8317430) [FAB-10409](https://jira.hyperledger.org/browse/FAB-10409) cryptogen should report rendering err
+* [b1eec2b6b](https://github.com/hyperledger/fabric/commit/b1eec2b6b) [FAB-10407](https://jira.hyperledger.org/browse/FAB-10407) Fix an errMsg in vscc (cc deploy/upgr.)
+* [55984d4ea](https://github.com/hyperledger/fabric/commit/55984d4ea) [FAB-10307](https://jira.hyperledger.org/browse/FAB-10307) Function test for block ACL
+* [b4d4fd7d1](https://github.com/hyperledger/fabric/commit/b4d4fd7d1) [FAB-9873](https://jira.hyperledger.org/browse/FAB-9873) Function tests for filtered block ACL
+* [a1c892ded](https://github.com/hyperledger/fabric/commit/a1c892ded) [FAB-8517](https://jira.hyperledger.org/browse/FAB-8517) Enable "peer channel fetch" against peer
+* [ca3ef64d1](https://github.com/hyperledger/fabric/commit/ca3ef64d1) [FAB-10247](https://jira.hyperledger.org/browse/FAB-10247) Peer CLI clients use hard-coded timeouts
+* [a9b0ab90a](https://github.com/hyperledger/fabric/commit/a9b0ab90a) [FAB-10395](https://jira.hyperledger.org/browse/FAB-10395) Synchronize access to version cache
+* [33aeb755b](https://github.com/hyperledger/fabric/commit/33aeb755b) [FAB-10392](https://jira.hyperledger.org/browse/FAB-10392) err if ccUpgrade has ccConfig & !v12
+* [ba7dcc7a0](https://github.com/hyperledger/fabric/commit/ba7dcc7a0) [FAB-9836](https://jira.hyperledger.org/browse/FAB-9836) Glossary
+* [acc027adb](https://github.com/hyperledger/fabric/commit/acc027adb) [FAB-10365](https://jira.hyperledger.org/browse/FAB-10365) Separate the Deployment from World
+* [e5b1aa919](https://github.com/hyperledger/fabric/commit/e5b1aa919) [FAB-10371](https://jira.hyperledger.org/browse/FAB-10371) Remove copyDir function
+* [28d14ad12](https://github.com/hyperledger/fabric/commit/28d14ad12) [FAB-10329](https://jira.hyperledger.org/browse/FAB-10329) Fail fast when required image missing
+* [8c4a257c3](https://github.com/hyperledger/fabric/commit/8c4a257c3) [FAB-10295](https://jira.hyperledger.org/browse/FAB-10295) Prefix zookeeper and kafka output
+* [55de90517](https://github.com/hyperledger/fabric/commit/55de90517) [FAB-10244](https://jira.hyperledger.org/browse/FAB-10244) Script and target for running int-test
+* [c9ab6b962](https://github.com/hyperledger/fabric/commit/c9ab6b962) [FAB-10348](https://jira.hyperledger.org/browse/FAB-10348) Remove workaround for golint install
+* [2c7de07ed](https://github.com/hyperledger/fabric/commit/2c7de07ed) [FAB-10345](https://jira.hyperledger.org/browse/FAB-10345) Reduce scope of serial packages
+* [2b37ada2d](https://github.com/hyperledger/fabric/commit/2b37ada2d) [FAB-10333](https://jira.hyperledger.org/browse/FAB-10333) change idemix revocation sig serialize
+* [686461da4](https://github.com/hyperledger/fabric/commit/686461da4) [FAB-10282](https://jira.hyperledger.org/browse/FAB-10282) Refactor the building of test config
+* [7a666f2cb](https://github.com/hyperledger/fabric/commit/7a666f2cb) [FAB-10349](https://jira.hyperledger.org/browse/FAB-10349) TestPluginLoadingFailure fails on macOS
+* [f452aa089](https://github.com/hyperledger/fabric/commit/f452aa089) [FAB-10201](https://jira.hyperledger.org/browse/FAB-10201) handle duplicate tx detection errors
+* [5c104943b](https://github.com/hyperledger/fabric/commit/5c104943b) [FAB-10344](https://jira.hyperledger.org/browse/FAB-10344) Make metrics tests use ephemeral ports
+* [b8e5e29fc](https://github.com/hyperledger/fabric/commit/b8e5e29fc) [FAB-10343](https://jira.hyperledger.org/browse/FAB-10343) TestNewGRPCServerInvalidParameters fix
+* [e6ba576ac](https://github.com/hyperledger/fabric/commit/e6ba576ac) [FAB-10303](https://jira.hyperledger.org/browse/FAB-10303) Clean up some assorted struct init
+* [80a11bafd](https://github.com/hyperledger/fabric/commit/80a11bafd) [FAB-10330](https://jira.hyperledger.org/browse/FAB-10330) Test for invalid plugin loading
+* [73e574919](https://github.com/hyperledger/fabric/commit/73e574919) [FAB-10220](https://jira.hyperledger.org/browse/FAB-10220) Use kafka for e2e test
+* [816653f0a](https://github.com/hyperledger/fabric/commit/816653f0a) [FAB-10334](https://jira.hyperledger.org/browse/FAB-10334) make unit-test fails locally on master
+* [003a6ef90](https://github.com/hyperledger/fabric/commit/003a6ef90) [FAB-10331](https://jira.hyperledger.org/browse/FAB-10331) Fix mockery mock generation
+* [e9c51c105](https://github.com/hyperledger/fabric/commit/e9c51c105) [FAB-10290](https://jira.hyperledger.org/browse/FAB-10290) channel name lowercase
+* [0ee18c2b1](https://github.com/hyperledger/fabric/commit/0ee18c2b1) [FAB-10314](https://jira.hyperledger.org/browse/FAB-10314) Hide ACLs behind capability
+* [cee7e9b16](https://github.com/hyperledger/fabric/commit/cee7e9b16) [FAB-10255](https://jira.hyperledger.org/browse/FAB-10255) Consolidate the chaincode for tests
+* [b794b72f7](https://github.com/hyperledger/fabric/commit/b794b72f7) [FAB-10266](https://jira.hyperledger.org/browse/FAB-10266) enable cc-2-cc policy integration test
+* [a838c2fba](https://github.com/hyperledger/fabric/commit/a838c2fba) [FAB-10093](https://jira.hyperledger.org/browse/FAB-10093) Increase UT coverage ledger/ledgerstorage
+* [2e57965ae](https://github.com/hyperledger/fabric/commit/2e57965ae) [FAB-10304](https://jira.hyperledger.org/browse/FAB-10304) Allow idemix proto translation
+* [959811e7e](https://github.com/hyperledger/fabric/commit/959811e7e) [FAB-10293](https://jira.hyperledger.org/browse/FAB-10293) Make MSP protos conform to official style
+* [2a1d90ec3](https://github.com/hyperledger/fabric/commit/2a1d90ec3) [FAB-10291](https://jira.hyperledger.org/browse/FAB-10291) Fix e2e_cli test
+* [5d5a0875c](https://github.com/hyperledger/fabric/commit/5d5a0875c) [FAB-10284](https://jira.hyperledger.org/browse/FAB-10284) Fix tx-id race with sending response
+* [bce573767](https://github.com/hyperledger/fabric/commit/bce573767) [FAB-10286](https://jira.hyperledger.org/browse/FAB-10286) Remove redundant debug messages
+* [a322cceff](https://github.com/hyperledger/fabric/commit/a322cceff) [FAB-10288](https://jira.hyperledger.org/browse/FAB-10288) Fix nits in systemchaincode.rst
+* [7fbc87d80](https://github.com/hyperledger/fabric/commit/7fbc87d80) [FAB-10285](https://jira.hyperledger.org/browse/FAB-10285) MSP topic
+* [f6f16452f](https://github.com/hyperledger/fabric/commit/f6f16452f) [FAB-10280](https://jira.hyperledger.org/browse/FAB-10280) fix anchor peer port in e2e
+* [6bb5127a1](https://github.com/hyperledger/fabric/commit/6bb5127a1) [FAB-10111](https://jira.hyperledger.org/browse/FAB-10111) cc2cc and collection support in go client
+* [3b5a7685e](https://github.com/hyperledger/fabric/commit/3b5a7685e) [FAB-10281](https://jira.hyperledger.org/browse/FAB-10281) Remove noisy debug message
+* [b1e029b5b](https://github.com/hyperledger/fabric/commit/b1e029b5b) [FAB-10090](https://jira.hyperledger.org/browse/FAB-10090) Increase UT coverage ledger/pvtdatapolicy
+* [dd94c0363](https://github.com/hyperledger/fabric/commit/dd94c0363) [FAB-10030](https://jira.hyperledger.org/browse/FAB-10030) Fix cc-to-cc invocation messages
+* [147bcb566](https://github.com/hyperledger/fabric/commit/147bcb566) [FAB-10271](https://jira.hyperledger.org/browse/FAB-10271) make idemix proto follow style
+* [a08211770](https://github.com/hyperledger/fabric/commit/a08211770) [FAB-10105](https://jira.hyperledger.org/browse/FAB-10105) fixed timeout in gossip test
+* [a7a78b782](https://github.com/hyperledger/fabric/commit/a7a78b782) [FAB-9919](https://jira.hyperledger.org/browse/FAB-9919) fix idemix.signature.Ver godoc
+* [c021b47dc](https://github.com/hyperledger/fabric/commit/c021b47dc) [FAB-10268](https://jira.hyperledger.org/browse/FAB-10268) Fix invalid qscc path
+* [b3d83fc81](https://github.com/hyperledger/fabric/commit/b3d83fc81) [FAB-10265](https://jira.hyperledger.org/browse/FAB-10265) Rename policy checker for clarity
+* [1a60c31ef](https://github.com/hyperledger/fabric/commit/1a60c31ef) [FAB-9388](https://jira.hyperledger.org/browse/FAB-9388): Blockchain Network concept topic
+* [0f0a84676](https://github.com/hyperledger/fabric/commit/0f0a84676) [FAB-10263](https://jira.hyperledger.org/browse/FAB-10263): fix comments for dist pvt data
+* [f652cbd0e](https://github.com/hyperledger/fabric/commit/f652cbd0e) [FAB-10250](https://jira.hyperledger.org/browse/FAB-10250) add logs for pvt data commit path
+* [534a029ef](https://github.com/hyperledger/fabric/commit/534a029ef) [FAB-10248](https://jira.hyperledger.org/browse/FAB-10248) add ledger height while sending pvt tx
+* [9fc1bcadc](https://github.com/hyperledger/fabric/commit/9fc1bcadc) [FAB-9996](https://jira.hyperledger.org/browse/FAB-9996) Add check for the collection name
+* [ccdb2455e](https://github.com/hyperledger/fabric/commit/ccdb2455e) [FAB-10256](https://jira.hyperledger.org/browse/FAB-10256) Remove pvt data experimental files
+* [ec0159a5a](https://github.com/hyperledger/fabric/commit/ec0159a5a) [FAB-10198](https://jira.hyperledger.org/browse/FAB-10198) Update system chaincode documentation
+* [9a3b1811d](https://github.com/hyperledger/fabric/commit/9a3b1811d) [FAB-7779](https://jira.hyperledger.org/browse/FAB-7779) CouchDB indexes for private data
+* [5b94364f9](https://github.com/hyperledger/fabric/commit/5b94364f9) [FAB-10240](https://jira.hyperledger.org/browse/FAB-10240) Remove duplicated checking on TxID
+* [c11956784](https://github.com/hyperledger/fabric/commit/c11956784) [FAB-10238](https://jira.hyperledger.org/browse/FAB-10238) Filter collections on peers, not principals
+* [7984961a3](https://github.com/hyperledger/fabric/commit/7984961a3) [FAB-10236](https://jira.hyperledger.org/browse/FAB-10236) improve integration-test target
+* [fcb9ae5a7](https://github.com/hyperledger/fabric/commit/fcb9ae5a7) [FAB-10048](https://jira.hyperledger.org/browse/FAB-10048) Add authentication to each CouchDB db
+* [58ad85bee](https://github.com/hyperledger/fabric/commit/58ad85bee) [FAB-10051](https://jira.hyperledger.org/browse/FAB-10051) Pluggable endorsement and validation e2e
+* [fc243c373](https://github.com/hyperledger/fabric/commit/fc243c373) [FAB-9997](https://jira.hyperledger.org/browse/FAB-9997) Validation check for a collection
+* [b1b43e437](https://github.com/hyperledger/fabric/commit/b1b43e437) [FAB-10004](https://jira.hyperledger.org/browse/FAB-10004) Get IdeMix docs into TOC
+* [9d3f15b94](https://github.com/hyperledger/fabric/commit/9d3f15b94) [FAB-10232](https://jira.hyperledger.org/browse/FAB-10232) Setup and teardown in Before/AfterEach
+* [11f2a9f77](https://github.com/hyperledger/fabric/commit/11f2a9f77) [FAB-10229](https://jira.hyperledger.org/browse/FAB-10229) Address comments from CR21683
+* [54237e4ba](https://github.com/hyperledger/fabric/commit/54237e4ba) [FAB-10175](https://jira.hyperledger.org/browse/FAB-10175) Ginkgo runner for idemixgen
+* [7400cc17c](https://github.com/hyperledger/fabric/commit/7400cc17c) [FAB-9227](https://jira.hyperledger.org/browse/FAB-9227) Add Kafka Runner
+* [d6ba31b6c](https://github.com/hyperledger/fabric/commit/d6ba31b6c) [FAB-9923/FAB-10096] Use stored coll. conf for pull
+* [6db89d79a](https://github.com/hyperledger/fabric/commit/6db89d79a) [FAB-10170](https://jira.hyperledger.org/browse/FAB-10170) Check mspMgrConfigDir is Dir
+* [852765316](https://github.com/hyperledger/fabric/commit/852765316) [FAB-10133](https://jira.hyperledger.org/browse/FAB-10133) Update docs to reflect new fetch log lvl
+* [9d5247196](https://github.com/hyperledger/fabric/commit/9d5247196) [FAB-10222](https://jira.hyperledger.org/browse/FAB-10222) Honor maximum peers to send if 0
+* [722fb9e92](https://github.com/hyperledger/fabric/commit/722fb9e92) [FAB-10213](https://jira.hyperledger.org/browse/FAB-10213) Add output flag for idemixgen
+* [938724739](https://github.com/hyperledger/fabric/commit/938724739) [FAB-10221](https://jira.hyperledger.org/browse/FAB-10221) Use EventuallyWithOffset in execute
+* [737d60bca](https://github.com/hyperledger/fabric/commit/737d60bca) [FAB-10218](https://jira.hyperledger.org/browse/FAB-10218) store keys without execute bit
+* [56d1ab92b](https://github.com/hyperledger/fabric/commit/56d1ab92b) [FAB-8921](https://jira.hyperledger.org/browse/FAB-8921) integrate idemix revocation
+* [703dead82](https://github.com/hyperledger/fabric/commit/703dead82) [FAB-10212](https://jira.hyperledger.org/browse/FAB-10212) Fix version info for idemixgen
+* [631595e2d](https://github.com/hyperledger/fabric/commit/631595e2d) [FAB-10210](https://jira.hyperledger.org/browse/FAB-10210) Clean up peers.md: grammar, fonts, dashes
+* [eef964512](https://github.com/hyperledger/fabric/commit/eef964512) [FAB-9548](https://jira.hyperledger.org/browse/FAB-9548) Fix image links on layout.html
+* [d78039b7d](https://github.com/hyperledger/fabric/commit/d78039b7d) [FAB-10200](https://jira.hyperledger.org/browse/FAB-10200): Update proto files
+* [77c359892](https://github.com/hyperledger/fabric/commit/77c359892) [FAB-10071](https://jira.hyperledger.org/browse/FAB-10071) Peer channel
+* [ae736a40e](https://github.com/hyperledger/fabric/commit/ae736a40e) [FAB-10152](https://jira.hyperledger.org/browse/FAB-10152) bump the go-yaml parser
+* [b69ad2c1f](https://github.com/hyperledger/fabric/commit/b69ad2c1f) [FAB-10173](https://jira.hyperledger.org/browse/FAB-10173) Done in testdata sample validation plugin
+* [dc0811ac7](https://github.com/hyperledger/fabric/commit/dc0811ac7) [FAB-10151](https://jira.hyperledger.org/browse/FAB-10151) reorder sections in configtx.yaml
+* [fb9890d01](https://github.com/hyperledger/fabric/commit/fb9890d01) [FAB-7615](https://jira.hyperledger.org/browse/FAB-7615) idemixmsp supports anon+combined principals
+* [f79967636](https://github.com/hyperledger/fabric/commit/f79967636) [FAB-10027](https://jira.hyperledger.org/browse/FAB-10027) Discovery cc2cc Implementation
+* [f096ff73b](https://github.com/hyperledger/fabric/commit/f096ff73b) [FAB-10154](https://jira.hyperledger.org/browse/FAB-10154) Close RWSetScanner at end of use
+* [39492a790](https://github.com/hyperledger/fabric/commit/39492a790) [FAB-10153](https://jira.hyperledger.org/browse/FAB-10153) Continue instead of erroring- endorserState
+* [3f9d2c942](https://github.com/hyperledger/fabric/commit/3f9d2c942) [FAB-9836](https://jira.hyperledger.org/browse/FAB-9836) Glossary
+* [ec1f138bb](https://github.com/hyperledger/fabric/commit/ec1f138bb) [FAB-10147](https://jira.hyperledger.org/browse/FAB-10147) Named processes and colors!
+* [38299224e](https://github.com/hyperledger/fabric/commit/38299224e) [FAB-9920](https://jira.hyperledger.org/browse/FAB-9920) Private key in PKCS#8 format
+* [f4bae950e](https://github.com/hyperledger/fabric/commit/f4bae950e) [FAB-10044](https://jira.hyperledger.org/browse/FAB-10044) Remove need for .gitigore in e2e
+* [dd9921cdb](https://github.com/hyperledger/fabric/commit/dd9921cdb) [FAB-5602](https://jira.hyperledger.org/browse/FAB-5602) add channel create outputBlock flag
+* [fab5d9769](https://github.com/hyperledger/fabric/commit/fab5d9769) [FAB-10132](https://jira.hyperledger.org/browse/FAB-10132) Align outlier peer CLI success msg log lvl
+* [c89954ae7](https://github.com/hyperledger/fabric/commit/c89954ae7) [FAB-10113](https://jira.hyperledger.org/browse/FAB-10113) test idemix MSP in the e2e
+* [2141d8983](https://github.com/hyperledger/fabric/commit/2141d8983) [FAB-10115](https://jira.hyperledger.org/browse/FAB-10115) Function to generate idemix creds in e2e
+* [37b0db955](https://github.com/hyperledger/fabric/commit/37b0db955) [FAB-9649](https://jira.hyperledger.org/browse/FAB-9649) Peer CLI invoke wait for event with txid
+* [e481ca82f](https://github.com/hyperledger/fabric/commit/e481ca82f) [FAB-10121](https://jira.hyperledger.org/browse/FAB-10121) Remove org scoped profile from struct
+* [9ed75d9a8](https://github.com/hyperledger/fabric/commit/9ed75d9a8) [FAB-9533](https://jira.hyperledger.org/browse/FAB-9533) Update peer side
+* [56f2ebf43](https://github.com/hyperledger/fabric/commit/56f2ebf43) [FAB-7613](https://jira.hyperledger.org/browse/FAB-7613) Combined principals in MSPPrincipal proto
+* [4df2a3159](https://github.com/hyperledger/fabric/commit/4df2a3159) [FAB-9675](https://jira.hyperledger.org/browse/FAB-9675) Attach transient store to endorser plugins
+* [64d6237e6](https://github.com/hyperledger/fabric/commit/64d6237e6) [FAB-7612](https://jira.hyperledger.org/browse/FAB-7612) MSPPrincipal for anonymity
+* [6789db6ea](https://github.com/hyperledger/fabric/commit/6789db6ea) [FAB-10031](https://jira.hyperledger.org/browse/FAB-10031) Add option to disable discovery auth cache
+* [85974a1da](https://github.com/hyperledger/fabric/commit/85974a1da) [FAB-10114](https://jira.hyperledger.org/browse/FAB-10114) Add idemixgen makefile target
+* [dd5ebf197](https://github.com/hyperledger/fabric/commit/dd5ebf197) [FAB-10028](https://jira.hyperledger.org/browse/FAB-10028) Prepare discovery for cc2cc queries
+* [ff315edd5](https://github.com/hyperledger/fabric/commit/ff315edd5) [FAB-9221](https://jira.hyperledger.org/browse/FAB-9221) - check before gossip in blocks delivery
+* [2605ddacd](https://github.com/hyperledger/fabric/commit/2605ddacd) [FAB-10104](https://jira.hyperledger.org/browse/FAB-10104) Improve LedgerConfig UT coverage
+* [188f14666](https://github.com/hyperledger/fabric/commit/188f14666) [FAB-9881](https://jira.hyperledger.org/browse/FAB-9881) Add gitignore files
+* [7456e0f83](https://github.com/hyperledger/fabric/commit/7456e0f83) [FAB-10070](https://jira.hyperledger.org/browse/FAB-10070) Improve State Validator UT & a fix
+* [dff291a0a](https://github.com/hyperledger/fabric/commit/dff291a0a) [FAB-9225](https://jira.hyperledger.org/browse/FAB-9225) Add e2e test suite
+* [797ba12e3](https://github.com/hyperledger/fabric/commit/797ba12e3) [FAB-9901](https://jira.hyperledger.org/browse/FAB-9901) Add test config structure and tests
+* [9e9090e39](https://github.com/hyperledger/fabric/commit/9e9090e39) [FAB-10029](https://jira.hyperledger.org/browse/FAB-10029) Extend committer API to get coll. conf.
+* [ff31dd1a2](https://github.com/hyperledger/fabric/commit/ff31dd1a2) [FAB-10026](https://jira.hyperledger.org/browse/FAB-10026) Store to filter collection configs
+* [f00890acc](https://github.com/hyperledger/fabric/commit/f00890acc) [FAB-9907](https://jira.hyperledger.org/browse/FAB-9907) Add Zookeeper Runner
+* [e9b3d0b52](https://github.com/hyperledger/fabric/commit/e9b3d0b52) [FAB-9879](https://jira.hyperledger.org/browse/FAB-9879) Refactor CouchDB runner
+* [e7ec7f884](https://github.com/hyperledger/fabric/commit/e7ec7f884) [FAB-10017](https://jira.hyperledger.org/browse/FAB-10017) Integration Test make target
+* [1dc934b94](https://github.com/hyperledger/fabric/commit/1dc934b94) [FAB-10086](https://jira.hyperledger.org/browse/FAB-10086) Exclude integration from unit tests
+* [314856d02](https://github.com/hyperledger/fabric/commit/314856d02) [FAB-10076](https://jira.hyperledger.org/browse/FAB-10076) Peer runner fails to list instantiated cc
+* [8b9c20309](https://github.com/hyperledger/fabric/commit/8b9c20309) [FAB-10047](https://jira.hyperledger.org/browse/FAB-10047) Report error on list instantiated
+* [99f788da8](https://github.com/hyperledger/fabric/commit/99f788da8) [FAB-10046](https://jira.hyperledger.org/browse/FAB-10046) Respect LSCC GETCHAINCODES ACL
+* [25da7601d](https://github.com/hyperledger/fabric/commit/25da7601d) [FAB-9035](https://jira.hyperledger.org/browse/FAB-9035) Clean up membership.md
+* [1ec0661cf](https://github.com/hyperledger/fabric/commit/1ec0661cf) [FAB-10052](https://jira.hyperledger.org/browse/FAB-10052) Remove unreferenced scripts
+* [b314b098c](https://github.com/hyperledger/fabric/commit/b314b098c) [FAB-9683](https://jira.hyperledger.org/browse/FAB-9683) Handle cc launch registration failures
+* [3137a379d](https://github.com/hyperledger/fabric/commit/3137a379d) [FAB-10049](https://jira.hyperledger.org/browse/FAB-10049) Change context to pointer
+* [35d2356e7](https://github.com/hyperledger/fabric/commit/35d2356e7) [FAB-10023](https://jira.hyperledger.org/browse/FAB-10023) Principal set merging
+* [a24a5e3e1](https://github.com/hyperledger/fabric/commit/a24a5e3e1) [FAB-8535](https://jira.hyperledger.org/browse/FAB-8535) Attach pluggable validation to the peer
+* [82dc4199e](https://github.com/hyperledger/fabric/commit/82dc4199e) [FAB-10035](https://jira.hyperledger.org/browse/FAB-10035) Fix function signature in ledger interface
+* [6a8f47eab](https://github.com/hyperledger/fabric/commit/6a8f47eab) [FAB-9231](https://jira.hyperledger.org/browse/FAB-9231) Add Peer Runner for use in tests
+* [bebafecf3](https://github.com/hyperledger/fabric/commit/bebafecf3) [FAB-10038](https://jira.hyperledger.org/browse/FAB-10038) history query executor on x-chan call
+* [4ad504a0d](https://github.com/hyperledger/fabric/commit/4ad504a0d) [FAB-8921](https://jira.hyperledger.org/browse/FAB-8921) include idemix revocation data in conf
+* [368b1511e](https://github.com/hyperledger/fabric/commit/368b1511e) [FAB-9318](https://jira.hyperledger.org/browse/FAB-9318) Update docs with multi endorse policy
+* [e0fd885ea](https://github.com/hyperledger/fabric/commit/e0fd885ea) [FAB-9653](https://jira.hyperledger.org/browse/FAB-9653) Cleanup endorser ProcessProposal log msg
+* [9570d473f](https://github.com/hyperledger/fabric/commit/9570d473f) [FAB-8921](https://jira.hyperledger.org/browse/FAB-8921) add idemix revocation authority
+* [f57277ab8](https://github.com/hyperledger/fabric/commit/f57277ab8) [FAB-9909](https://jira.hyperledger.org/browse/FAB-9909) Remove membersrvc target
+* [89c0b3bd1](https://github.com/hyperledger/fabric/commit/89c0b3bd1) [FAB-9074](https://jira.hyperledger.org/browse/FAB-9074) Init logging prior to MSP
+* [44fd7722b](https://github.com/hyperledger/fabric/commit/44fd7722b) [FAB-9955](https://jira.hyperledger.org/browse/FAB-9955) Use coll. conf available at endorsement
+* [7b00a131d](https://github.com/hyperledger/fabric/commit/7b00a131d) [FAB-9982](https://jira.hyperledger.org/browse/FAB-9982) Service Discovery collection support
+* [d244e5dfb](https://github.com/hyperledger/fabric/commit/d244e5dfb) [FAB-9973](https://jira.hyperledger.org/browse/FAB-9973) Chaincode cmd errors return wrong cc name
+* [2eb7961ab](https://github.com/hyperledger/fabric/commit/2eb7961ab) [FAB-9961](https://jira.hyperledger.org/browse/FAB-9961)Fix docs about Chaincode's log level control
+* [555de7199](https://github.com/hyperledger/fabric/commit/555de7199) [FAB-10018](https://jira.hyperledger.org/browse/FAB-10018) space after tx-id in logs/errors
+* [615f1b702](https://github.com/hyperledger/fabric/commit/615f1b702) [FAB-8388](https://jira.hyperledger.org/browse/FAB-8388) add jq to fabric-tools image
+* [940616210](https://github.com/hyperledger/fabric/commit/940616210) [FAB-9981](https://jira.hyperledger.org/browse/FAB-9981) Remove RegisterACLProvider/GetACLProvider
+* [90265a8cf](https://github.com/hyperledger/fabric/commit/90265a8cf) [FAB-9976](https://jira.hyperledger.org/browse/FAB-9976) Remove ChaincodeProviderFactory
+* [36bc31ea7](https://github.com/hyperledger/fabric/commit/36bc31ea7) [FAB-9951](https://jira.hyperledger.org/browse/FAB-9951) use *CCContext instead of interface{}
+* [d97062a42](https://github.com/hyperledger/fabric/commit/d97062a42) [FAB-9933](https://jira.hyperledger.org/browse/FAB-9933) Convert some units to ginkgo style
+* [0f3754f24](https://github.com/hyperledger/fabric/commit/0f3754f24) [FAB-10008](https://jira.hyperledger.org/browse/FAB-10008) Fine tune gossip pull timeouts
+* [1a20bac1a](https://github.com/hyperledger/fabric/commit/1a20bac1a) [FAB-9905](https://jira.hyperledger.org/browse/FAB-9905) Update ginkgo version
+* [ac725519a](https://github.com/hyperledger/fabric/commit/ac725519a) [FAB-9886](https://jira.hyperledger.org/browse/FAB-9886) Begin backfill of handler unit tests
+* [4e6f2386d](https://github.com/hyperledger/fabric/commit/4e6f2386d) [FAB-9856](https://jira.hyperledger.org/browse/FAB-9856) Create interfaces for external deps
+* [f7e790a26](https://github.com/hyperledger/fabric/commit/f7e790a26) [FAB-9851](https://jira.hyperledger.org/browse/FAB-9851) Remove constructor in favor of literal
+* [2ed711290](https://github.com/hyperledger/fabric/commit/2ed711290) [FAB-9848](https://jira.hyperledger.org/browse/FAB-9848) Remove handlerSupport interface
+* [db8e7480e](https://github.com/hyperledger/fabric/commit/db8e7480e) [FAB-9845](https://jira.hyperledger.org/browse/FAB-9845) Introduce Launcher interface
+* [34118801f](https://github.com/hyperledger/fabric/commit/34118801f) [FAB-9842](https://jira.hyperledger.org/browse/FAB-9842) test getChaincodeInstance and refactor
+* [3935acec0](https://github.com/hyperledger/fabric/commit/3935acec0) [FAB-9826](https://jira.hyperledger.org/browse/FAB-9826) Message handlers now return errors
+* [e1b211efa](https://github.com/hyperledger/fabric/commit/e1b211efa) [FAB-9825](https://jira.hyperledger.org/browse/FAB-9825) Extract boilerplate to invokeHandler
+* [d304c94ed](https://github.com/hyperledger/fabric/commit/d304c94ed) [FAB-9950](https://jira.hyperledger.org/browse/FAB-9950) Assorted deferred review cleanup
+* [90281f485](https://github.com/hyperledger/fabric/commit/90281f485) [FAB-9807](https://jira.hyperledger.org/browse/FAB-9807) Remove unused VM methods
+* [7bc73ea7d](https://github.com/hyperledger/fabric/commit/7bc73ea7d) [FAB-9806](https://jira.hyperledger.org/browse/FAB-9806) Remove GetVMName filter func
+* [0a7719bf9](https://github.com/hyperledger/fabric/commit/0a7719bf9) [FAB-9805](https://jira.hyperledger.org/browse/FAB-9805) Remove ChaincodeID from ccintf
+* [b703c8b81](https://github.com/hyperledger/fabric/commit/b703c8b81) [FAB-9804](https://jira.hyperledger.org/browse/FAB-9804) Register syscc by name, not path
+* [ca2360b8d](https://github.com/hyperledger/fabric/commit/ca2360b8d) [FAB-9803](https://jira.hyperledger.org/browse/FAB-9803) Push PeerID and NetworkID into dc
+* [f789a768d](https://github.com/hyperledger/fabric/commit/f789a768d) [FAB-9711](https://jira.hyperledger.org/browse/FAB-9711) Remove cs.SetSysCCProvider
+* [bb602d5ac](https://github.com/hyperledger/fabric/commit/bb602d5ac) [FAB-9568](https://jira.hyperledger.org/browse/FAB-9568) Remove package scoped syscc functions
+* [68f5ded24](https://github.com/hyperledger/fabric/commit/68f5ded24) [FAB-9609](https://jira.hyperledger.org/browse/FAB-9609) Remove inproccontroller singletons
+* [b7dd5aaa2](https://github.com/hyperledger/fabric/commit/b7dd5aaa2) [FAB-9763](https://jira.hyperledger.org/browse/FAB-9763) Fix container control inversion
+* [367e5b314](https://github.com/hyperledger/fabric/commit/367e5b314) [FAB-9802](https://jira.hyperledger.org/browse/FAB-9802) Bootstrap ginkgo test for container
+* [c5fc9a9d4](https://github.com/hyperledger/fabric/commit/c5fc9a9d4) [FAB-9762](https://jira.hyperledger.org/browse/FAB-9762) Remove VMCResp structure
+* [b3c82bac6](https://github.com/hyperledger/fabric/commit/b3c82bac6) [FAB-9228](https://jira.hyperledger.org/browse/FAB-9228) Add Orderer Runner for tests
+* [cbf084436](https://github.com/hyperledger/fabric/commit/cbf084436) [FAB-9251](https://jira.hyperledger.org/browse/FAB-9251) Add Configtxgen for Integration Tests
+* [7830bfe9d](https://github.com/hyperledger/fabric/commit/7830bfe9d) [FAB-9030](https://jira.hyperledger.org/browse/FAB-9030) Clean up identity.md
+* [1d98632af](https://github.com/hyperledger/fabric/commit/1d98632af) [FAB-9991](https://jira.hyperledger.org/browse/FAB-9991) Cleanup bddtests/behave references
+* [6a976ba38](https://github.com/hyperledger/fabric/commit/6a976ba38) [FAB-9478](https://jira.hyperledger.org/browse/FAB-9478) Principal set filtering based on role
+* [18ea0ff82](https://github.com/hyperledger/fabric/commit/18ea0ff82) [FAB-9924](https://jira.hyperledger.org/browse/FAB-9924) UT preperations for pluggable validation
+* [92eeb200e](https://github.com/hyperledger/fabric/commit/92eeb200e) [FAB-9744](https://jira.hyperledger.org/browse/FAB-9744) Pluggable validation implementation
+* [12407368e](https://github.com/hyperledger/fabric/commit/12407368e) [FAB-9724](https://jira.hyperledger.org/browse/FAB-9724) Validation plugin infrastructure support
+* [a1da4f8ae](https://github.com/hyperledger/fabric/commit/a1da4f8ae) [FAB-9761](https://jira.hyperledger.org/browse/FAB-9761) Convert BuilderSpecFactory to intf
+* [9a3add5c6](https://github.com/hyperledger/fabric/commit/9a3add5c6) [FAB-9760](https://jira.hyperledger.org/browse/FAB-9760) Remove unused prelaunch func
+* [ff47da8b9](https://github.com/hyperledger/fabric/commit/ff47da8b9) [FAB-9921](https://jira.hyperledger.org/browse/FAB-9921) Save collection conf in transient store
+* [4e61bc320](https://github.com/hyperledger/fabric/commit/4e61bc320) [FAB-9980](https://jira.hyperledger.org/browse/FAB-9980) Fix rwset-protos and ledger interface
+* [715be74c5](https://github.com/hyperledger/fabric/commit/715be74c5) [FAB-9948](https://jira.hyperledger.org/browse/FAB-9948) Collection retrieval for service discovery
+* [58d2b88d9](https://github.com/hyperledger/fabric/commit/58d2b88d9) [FAB-9984](https://jira.hyperledger.org/browse/FAB-9984) Discovery cc2cc with collections to protobuf
+* [64a5b7b4c](https://github.com/hyperledger/fabric/commit/64a5b7b4c) [FAB-9665](https://jira.hyperledger.org/browse/FAB-9665) change bold to code block
+* [4ca80aa5b](https://github.com/hyperledger/fabric/commit/4ca80aa5b) [FAB-9974](https://jira.hyperledger.org/browse/FAB-9974) Configtxgen recover profile not found panic
+* [e4e8e4c58](https://github.com/hyperledger/fabric/commit/e4e8e4c58) [FAB-9971](https://jira.hyperledger.org/browse/FAB-9971) Minor tweaks to a couple Key concepts files
+* [25fabb87c](https://github.com/hyperledger/fabric/commit/25fabb87c) [FAB-9969](https://jira.hyperledger.org/browse/FAB-9969) blockchain.rst: Fix wording and em dashes
+* [c2be51fd6](https://github.com/hyperledger/fabric/commit/c2be51fd6) [FAB-9764](https://jira.hyperledger.org/browse/FAB-9764) Extend pluggable validation interfaces
+* [517eba4a8](https://github.com/hyperledger/fabric/commit/517eba4a8) [FAB-8832](https://jira.hyperledger.org/browse/FAB-8832) Service Discovery overview doc
+* [6118aea3a](https://github.com/hyperledger/fabric/commit/6118aea3a) [FAB-9949](https://jira.hyperledger.org/browse/FAB-9949) Non-instanced collection config retrieval
+* [6e6c3d672](https://github.com/hyperledger/fabric/commit/6e6c3d672) [FAB-9956](https://jira.hyperledger.org/browse/FAB-9956) Minor tweaks to docs file whatis.md
+* [fa1292479](https://github.com/hyperledger/fabric/commit/fa1292479) [FAB-9759](https://jira.hyperledger.org/browse/FAB-9759) Make controllers instantiate by intf
+* [143d35a50](https://github.com/hyperledger/fabric/commit/143d35a50) [FAB-9729](https://jira.hyperledger.org/browse/FAB-9729) Make VMCProcess non-package scoped
+* [3f41fc384](https://github.com/hyperledger/fabric/commit/3f41fc384) [FAB-9944](https://jira.hyperledger.org/browse/FAB-9944) Add reference to Solidity language to intro
+* [3d7dd6495](https://github.com/hyperledger/fabric/commit/3d7dd6495) [FAB-9942](https://jira.hyperledger.org/browse/FAB-9942) Remove :ref: to non-existent "binaries" lbl
+* [c03de6441](https://github.com/hyperledger/fabric/commit/c03de6441) [FAB-9941](https://jira.hyperledger.org/browse/FAB-9941) Remove :ref: to gone "upgrade-vendored-shim"
+* [90ff463fc](https://github.com/hyperledger/fabric/commit/90ff463fc) [FAB-9232](https://jira.hyperledger.org/browse/FAB-9232) Add Cryptogen for Integration Test
+* [3eb88443e](https://github.com/hyperledger/fabric/commit/3eb88443e) [FAB-8686](https://jira.hyperledger.org/browse/FAB-8686) Add configPath arg to configtxgen
+* [a7e8cb0b7](https://github.com/hyperledger/fabric/commit/a7e8cb0b7) [FAB-8532](https://jira.hyperledger.org/browse/FAB-8532) Connect plugin endorser to the endorser
+* [d5e9f9bf4](https://github.com/hyperledger/fabric/commit/d5e9f9bf4) [FAB-8534](https://jira.hyperledger.org/browse/FAB-8534) Document pluggable endorsement n' validation
+* [dcebaa114](https://github.com/hyperledger/fabric/commit/dcebaa114) [FAB-9870](https://jira.hyperledger.org/browse/FAB-9870) Use CollectionUpgrade Capab. in lscc
+* [25d29a009](https://github.com/hyperledger/fabric/commit/25d29a009) [FAB-9922](https://jira.hyperledger.org/browse/FAB-9922) Restructure TxPvtReadWriteSetWithConfig
+* [6bb560e50](https://github.com/hyperledger/fabric/commit/6bb560e50) [FAB-9915](https://jira.hyperledger.org/browse/FAB-9915): Validate PrivateDataMessage payload
+* [0f2b10d44](https://github.com/hyperledger/fabric/commit/0f2b10d44) [FAB-6021](https://jira.hyperledger.org/browse/FAB-6021) do not delete release images
+* [021b6d503](https://github.com/hyperledger/fabric/commit/021b6d503) [FAB-9733](https://jira.hyperledger.org/browse/FAB-9733) Add Done() to State interface
+* [b9ac87115](https://github.com/hyperledger/fabric/commit/b9ac87115) [FAB-9913](https://jira.hyperledger.org/browse/FAB-9913) Remove last vestiges of "-m" from byfn.sh
+* [0712f7237](https://github.com/hyperledger/fabric/commit/0712f7237) [FAB-9833](https://jira.hyperledger.org/browse/FAB-9833) iface to retrieve key-level validation parm
+* [dcff346e0](https://github.com/hyperledger/fabric/commit/dcff346e0) [FAB-9834](https://jira.hyperledger.org/browse/FAB-9834) interfaces for key-level validation
+* [538425e2e](https://github.com/hyperledger/fabric/commit/538425e2e) [FAB-9891](https://jira.hyperledger.org/browse/FAB-9891) Add delete functions for state metadata
+* [c8b55424e](https://github.com/hyperledger/fabric/commit/c8b55424e) [FAB-9674](https://jira.hyperledger.org/browse/FAB-9674) Pluggable endorsement implementation
+* [25fecd32b](https://github.com/hyperledger/fabric/commit/25fecd32b) [FAB-5963](https://jira.hyperledger.org/browse/FAB-5963) Prevent install of SCC named chaincodes
+* [a3e455fe8](https://github.com/hyperledger/fabric/commit/a3e455fe8) [FAB-9851](https://jira.hyperledger.org/browse/FAB-9851) Enable PvtChanData by default in v1.2
+* [42c20cf86](https://github.com/hyperledger/fabric/commit/42c20cf86) [FAB-9890](https://jira.hyperledger.org/browse/FAB-9890) Fix typo, :doc:`configtxgen`
+* [e26c37ccc](https://github.com/hyperledger/fabric/commit/e26c37ccc) [FAB-9722](https://jira.hyperledger.org/browse/FAB-9722) allow collection updates - lscc side
+* [710651084](https://github.com/hyperledger/fabric/commit/710651084) [FAB-9882](https://jira.hyperledger.org/browse/FAB-9882) Replace map by array in rwset proto
+* [42403c014](https://github.com/hyperledger/fabric/commit/42403c014) [FAB-9546](https://jira.hyperledger.org/browse/FAB-9546) allow collection updates - vscc side
+* [ad66c6ffe](https://github.com/hyperledger/fabric/commit/ad66c6ffe) [FAB-9721](https://jira.hyperledger.org/browse/FAB-9721) check cd existance before col. validation
+* [e512e7431](https://github.com/hyperledger/fabric/commit/e512e7431) [FAB-9880](https://jira.hyperledger.org/browse/FAB-9880) Update generateArtifacts.sh
+* [8efecba83](https://github.com/hyperledger/fabric/commit/8efecba83) [FAB-9720](https://jira.hyperledger.org/browse/FAB-9720) Validate Collection Objects
+* [b1972de3a](https://github.com/hyperledger/fabric/commit/b1972de3a) [FAB-9203](https://jira.hyperledger.org/browse/FAB-9203) Maintain versions of collection configs
+* [23cabe9c9](https://github.com/hyperledger/fabric/commit/23cabe9c9) [FAB-9835](https://jira.hyperledger.org/browse/FAB-9835) Tidy up whatis.md; grammar, structure
+* [ee92d9b41](https://github.com/hyperledger/fabric/commit/ee92d9b41) [FAB-9788](https://jira.hyperledger.org/browse/FAB-9788) Refactor rwsetbuilder code
+* [9fbe72438](https://github.com/hyperledger/fabric/commit/9fbe72438) [FAB-9775](https://jira.hyperledger.org/browse/FAB-9775) Remove duplicate method
+* [5a04cf5aa](https://github.com/hyperledger/fabric/commit/5a04cf5aa) [FAB-9725](https://jira.hyperledger.org/browse/FAB-9725) collection config upgrade -- peer CLI
+* [8deac595a](https://github.com/hyperledger/fabric/commit/8deac595a) [FAB-9765](https://jira.hyperledger.org/browse/FAB-9765) Introduce CollectionUpgrade Capability
+* [046d27d37](https://github.com/hyperledger/fabric/commit/046d27d37) [FAB-9645](https://jira.hyperledger.org/browse/FAB-9645) Key-level metadata ledger interface
+* [02c191ccc](https://github.com/hyperledger/fabric/commit/02c191ccc) [FAB-9645](https://jira.hyperledger.org/browse/FAB-9645) Key-level metadata protobufs
+* [f30aa5e94](https://github.com/hyperledger/fabric/commit/f30aa5e94) [FAB-9843](https://jira.hyperledger.org/browse/FAB-9843) Improve e2e_cli multi-endorse
+* [37bfad085](https://github.com/hyperledger/fabric/commit/37bfad085) [FAB-9865](https://jira.hyperledger.org/browse/FAB-9865) Fix markup error, "**anchor peer**s"
+* [2dcd695d2](https://github.com/hyperledger/fabric/commit/2dcd695d2) [FAB-9792](https://jira.hyperledger.org/browse/FAB-9792) peer-node-chaincodedev -> peer-chaincodedev
+* [b1a8b7260](https://github.com/hyperledger/fabric/commit/b1a8b7260) [FAB-9820](https://jira.hyperledger.org/browse/FAB-9820) Correct endorsement policy specifics
+* [ded05a882](https://github.com/hyperledger/fabric/commit/ded05a882) [FAB-9839](https://jira.hyperledger.org/browse/FAB-9839) Fix pending comments for purge CRs
+* [7f6374908](https://github.com/hyperledger/fabric/commit/7f6374908) [FAB-9817](https://jira.hyperledger.org/browse/FAB-9817) Use Tx-simulator after obtaining results
+* [a27d7ff02](https://github.com/hyperledger/fabric/commit/a27d7ff02) [FAB-9295](https://jira.hyperledger.org/browse/FAB-9295) Enforce event chaincode_id matches action
+* [109db5b3d](https://github.com/hyperledger/fabric/commit/109db5b3d) [FAB-9854](https://jira.hyperledger.org/browse/FAB-9854) Fix compilation error
+* [98c8c589d](https://github.com/hyperledger/fabric/commit/98c8c589d) [FAB-7600](https://jira.hyperledger.org/browse/FAB-7600) Clean up CouchDB index review comments
+* [a20555eb7](https://github.com/hyperledger/fabric/commit/a20555eb7) [FAB-9638](https://jira.hyperledger.org/browse/FAB-9638) replace use of uname in image tags
+* [ef600ce85](https://github.com/hyperledger/fabric/commit/ef600ce85) [FAB-9604](https://jira.hyperledger.org/browse/FAB-9604) Move container/vm.go to car test
+* [3d11489a3](https://github.com/hyperledger/fabric/commit/3d11489a3) [FAB-9603](https://jira.hyperledger.org/browse/FAB-9603) Remove dead code from core/container
+* [3b39abe0b](https://github.com/hyperledger/fabric/commit/3b39abe0b) [FAB-9841](https://jira.hyperledger.org/browse/FAB-9841) fix line-lengths to <80 chars
+* [79c1ba012](https://github.com/hyperledger/fabric/commit/79c1ba012) [FAB-9815](https://jira.hyperledger.org/browse/FAB-9815) Caller starts go routines in handler
+* [1496b7825](https://github.com/hyperledger/fabric/commit/1496b7825) [FAB-9814](https://jira.hyperledger.org/browse/FAB-9814) Use enum in handler conditionals
+* [426b5dd7d](https://github.com/hyperledger/fabric/commit/426b5dd7d) [FAB-9813](https://jira.hyperledger.org/browse/FAB-9813) Handler uses txContexts without wrapper
+* [05c827290](https://github.com/hyperledger/fabric/commit/05c827290) [FAB-9811](https://jira.hyperledger.org/browse/FAB-9811) Space should follow comment delimiter
+* [de11826c2](https://github.com/hyperledger/fabric/commit/de11826c2) [FAB-9810](https://jira.hyperledger.org/browse/FAB-9810) Replace maps with switch, remove lock
+* [816ef699e](https://github.com/hyperledger/fabric/commit/816ef699e) [FAB-9647](https://jira.hyperledger.org/browse/FAB-9647) Rename ContainerRuntime and cleanup
+* [5df456e76](https://github.com/hyperledger/fabric/commit/5df456e76) [FAB-9795](https://jira.hyperledger.org/browse/FAB-9795) Split out launcher and lifecycle
+* [382057ea8](https://github.com/hyperledger/fabric/commit/382057ea8) [FAB-9766](https://jira.hyperledger.org/browse/FAB-9766) Miscellaneous cleanup in cc support
+* [b7bd8b74b](https://github.com/hyperledger/fabric/commit/b7bd8b74b) [FAB-9758](https://jira.hyperledger.org/browse/FAB-9758) Remove unused return value from Launch
+* [d6e6bae66](https://github.com/hyperledger/fabric/commit/d6e6bae66) [FAB-9670](https://jira.hyperledger.org/browse/FAB-9670) Customisable SW-based BCCSP
+* [d61a585aa](https://github.com/hyperledger/fabric/commit/d61a585aa) [FAB-9723](https://jira.hyperledger.org/browse/FAB-9723) Infrastructure for pluggable endorsement
+* [37e70337f](https://github.com/hyperledger/fabric/commit/37e70337f) [FAB-9645](https://jira.hyperledger.org/browse/FAB-9645) Key-level metadata protobufs
+* [3d83ff085](https://github.com/hyperledger/fabric/commit/3d83ff085) [FAB-9015](https://jira.hyperledger.org/browse/FAB-9015) remove resources tree
+* [6c34ae7bc](https://github.com/hyperledger/fabric/commit/6c34ae7bc) [FAB-9821](https://jira.hyperledger.org/browse/FAB-9821) merge FAQs into single doc
+* [7cfa7a016](https://github.com/hyperledger/fabric/commit/7cfa7a016) [FAB-9751](https://jira.hyperledger.org/browse/FAB-9751) Remove flaky logging concurrency test
+* [df9dd4814](https://github.com/hyperledger/fabric/commit/df9dd4814) [FAB-8347](https://jira.hyperledger.org/browse/FAB-8347) Fix re-entrant lock isuue
+* [661cb9486](https://github.com/hyperledger/fabric/commit/661cb9486) [FAB-7810](https://jira.hyperledger.org/browse/FAB-7810) Enable BTL via collection config
+* [11a3daa7b](https://github.com/hyperledger/fabric/commit/11a3daa7b) [FAB-9698](https://jira.hyperledger.org/browse/FAB-9698) fix TOC rendering in commands reference
+* [53de07811](https://github.com/hyperledger/fabric/commit/53de07811) [FAB-6381](https://jira.hyperledger.org/browse/FAB-6381) Secure defaults for txsFilter
+* [63a92d1e5](https://github.com/hyperledger/fabric/commit/63a92d1e5) [FAB-8921](https://jira.hyperledger.org/browse/FAB-8921) adds weak-bb signatures
+* [a30d2bd54](https://github.com/hyperledger/fabric/commit/a30d2bd54) [FAB-9809](https://jira.hyperledger.org/browse/FAB-9809) fix typo
+* [8cbae040a](https://github.com/hyperledger/fabric/commit/8cbae040a) [FAB-8810](https://jira.hyperledger.org/browse/FAB-8810) Extend idemix cred with enrollment IDs
+* [3d05ff3a1](https://github.com/hyperledger/fabric/commit/3d05ff3a1) [FAB-6619](https://jira.hyperledger.org/browse/FAB-6619) purge pvtdata from pvt block store
+* [7823ea7d3](https://github.com/hyperledger/fabric/commit/7823ea7d3) [FAB-6556](https://jira.hyperledger.org/browse/FAB-6556) Enable purge from pvt statedb
+* [6a00db3d6](https://github.com/hyperledger/fabric/commit/6a00db3d6) [FAB-6555](https://jira.hyperledger.org/browse/FAB-6555) Purge manager for pvt statedb data
+* [1b675b0b9](https://github.com/hyperledger/fabric/commit/1b675b0b9) [FAB-9800](https://jira.hyperledger.org/browse/FAB-9800) Remove bad space in option "-- cafile"
+* [5c9a5d5dd](https://github.com/hyperledger/fabric/commit/5c9a5d5dd) [FAB-9780](https://jira.hyperledger.org/browse/FAB-9780) genesis block in glossary.rst
+* [1c129e95a](https://github.com/hyperledger/fabric/commit/1c129e95a) [FAB-9794](https://jira.hyperledger.org/browse/FAB-9794) Remove docs refs to byfn.sh "-m" flag
+* [7ebefe27a](https://github.com/hyperledger/fabric/commit/7ebefe27a) [FAB-9745](https://jira.hyperledger.org/browse/FAB-9745) close txsim ASAP once the tx is simu.
+* [f1e0e363a](https://github.com/hyperledger/fabric/commit/f1e0e363a) [FAB-9774](https://jira.hyperledger.org/browse/FAB-9774) transient store with the new proto msg
+* [85a464595](https://github.com/hyperledger/fabric/commit/85a464595) [FAB-9757](https://jira.hyperledger.org/browse/FAB-9757) Remove ExecuteWithErrorFilter
+* [631ab5b1b](https://github.com/hyperledger/fabric/commit/631ab5b1b) [FAB-9787](https://jira.hyperledger.org/browse/FAB-9787) populate PrivatePayload with sim. info
+* [0ca1af54e](https://github.com/hyperledger/fabric/commit/0ca1af54e) [FAB-6554](https://jira.hyperledger.org/browse/FAB-6554) Expiry schedule keeper for pvt-statedb data
+* [b96698134](https://github.com/hyperledger/fabric/commit/b96698134) [FAB-6553](https://jira.hyperledger.org/browse/FAB-6553) Ledger bookkeeping provider
+* [3ac63584b](https://github.com/hyperledger/fabric/commit/3ac63584b) [FAB-6552](https://jira.hyperledger.org/browse/FAB-6552) Block-to-live policy for pvtdata
+* [6fd506e5f](https://github.com/hyperledger/fabric/commit/6fd506e5f) [FAB-9785](https://jira.hyperledger.org/browse/FAB-9785): Extend gossip PrivatePayload message
+* [35f4e500b](https://github.com/hyperledger/fabric/commit/35f4e500b) [FAB-9783](https://jira.hyperledger.org/browse/FAB-9783) Delete unused file install_instantiate.rst
+* [3933ffd06](https://github.com/hyperledger/fabric/commit/3933ffd06) [FAB-9778](https://jira.hyperledger.org/browse/FAB-9778) Update grpc-go to v1.11.3
+* [4d5d6f9f4](https://github.com/hyperledger/fabric/commit/4d5d6f9f4) [FAB-9705](https://jira.hyperledger.org/browse/FAB-9705) add digest paper as introduction
+* [bbac03cae](https://github.com/hyperledger/fabric/commit/bbac03cae) [FAB-9204](https://jira.hyperledger.org/browse/FAB-9204) new proto for transient store entry
+* [df31162c1](https://github.com/hyperledger/fabric/commit/df31162c1) [FAB-9706](https://jira.hyperledger.org/browse/FAB-9706) Fix broken Search
+* [b805e07c5](https://github.com/hyperledger/fabric/commit/b805e07c5) [FAB-9770](https://jira.hyperledger.org/browse/FAB-9770) Upgrade vagrant env to go 1.10
+* [66c346781](https://github.com/hyperledger/fabric/commit/66c346781) [FAB-9756](https://jira.hyperledger.org/browse/FAB-9756) Add missing .env file
+* [4bb6697d2](https://github.com/hyperledger/fabric/commit/4bb6697d2) [FAB-9607](https://jira.hyperledger.org/browse/FAB-9607) doc fix: peers.md, ledger.md, tutorials.rst
+* [83f661c49](https://github.com/hyperledger/fabric/commit/83f661c49) [FAB-9755](https://jira.hyperledger.org/browse/FAB-9755) Remove redundant empty cname check
+* [d1dd34375](https://github.com/hyperledger/fabric/commit/d1dd34375) [FAB-9753](https://jira.hyperledger.org/browse/FAB-9753) Normalize error reporting in runtime
+* [8ddc47edf](https://github.com/hyperledger/fabric/commit/8ddc47edf) [FAB-9752](https://jira.hyperledger.org/browse/FAB-9752) Wire registry into handler
+* [43ece2d76](https://github.com/hyperledger/fabric/commit/43ece2d76) [FAB-9739](https://jira.hyperledger.org/browse/FAB-9739) Introduce ACLProvider interface
+* [a12d25603](https://github.com/hyperledger/fabric/commit/a12d25603) [FAB-9737](https://jira.hyperledger.org/browse/FAB-9737) Introduce PackageProvider interface
+* [3019453bb](https://github.com/hyperledger/fabric/commit/3019453bb) [FAB-9677](https://jira.hyperledger.org/browse/FAB-9677) Restructure state DB encoder
+* [4a87732f3](https://github.com/hyperledger/fabric/commit/4a87732f3) [FAB-9654](https://jira.hyperledger.org/browse/FAB-9654) Capabilities for key-level validation
+* [aad782e5d](https://github.com/hyperledger/fabric/commit/aad782e5d) [FAB-9735](https://jira.hyperledger.org/browse/FAB-9735) Move execute variants into one file
+* [2252bc42c](https://github.com/hyperledger/fabric/commit/2252bc42c) [FAB-9732](https://jira.hyperledger.org/browse/FAB-9732) Remove dead cc example from e2e_cli dir
+* [50a82f0de](https://github.com/hyperledger/fabric/commit/50a82f0de) [FAB-9728](https://jira.hyperledger.org/browse/FAB-9728) Add indirection to state retrieval API
+* [a85d7dbbc](https://github.com/hyperledger/fabric/commit/a85d7dbbc) docs: fix a typo in arch-deep-drive
+* [bec6f8481](https://github.com/hyperledger/fabric/commit/bec6f8481) [FAB-9479](https://jira.hyperledger.org/browse/FAB-9479) Filter out MSP IDs before computing layouts
+* [de422d777](https://github.com/hyperledger/fabric/commit/de422d777) [FAB-9715](https://jira.hyperledger.org/browse/FAB-9715) Tree Clone() omits data field
+* [621597453](https://github.com/hyperledger/fabric/commit/621597453) [FAB-9712](https://jira.hyperledger.org/browse/FAB-9712) Move SetChaincodesPath out of support
+* [731b0ab4e](https://github.com/hyperledger/fabric/commit/731b0ab4e) [FAB-9610](https://jira.hyperledger.org/browse/FAB-9610) Unsupported fields appear supported
+* [b0663086f](https://github.com/hyperledger/fabric/commit/b0663086f) [FAB-9551](https://jira.hyperledger.org/browse/FAB-9551) Extract TransactionContext
+* [b5ced55a7](https://github.com/hyperledger/fabric/commit/b5ced55a7) [FAB-9691](https://jira.hyperledger.org/browse/FAB-9691) Extract PendingQueryResult
+* [aa2cc9478](https://github.com/hyperledger/fabric/commit/aa2cc9478) [FAB-9684](https://jira.hyperledger.org/browse/FAB-9684) Replace runningChaincodes
+* [82d07a857](https://github.com/hyperledger/fabric/commit/82d07a857) [FAB-9703](https://jira.hyperledger.org/browse/FAB-9703) A minor fix
+* [818b3fd31](https://github.com/hyperledger/fabric/commit/818b3fd31) [FAB-9685](https://jira.hyperledger.org/browse/FAB-9685) Move IsDevMode to config and add tests
+* [28be67fff](https://github.com/hyperledger/fabric/commit/28be67fff) [FAB-9687](https://jira.hyperledger.org/browse/FAB-9687) Fix vet issues in chaincode tests
+* [3c34bc29c](https://github.com/hyperledger/fabric/commit/3c34bc29c) [FAB-9623](https://jira.hyperledger.org/browse/FAB-9623) theChaincodeSupport is finally dead
+* [eea281bf7](https://github.com/hyperledger/fabric/commit/eea281bf7) [FAB-9582](https://jira.hyperledger.org/browse/FAB-9582) Remove the sysccprovider singleton
+* [0d41a3f0e](https://github.com/hyperledger/fabric/commit/0d41a3f0e) [FAB-9091](https://jira.hyperledger.org/browse/FAB-9091) Intro links/better guidance/images
+* [80e479755](https://github.com/hyperledger/fabric/commit/80e479755) [FAB-9702](https://jira.hyperledger.org/browse/FAB-9702) Orderer defaults to invalid system chan
+* [f26382aa2](https://github.com/hyperledger/fabric/commit/f26382aa2) [FAB-9544](https://jira.hyperledger.org/browse/FAB-9544) added notification about chaincode upgrade
+* [154cebd28](https://github.com/hyperledger/fabric/commit/154cebd28) [FAB-9693](https://jira.hyperledger.org/browse/FAB-9693) Handle async container removal
+* [addaee5a4](https://github.com/hyperledger/fabric/commit/addaee5a4) [FAB-9688](https://jira.hyperledger.org/browse/FAB-9688) Remove dangerous unused CCID.ChainID
+* [45e822bd9](https://github.com/hyperledger/fabric/commit/45e822bd9) [FAB-9644](https://jira.hyperledger.org/browse/FAB-9644) Interfaces for pluggable endorsement/valid
+* [916b42a5e](https://github.com/hyperledger/fabric/commit/916b42a5e) [FAB-6387](https://jira.hyperledger.org/browse/FAB-6387) Fix error code missing in endorser
+* [5f37d120d](https://github.com/hyperledger/fabric/commit/5f37d120d) [FAB-9651](https://jira.hyperledger.org/browse/FAB-9651) Closed channel should return error
+* [2561a4b91](https://github.com/hyperledger/fabric/commit/2561a4b91) [FAB-9667](https://jira.hyperledger.org/browse/FAB-9667) temporary workaround for golint breakage
+* [a72e8e7f3](https://github.com/hyperledger/fabric/commit/a72e8e7f3) [FAB-9659](https://jira.hyperledger.org/browse/FAB-9659) Update fsouza/go-dockerclient to v1.0.0
+* [13e02da7a](https://github.com/hyperledger/fabric/commit/13e02da7a) [FAB-9513](https://jira.hyperledger.org/browse/FAB-9513) Glossary: Add Smart Contract
+* [9b83ea0a7](https://github.com/hyperledger/fabric/commit/9b83ea0a7) [FAB-4458](https://jira.hyperledger.org/browse/FAB-4458) Incremental downloads in bootstrap script
+* [fb48ac9bf](https://github.com/hyperledger/fabric/commit/fb48ac9bf) [FAB-9648](https://jira.hyperledger.org/browse/FAB-9648) Update sphinx to latest version
+* [1f3ec39c3](https://github.com/hyperledger/fabric/commit/1f3ec39c3) [FAB-9551](https://jira.hyperledger.org/browse/FAB-9551) New config object for ChaincodeSupport
+* [ddbe6fcdb](https://github.com/hyperledger/fabric/commit/ddbe6fcdb) [FAB-9613](https://jira.hyperledger.org/browse/FAB-9613) Replace launcher with ContainerRuntime
+* [3978987f0](https://github.com/hyperledger/fabric/commit/3978987f0) [FAB-9600](https://jira.hyperledger.org/browse/FAB-9600) s/handler/h/g
+* [ad62847a8](https://github.com/hyperledger/fabric/commit/ad62847a8) [FAB-9588](https://jira.hyperledger.org/browse/FAB-9588) runningChaincodes to separate file
+* [11f0d312a](https://github.com/hyperledger/fabric/commit/11f0d312a) [FAB-9599](https://jira.hyperledger.org/browse/FAB-9599) s/chaincodeSupport/cs/g
+* [9095d9ec3](https://github.com/hyperledger/fabric/commit/9095d9ec3) [FAB-9591](https://jira.hyperledger.org/browse/FAB-9591) Make active transactions an object
+* [f2f4b3d5c](https://github.com/hyperledger/fabric/commit/f2f4b3d5c) [FAB-9590](https://jira.hyperledger.org/browse/FAB-9590) Convert tx context map to object
+* [a9151d231](https://github.com/hyperledger/fabric/commit/a9151d231) [FAB-9589](https://jira.hyperledger.org/browse/FAB-9589) add ccprovider.ChaincodeSpecGetter
+* [64c38b0a7](https://github.com/hyperledger/fabric/commit/64c38b0a7) [FAB-9581](https://jira.hyperledger.org/browse/FAB-9581) Pass sccprovider into chaincode New
+* [de463bba5](https://github.com/hyperledger/fabric/commit/de463bba5) [FAB-9634](https://jira.hyperledger.org/browse/FAB-9634) Upgrade to chaintool v1.1.1
+* [4ceccd403](https://github.com/hyperledger/fabric/commit/4ceccd403) [FAB-9643](https://jira.hyperledger.org/browse/FAB-9643) Remove unreachable nil check
+* [e360a6e5b](https://github.com/hyperledger/fabric/commit/e360a6e5b) [FAB-9516](https://jira.hyperledger.org/browse/FAB-9516) Split cclifecycle update to 2 phases
+* [e8d83e5f3](https://github.com/hyperledger/fabric/commit/e8d83e5f3) [FAB-9550](https://jira.hyperledger.org/browse/FAB-9550) Add collections and cc2cc to discovery proto
+* [bae139343](https://github.com/hyperledger/fabric/commit/bae139343) [FAB-6060](https://jira.hyperledger.org/browse/FAB-6060) Add a troubleshooting in the BYFN
+* [5d93c5339](https://github.com/hyperledger/fabric/commit/5d93c5339) [FAB-9637](https://jira.hyperledger.org/browse/FAB-9637) add manifest-tool to gotools.mk
+* [8693cc099](https://github.com/hyperledger/fabric/commit/8693cc099) [FAB-9567](https://jira.hyperledger.org/browse/FAB-9567) fix broken link to dev instruction
+* [d5b6a6945](https://github.com/hyperledger/fabric/commit/d5b6a6945) [FAB-9048](https://jira.hyperledger.org/browse/FAB-9048) remove proposals directory
+* [447768fd0](https://github.com/hyperledger/fabric/commit/447768fd0) [FAB-9628](https://jira.hyperledger.org/browse/FAB-9628) Remove CLI sleep reference from docs
+* [1c4ff7390](https://github.com/hyperledger/fabric/commit/1c4ff7390) [FAB-9587](https://jira.hyperledger.org/browse/FAB-9587) keepalive and userRunsCC on handler
+* [8c15a3493](https://github.com/hyperledger/fabric/commit/8c15a3493) [FAB-9594](https://jira.hyperledger.org/browse/FAB-9594) generated files not license checked
+* [f11370567](https://github.com/hyperledger/fabric/commit/f11370567) [FAB-9620](https://jira.hyperledger.org/browse/FAB-9620) Switch sample clients to new channel ID
+* [8c61b1191](https://github.com/hyperledger/fabric/commit/8c61b1191) [FAB-9618](https://jira.hyperledger.org/browse/FAB-9618) Cleanup orderer localconfig package
+* [12076e95b](https://github.com/hyperledger/fabric/commit/12076e95b) [FAB-9619](https://jira.hyperledger.org/browse/FAB-9619) Export orderer configuration defaults
+* [0134850c9](https://github.com/hyperledger/fabric/commit/0134850c9) [FAB-9605](https://jira.hyperledger.org/browse/FAB-9605) Export list of default cipher suites
+* [7dff36072](https://github.com/hyperledger/fabric/commit/7dff36072) [FAB-9584](https://jira.hyperledger.org/browse/FAB-9584) Fix warnings in e2e tests
+* [e29d43bb8](https://github.com/hyperledger/fabric/commit/e29d43bb8) [FAB-9087](https://jira.hyperledger.org/browse/FAB-9087) Sync conn decrement in deliverclient test
+* [8c6452200](https://github.com/hyperledger/fabric/commit/8c6452200) [FAB-9534](https://jira.hyperledger.org/browse/FAB-9534) Getting Started TOC
+* [b21927442](https://github.com/hyperledger/fabric/commit/b21927442) [FAB-9556](https://jira.hyperledger.org/browse/FAB-9556) Peer CLI multi-endorse via connection prof
+* [21d15a68e](https://github.com/hyperledger/fabric/commit/21d15a68e) [FAB-9592](https://jira.hyperledger.org/browse/FAB-9592) Export private default keepalive options
+* [32d20ad71](https://github.com/hyperledger/fabric/commit/32d20ad71) [FAB-9316](https://jira.hyperledger.org/browse/FAB-9316) Update e2e_cli to use AND endorsement pol
+* [d9a6bac16](https://github.com/hyperledger/fabric/commit/d9a6bac16) [FAB-9446](https://jira.hyperledger.org/browse/FAB-9446) Peer CLI multi-endorse via string arrays
+* [27121be1d](https://github.com/hyperledger/fabric/commit/27121be1d) [FAB-9580](https://jira.hyperledger.org/browse/FAB-9580) Create SCC instances by constructor
+* [ad522a50c](https://github.com/hyperledger/fabric/commit/ad522a50c) [FAB-9578](https://jira.hyperledger.org/browse/FAB-9578) ConfigSequence support ignore empty channel
+* [38ad27eaa](https://github.com/hyperledger/fabric/commit/38ad27eaa) [FAB-8176](https://jira.hyperledger.org/browse/FAB-8176) API Reference doc
+* [8312bd570](https://github.com/hyperledger/fabric/commit/8312bd570) [FAB-9557](https://jira.hyperledger.org/browse/FAB-9557) identity.md: Some grammar fixes
+* [4f2864363](https://github.com/hyperledger/fabric/commit/4f2864363) [FAB-9531](https://jira.hyperledger.org/browse/FAB-9531) implement ACL in channelconfig
+* [b973ff777](https://github.com/hyperledger/fabric/commit/b973ff777) [FAB-9571](https://jira.hyperledger.org/browse/FAB-9571) Add indirect Validate() MSP caching
+* [afeeeeea9](https://github.com/hyperledger/fabric/commit/afeeeeea9) [FAB-9562](https://jira.hyperledger.org/browse/FAB-9562) Typo in msp-identity-validity-rules.rst
+* [3bc8a6999](https://github.com/hyperledger/fabric/commit/3bc8a6999) [FAB-9561](https://jira.hyperledger.org/browse/FAB-9561)Fix typo in Key-Concepts/Identity doc
+* [f478fa5ea](https://github.com/hyperledger/fabric/commit/f478fa5ea) [FAB-9127](https://jira.hyperledger.org/browse/FAB-9127) Address race in blockledger/json
+* [0d0702457](https://github.com/hyperledger/fabric/commit/0d0702457) [FAB-9559](https://jira.hyperledger.org/browse/FAB-9559) Deprecate configtxgen missing channelID
+* [f1c0f6462](https://github.com/hyperledger/fabric/commit/f1c0f6462) [FAB-8245](https://jira.hyperledger.org/browse/FAB-8245) remove extra chars from peer cli output
+* [c8cdbe128](https://github.com/hyperledger/fabric/commit/c8cdbe128) [FAB-9522](https://jira.hyperledger.org/browse/FAB-9522) Remove TLSEnabled() from core/comm package
+* [4a5c4cbda](https://github.com/hyperledger/fabric/commit/4a5c4cbda) [FAB-9553](https://jira.hyperledger.org/browse/FAB-9553) Fix Vagrant runtime environment
+* [71eea827b](https://github.com/hyperledger/fabric/commit/71eea827b) [FAB-9130](https://jira.hyperledger.org/browse/FAB-9130) fix race on metrics.RootScope
+* [483454008](https://github.com/hyperledger/fabric/commit/483454008) [FAB-9545](https://jira.hyperledger.org/browse/FAB-9545) Align discover proto fields to standards
+* [9fccc7e3b](https://github.com/hyperledger/fabric/commit/9fccc7e3b) [FAB-9126](https://jira.hyperledger.org/browse/FAB-9126) Fix race in block iterator test
+* [1d8344d7d](https://github.com/hyperledger/fabric/commit/1d8344d7d) [FAB-9494](https://jira.hyperledger.org/browse/FAB-9494) test package functions to load config
+* [b69906193](https://github.com/hyperledger/fabric/commit/b69906193) [FAB-9536](https://jira.hyperledger.org/browse/FAB-9536) Fix potential panic in broadcast
+* [e08c849d3](https://github.com/hyperledger/fabric/commit/e08c849d3) [FAB-8459](https://jira.hyperledger.org/browse/FAB-8459) generate fabric help docs
+* [ddf0faab3](https://github.com/hyperledger/fabric/commit/ddf0faab3) [FAB-5950](https://jira.hyperledger.org/browse/FAB-5950) exported peer retry policy to config file
+* [cc7702d52](https://github.com/hyperledger/fabric/commit/cc7702d52) [FAB-9405](https://jira.hyperledger.org/browse/FAB-9405) Add local peer queries to service discovery
+* [2eab5b0af](https://github.com/hyperledger/fabric/commit/2eab5b0af) [FAB-9100](https://jira.hyperledger.org/browse/FAB-9100) fix ports to allow parallel unit-tests
+* [a25e722fc](https://github.com/hyperledger/fabric/commit/a25e722fc) [FAB-9507](https://jira.hyperledger.org/browse/FAB-9507) replace "." from resource names
+* [ed8602703](https://github.com/hyperledger/fabric/commit/ed8602703) [FAB-9523](https://jira.hyperledger.org/browse/FAB-9523) Use American Spelling in Doc Consistently
+* [468858092](https://github.com/hyperledger/fabric/commit/468858092) [FAB-9481](https://jira.hyperledger.org/browse/FAB-9481): Close gzip reader, javaCC build cmd
+* [4aba4a819](https://github.com/hyperledger/fabric/commit/4aba4a819) [FAB-7692](https://jira.hyperledger.org/browse/FAB-7692) Refactor statecouchdb impl
+* [13bcbeb3f](https://github.com/hyperledger/fabric/commit/13bcbeb3f) [FAB-7549](https://jira.hyperledger.org/browse/FAB-7549) Silence Usage once command args are parsed
+* [8e62595f1](https://github.com/hyperledger/fabric/commit/8e62595f1) [FAB-9517](https://jira.hyperledger.org/browse/FAB-9517) Correct Misspelling in Document
+* [155f5fd8b](https://github.com/hyperledger/fabric/commit/155f5fd8b) [FAB-9515](https://jira.hyperledger.org/browse/FAB-9515) Add indirect SatisfiesPrincipal MSP caching
+* [5c62a6cbe](https://github.com/hyperledger/fabric/commit/5c62a6cbe) [FAB-9492](https://jira.hyperledger.org/browse/FAB-9492) Fix flaky discovery cache test
+* [cf9859d0e](https://github.com/hyperledger/fabric/commit/cf9859d0e) [FAB-9510](https://jira.hyperledger.org/browse/FAB-9510) Mismatch of yaml label
+* [e43abda97](https://github.com/hyperledger/fabric/commit/e43abda97) [FAB-9395](https://jira.hyperledger.org/browse/FAB-9395) World State
+* [728367577](https://github.com/hyperledger/fabric/commit/728367577) [FAB-9495](https://jira.hyperledger.org/browse/FAB-9495) Fix to be able to get a specific images
+* [c44bfed1c](https://github.com/hyperledger/fabric/commit/c44bfed1c) [FAB-9014](https://jira.hyperledger.org/browse/FAB-9014) Add new config element for peer ACLs
+* [39979dae8](https://github.com/hyperledger/fabric/commit/39979dae8) [FAB-9505](https://jira.hyperledger.org/browse/FAB-9505) Export Gate and Role values used in policies
+* [708c4931b](https://github.com/hyperledger/fabric/commit/708c4931b) [FAB-9124](https://jira.hyperledger.org/browse/FAB-9124) Fix race in nextBlock
+* [aecefa927](https://github.com/hyperledger/fabric/commit/aecefa927) [FAB-8930](https://jira.hyperledger.org/browse/FAB-8930) Intoducing BCCSP Idemix Options
+* [eafd9759c](https://github.com/hyperledger/fabric/commit/eafd9759c) [FAB-9102](https://jira.hyperledger.org/browse/FAB-9102) Start CouchDB as needed in ledger tests
+* [b1d761c32](https://github.com/hyperledger/fabric/commit/b1d761c32) [FAB-9102](https://jira.hyperledger.org/browse/FAB-9102) CouchDB runner for test
+* [4200a5e69](https://github.com/hyperledger/fabric/commit/4200a5e69) [FAB-9488](https://jira.hyperledger.org/browse/FAB-9488) Make discovery request be shareable
+* [38e3bc1d2](https://github.com/hyperledger/fabric/commit/38e3bc1d2) [FAB-9401](https://jira.hyperledger.org/browse/FAB-9401) sanitize resource names and add doc
+* [9c51f9f94](https://github.com/hyperledger/fabric/commit/9c51f9f94) [FAB-9409](https://jira.hyperledger.org/browse/FAB-9409) add ACL spec to configtx
+* [f8cb5ff97](https://github.com/hyperledger/fabric/commit/f8cb5ff97) [FAB-7721](https://jira.hyperledger.org/browse/FAB-7721) Remove the test directory from fabric
+* [0511d42b4](https://github.com/hyperledger/fabric/commit/0511d42b4) [FAB-7721](https://jira.hyperledger.org/browse/FAB-7721) Move AutoVendor to golang platform
+* [baf51b469](https://github.com/hyperledger/fabric/commit/baf51b469) [FAB-9465](https://jira.hyperledger.org/browse/FAB-9465) Remove ccchecker from examples
+* [cd7f70a83](https://github.com/hyperledger/fabric/commit/cd7f70a83) [FAB-9485](https://jira.hyperledger.org/browse/FAB-9485) Replace nopkcs11 build tag with pkcs11
+* [ddf777330](https://github.com/hyperledger/fabric/commit/ddf777330) [FAB-9483](https://jira.hyperledger.org/browse/FAB-9483) Remove experimental build tag example
+* [e2afb5067](https://github.com/hyperledger/fabric/commit/e2afb5067) [FAB-9462](https://jira.hyperledger.org/browse/FAB-9462) Fix get-docker-images.sh pulling failed
+* [5d5ed4c26](https://github.com/hyperledger/fabric/commit/5d5ed4c26) [FAB-9477](https://jira.hyperledger.org/browse/FAB-9477) Correct Mary/John/Joe mismatch
+* [b63ea96b3](https://github.com/hyperledger/fabric/commit/b63ea96b3) [FAB-9224](https://jira.hyperledger.org/browse/FAB-9224) simplify obtaining idemix cred
+* [e5d430391](https://github.com/hyperledger/fabric/commit/e5d430391) [FAB-9466](https://jira.hyperledger.org/browse/FAB-9466) separate dev/test config from prod code
+* [0d25786b8](https://github.com/hyperledger/fabric/commit/0d25786b8) [FAB-9473](https://jira.hyperledger.org/browse/FAB-9473) Always enforce validation on initial cc
+* [e507d7409](https://github.com/hyperledger/fabric/commit/e507d7409) [FAB-9472](https://jira.hyperledger.org/browse/FAB-9472) Define v1.2 validation capability
+* [d60036d2b](https://github.com/hyperledger/fabric/commit/d60036d2b) [FAB-9464](https://jira.hyperledger.org/browse/FAB-9464) Remove theChaincodeSupport singleton
+* [085169481](https://github.com/hyperledger/fabric/commit/085169481)  [FAB-9452](https://jira.hyperledger.org/browse/FAB-9452) Enhance chaincode event listers
+* [a7f948d3d](https://github.com/hyperledger/fabric/commit/a7f948d3d) [FAB-9443](https://jira.hyperledger.org/browse/FAB-9443) Enhance discovery client expressiveness
+* [290b96489](https://github.com/hyperledger/fabric/commit/290b96489) [FAB-9454](https://jira.hyperledger.org/browse/FAB-9454) Remove last unit test package exclusion
+* [96ff70280](https://github.com/hyperledger/fabric/commit/96ff70280) [FAB-9453](https://jira.hyperledger.org/browse/FAB-9453) !nopkcs11 build tags in pkcs11 tests
+* [1cc3780dc](https://github.com/hyperledger/fabric/commit/1cc3780dc) [FAB-9448](https://jira.hyperledger.org/browse/FAB-9448) Protos have drifted
+* [f4fe817b2](https://github.com/hyperledger/fabric/commit/f4fe817b2) [FAB-9442](https://jira.hyperledger.org/browse/FAB-9442) Enhance ledger state listener mechanism
+* [968d12b56](https://github.com/hyperledger/fabric/commit/968d12b56) [FAB-9438](https://jira.hyperledger.org/browse/FAB-9438) Fix protos compilation perm denied
+* [a9fd52bd4](https://github.com/hyperledger/fabric/commit/a9fd52bd4) [FAB-9211](https://jira.hyperledger.org/browse/FAB-9211) add fabric-samples to bootstrap.sh
+* [d3e8c0068](https://github.com/hyperledger/fabric/commit/d3e8c0068) [FAB-8551](https://jira.hyperledger.org/browse/FAB-8551) Tool image binaries don't show version
+* [7daba58b3](https://github.com/hyperledger/fabric/commit/7daba58b3) [FAB-7963](https://jira.hyperledger.org/browse/FAB-7963) Check gzip/tar error before returning
+* [65d2fbb03](https://github.com/hyperledger/fabric/commit/65d2fbb03) [FAB-9403](https://jira.hyperledger.org/browse/FAB-9403) Replace docker/docker/pkg/testutil/assert
+* [d494dcd25](https://github.com/hyperledger/fabric/commit/d494dcd25) [FAB-9404](https://jira.hyperledger.org/browse/FAB-9404) Fix port conflicts in core/peer tests
+* [5f5d8e8b8](https://github.com/hyperledger/fabric/commit/5f5d8e8b8) [FAB-9174](https://jira.hyperledger.org/browse/FAB-9174) Fix peer crash due to log contention
+* [55ceea4a0](https://github.com/hyperledger/fabric/commit/55ceea4a0) [FAB-9246](https://jira.hyperledger.org/browse/FAB-9246) Remove peer version flag
+* [5e14546fe](https://github.com/hyperledger/fabric/commit/5e14546fe) [FAB-7995](https://jira.hyperledger.org/browse/FAB-7995) Remove plugin issue workaround
+* [45c6d31a0](https://github.com/hyperledger/fabric/commit/45c6d31a0) [FAB-9393](https://jira.hyperledger.org/browse/FAB-9393) Set $GOCACHE directory in linter script
+* [73c6759f0](https://github.com/hyperledger/fabric/commit/73c6759f0) [FAB-9059](https://jira.hyperledger.org/browse/FAB-9059) move current metadata code to use platfrom
+* [f791a37a1](https://github.com/hyperledger/fabric/commit/f791a37a1) [FAB-9059](https://jira.hyperledger.org/browse/FAB-9059) add metadata to chaincode platforms
+* [08ac343e2](https://github.com/hyperledger/fabric/commit/08ac343e2) [FAB-9389](https://jira.hyperledger.org/browse/FAB-9389) Fix deliver client crash at abrupt restart
+* [b63ee5603](https://github.com/hyperledger/fabric/commit/b63ee5603) [FAB-5861](https://jira.hyperledger.org/browse/FAB-5861) Fix mis-usage in container/image
+* [68f268379](https://github.com/hyperledger/fabric/commit/68f268379) [FAB-9385](https://jira.hyperledger.org/browse/FAB-9385) Don't close conn in discovery client
+* [a77b923f4](https://github.com/hyperledger/fabric/commit/a77b923f4) [FAB-8689](https://jira.hyperledger.org/browse/FAB-8689): Enhance Ledger documentation topic
+* [af8be1c1a](https://github.com/hyperledger/fabric/commit/af8be1c1a) [FAB-9363](https://jira.hyperledger.org/browse/FAB-9363) Remove ccenv dep from peer binary build
+* [895927a5c](https://github.com/hyperledger/fabric/commit/895927a5c) [FAB-9356](https://jira.hyperledger.org/browse/FAB-9356) add CODE_OF_CONDUCT.md
+* [7d42da860](https://github.com/hyperledger/fabric/commit/7d42da860) [FAB-7574](https://jira.hyperledger.org/browse/FAB-7574) Attach discovery to peer
+* [702f2861e](https://github.com/hyperledger/fabric/commit/702f2861e) [FAB-9336](https://jira.hyperledger.org/browse/FAB-9336) Update Docs readme
+* [2de4187e3](https://github.com/hyperledger/fabric/commit/2de4187e3) [FAB-9232](https://jira.hyperledger.org/browse/FAB-9232) Add mock and fake generation tools
+* [45adaa674](https://github.com/hyperledger/fabric/commit/45adaa674) [FAB-9328](https://jira.hyperledger.org/browse/FAB-9328) Fail at the beginning if no MSP ID
+* [15f162609](https://github.com/hyperledger/fabric/commit/15f162609) [FAB-9301](https://jira.hyperledger.org/browse/FAB-9301) Remove TODO for KeyStore in core.yaml
+* [3c9112744](https://github.com/hyperledger/fabric/commit/3c9112744) [FAB-7570](https://jira.hyperledger.org/browse/FAB-7570) chaincode metadata retrieval for SD
+* [3e6e4210a](https://github.com/hyperledger/fabric/commit/3e6e4210a) [FAB-6723](https://jira.hyperledger.org/browse/FAB-6723) chaincode lifecycle for peer services
+* [25f5be19e](https://github.com/hyperledger/fabric/commit/25f5be19e) [FAB-9255](https://jira.hyperledger.org/browse/FAB-9255) configtxgen encode policy specs
+* [aaf29dc82](https://github.com/hyperledger/fabric/commit/aaf29dc82) [FAB-9320](https://jira.hyperledger.org/browse/FAB-9320) Exploit go 1.10 cache for unit-tests
+* [fd0922064](https://github.com/hyperledger/fabric/commit/fd0922064) [FAB-9319](https://jira.hyperledger.org/browse/FAB-9319) Exploit go 1.10 coverage profile
+* [7e80d8651](https://github.com/hyperledger/fabric/commit/7e80d8651) [FAB-9233](https://jira.hyperledger.org/browse/FAB-9233) Remove behave make targets
+* [f519714c8](https://github.com/hyperledger/fabric/commit/f519714c8) [FAB-9254](https://jira.hyperledger.org/browse/FAB-9254) Specify policies in configtx.yaml
+* [1cecb57ab](https://github.com/hyperledger/fabric/commit/1cecb57ab) [FAB-9299](https://jira.hyperledger.org/browse/FAB-9299) Use base image with go 1.10
+* [2136c2fc0](https://github.com/hyperledger/fabric/commit/2136c2fc0) [FAB-9201](https://jira.hyperledger.org/browse/FAB-9201) Add 'make docker-list'
+* [20214ad88](https://github.com/hyperledger/fabric/commit/20214ad88) [FAB-9192](https://jira.hyperledger.org/browse/FAB-9192) Use BASE_DOCKER_NS for thirdparty images
+* [3693e8ae6](https://github.com/hyperledger/fabric/commit/3693e8ae6) [FAB-9280](https://jira.hyperledger.org/browse/FAB-9280) Update Go version in prereqs
+* [157b8410e](https://github.com/hyperledger/fabric/commit/157b8410e) [FAB-4098](https://jira.hyperledger.org/browse/FAB-4098), [FAB-5041], [FAB-9055] Glossary updates
+* [a0032984b](https://github.com/hyperledger/fabric/commit/a0032984b) [FAB-9252](https://jira.hyperledger.org/browse/FAB-9252) Add ImplicitMetaPolicy parser
+* [75e936b80](https://github.com/hyperledger/fabric/commit/75e936b80) [FAB-9288](https://jira.hyperledger.org/browse/FAB-9288) default gotools to $GOPATH/bin
+* [edce2d254](https://github.com/hyperledger/fabric/commit/edce2d254) [FAB-9290](https://jira.hyperledger.org/browse/FAB-9290) Add clean targets for generated doc files
+* [3440d7a5a](https://github.com/hyperledger/fabric/commit/3440d7a5a) [FAB-9289](https://jira.hyperledger.org/browse/FAB-9289) Add copyright to .gitreview
+* [221c63e1a](https://github.com/hyperledger/fabric/commit/221c63e1a) [FAB-9283](https://jira.hyperledger.org/browse/FAB-9283) Various wording improvements in changes.rst
+* [5495b1782](https://github.com/hyperledger/fabric/commit/5495b1782) [FAB-9285](https://jira.hyperledger.org/browse/FAB-9285) Escape periods in filenames for license chk
+* [2d0747b67](https://github.com/hyperledger/fabric/commit/2d0747b67) [FAB-9077](https://jira.hyperledger.org/browse/FAB-9077) Update go version to 1.10
+* [130f896e2](https://github.com/hyperledger/fabric/commit/130f896e2) [FAB-9222](https://jira.hyperledger.org/browse/FAB-9222) Fix ledger test race condition
+* [4b7d8aa9b](https://github.com/hyperledger/fabric/commit/4b7d8aa9b) [FAB-9260](https://jira.hyperledger.org/browse/FAB-9260) Remove trailing whitespace in docs rst files
+* [70735ddab](https://github.com/hyperledger/fabric/commit/70735ddab) [FAB-9281](https://jira.hyperledger.org/browse/FAB-9281) Update check_license.sh, ^build/ -> ^.build/
+* [15f4882b1](https://github.com/hyperledger/fabric/commit/15f4882b1) [FAB-9265](https://jira.hyperledger.org/browse/FAB-9265) Remove Java CC Samples
+* [990b9e6c2](https://github.com/hyperledger/fabric/commit/990b9e6c2) [FAB-9263](https://jira.hyperledger.org/browse/FAB-9263) Remove Java shim from fabric repo
+* [423e02ee3](https://github.com/hyperledger/fabric/commit/423e02ee3) [FAB-9264](https://jira.hyperledger.org/browse/FAB-9264) Remove javaenv from fabric build
+* [940d41be1](https://github.com/hyperledger/fabric/commit/940d41be1) [FAB-9176](https://jira.hyperledger.org/browse/FAB-9176) Fix some docs issue
+* [aa25135e3](https://github.com/hyperledger/fabric/commit/aa25135e3) [FAB-9259](https://jira.hyperledger.org/browse/FAB-9259) Add missing EOL at end of .gitreview file
+* [649ceeac3](https://github.com/hyperledger/fabric/commit/649ceeac3) [FAB-9256](https://jira.hyperledger.org/browse/FAB-9256) Change DEFAULT MSPID to SampleOrg
+* [df91e7662](https://github.com/hyperledger/fabric/commit/df91e7662) [FAB-9261](https://jira.hyperledger.org/browse/FAB-9261) Remove redundant const for cmd description
+* [ce557d7a9](https://github.com/hyperledger/fabric/commit/ce557d7a9) [FAB-9278](https://jira.hyperledger.org/browse/FAB-9278) Remove peer pidfile
+* [1f2503fa2](https://github.com/hyperledger/fabric/commit/1f2503fa2) [FAB-8350](https://jira.hyperledger.org/browse/FAB-8350) Support different listener for admin server
+* [da820acaf](https://github.com/hyperledger/fabric/commit/da820acaf) [FAB-9248](https://jira.hyperledger.org/browse/FAB-9248) Fix TestCredentialSupport
+* [dc8955e17](https://github.com/hyperledger/fabric/commit/dc8955e17) [FAB-8349](https://jira.hyperledger.org/browse/FAB-8349) Move admin server to its own package
+* [13e1f1526](https://github.com/hyperledger/fabric/commit/13e1f1526) [FAB-9208](https://jira.hyperledger.org/browse/FAB-9208) Explain proper setting of GOPATH, PATH vars
+* [0f5b1850e](https://github.com/hyperledger/fabric/commit/0f5b1850e) [FAB-9213](https://jira.hyperledger.org/browse/FAB-9213) Move gotools/Makefile to gotools.mk
+* [62b357d07](https://github.com/hyperledger/fabric/commit/62b357d07) [FAB-9209](https://jira.hyperledger.org/browse/FAB-9209) fix make gotools
+* [9c51325b4](https://github.com/hyperledger/fabric/commit/9c51325b4) [FAB-9104](https://jira.hyperledger.org/browse/FAB-9104) Improve core/comm tests
+* [ab800d063](https://github.com/hyperledger/fabric/commit/ab800d063) [FAB-9187](https://jira.hyperledger.org/browse/FAB-9187) prune excluded packages in unit-test
+* [3258f17d5](https://github.com/hyperledger/fabric/commit/3258f17d5) [FAB-8333](https://jira.hyperledger.org/browse/FAB-8333) Make peer admin API work with envelopes
+* [be72a281c](https://github.com/hyperledger/fabric/commit/be72a281c) [FAB-9250](https://jira.hyperledger.org/browse/FAB-9250) add logos to RTD
+* [2073feb78](https://github.com/hyperledger/fabric/commit/2073feb78) [FAB-9247](https://jira.hyperledger.org/browse/FAB-9247) Remove superfluous setting of "go.fqp.dep"
+* [ed2720099](https://github.com/hyperledger/fabric/commit/ed2720099) [FAB-9242](https://jira.hyperledger.org/browse/FAB-9242) Remove "Exiting..." log for peer cmd
+* [aefee8bc7](https://github.com/hyperledger/fabric/commit/aefee8bc7) [FAB-8429](https://jira.hyperledger.org/browse/FAB-8429) make clear to teardown b4 manual steps
+* [b0ac6214e](https://github.com/hyperledger/fabric/commit/b0ac6214e) [FAB-8959](https://jira.hyperledger.org/browse/FAB-8959) Default version in bootstrap.sh
+* [9b53997ad](https://github.com/hyperledger/fabric/commit/9b53997ad) [FAB-7025](https://jira.hyperledger.org/browse/FAB-7025) Platform specific Centos 7 native builds.
+* [eb6e7fb70](https://github.com/hyperledger/fabric/commit/eb6e7fb70) [FAB-5396](https://jira.hyperledger.org/browse/FAB-5396) Fix indentations in proto files
+* [639825860](https://github.com/hyperledger/fabric/commit/639825860) [FAB-6525](https://jira.hyperledger.org/browse/FAB-6525) shutdown CounchDB docker in NetworkDown()
+* [c4c87ee71](https://github.com/hyperledger/fabric/commit/c4c87ee71) [FAB-9219](https://jira.hyperledger.org/browse/FAB-9219) Remove superfluous "||:" from Makefile rules
+* [30806c107](https://github.com/hyperledger/fabric/commit/30806c107) [FAB-8922](https://jira.hyperledger.org/browse/FAB-8922) s/build/.build/g Makefile
+* [adbd6ad76](https://github.com/hyperledger/fabric/commit/adbd6ad76) [FAB-9214](https://jira.hyperledger.org/browse/FAB-9214) Fix misspelling of "certificate" in log
+* [eade21d63](https://github.com/hyperledger/fabric/commit/eade21d63) [FAB-9199](https://jira.hyperledger.org/browse/FAB-9199) Remove bddtests folder from .gitignore
+* [36ffcc27b](https://github.com/hyperledger/fabric/commit/36ffcc27b) [FAB-8419](https://jira.hyperledger.org/browse/FAB-8419) Add teardown to WYFA
+* [44baede40](https://github.com/hyperledger/fabric/commit/44baede40) [FAB-8254](https://jira.hyperledger.org/browse/FAB-8254) Doc consensus type cannot be changed
+* [f9b1054ec](https://github.com/hyperledger/fabric/commit/f9b1054ec) [FAB-7551](https://jira.hyperledger.org/browse/FAB-7551) Peer support for discovery service
+* [eacec5f93](https://github.com/hyperledger/fabric/commit/eacec5f93) [FAB-9184](https://jira.hyperledger.org/browse/FAB-9184) Edit http:// to https:// for make linkcheck
+* [9595d613c](https://github.com/hyperledger/fabric/commit/9595d613c) [FAB-9206](https://jira.hyperledger.org/browse/FAB-9206) Remove "html_add_permalinks" config setting
+* [e41997747](https://github.com/hyperledger/fabric/commit/e41997747) [FAB-9183](https://jira.hyperledger.org/browse/FAB-9183) Replace named links with anonymous links
+* [57e23d3c3](https://github.com/hyperledger/fabric/commit/57e23d3c3) [FAB-9167](https://jira.hyperledger.org/browse/FAB-9167) builds check for stale deps
+* [20457eb88](https://github.com/hyperledger/fabric/commit/20457eb88) [FAB-9178](https://jira.hyperledger.org/browse/FAB-9178) Fix erroneous indentation in three lists
+* [99db5e56b](https://github.com/hyperledger/fabric/commit/99db5e56b) [FAB-9178](https://jira.hyperledger.org/browse/FAB-9178) Fix lack of indentation in two notes
+* [773e60836](https://github.com/hyperledger/fabric/commit/773e60836) [FAB-9177](https://jira.hyperledger.org/browse/FAB-9177) Remove self-referential line from index.rst
+* [fdb823ced](https://github.com/hyperledger/fabric/commit/fdb823ced) [FAB-9083](https://jira.hyperledger.org/browse/FAB-9083) Add Anchor Peer to Gossip doc
+* [62ef0eb00](https://github.com/hyperledger/fabric/commit/62ef0eb00) [FAB-9116](https://jira.hyperledger.org/browse/FAB-9116) fabric_model.rst: Some typos/grammar fixes
+* [f332cae44](https://github.com/hyperledger/fabric/commit/f332cae44) [FAB-8809](https://jira.hyperledger.org/browse/FAB-8809) Remove redundant test in localconfig
+* [e752be3fb](https://github.com/hyperledger/fabric/commit/e752be3fb) [FAB-8990](https://jira.hyperledger.org/browse/FAB-8990) deliver uses generated mocks and ginkgo
+* [4b8fc3aad](https://github.com/hyperledger/fabric/commit/4b8fc3aad) [FAB-9120](https://jira.hyperledger.org/browse/FAB-9120) "key/value" -> "key-value" in some doc files
+* [a0935aa2e](https://github.com/hyperledger/fabric/commit/a0935aa2e) [FAB-9119](https://jira.hyperledger.org/browse/FAB-9119) Tidy up blockchain.rst: grammar, punctuation
+* [70bff1041](https://github.com/hyperledger/fabric/commit/70bff1041) [FAB-9118](https://jira.hyperledger.org/browse/FAB-9118) Correct number of retrieved binaries
+* [122fed7e5](https://github.com/hyperledger/fabric/commit/122fed7e5) [FAB-9117](https://jira.hyperledger.org/browse/FAB-9117) Fix one misspelling of "legder" in Go code
+* [a927ad97a](https://github.com/hyperledger/fabric/commit/a927ad97a) [FAB-9115](https://jira.hyperledger.org/browse/FAB-9115) Standardize on "chaincode", not "chain code"
+* [3bfc2af77](https://github.com/hyperledger/fabric/commit/3bfc2af77) [FAB-9114](https://jira.hyperledger.org/browse/FAB-9114) Add references/links for all 5 Fabric SDKs
+* [859598311](https://github.com/hyperledger/fabric/commit/859598311) [FAB-9113](https://jira.hyperledger.org/browse/FAB-9113) Edit lf-account.rst for clarity, grammar
+* [be1eb3bea](https://github.com/hyperledger/fabric/commit/be1eb3bea) [FAB-9105](https://jira.hyperledger.org/browse/FAB-9105) Vendor gomega/* and ifrit libraries
+* [ac08bad42](https://github.com/hyperledger/fabric/commit/ac08bad42) [FAB-9101](https://jira.hyperledger.org/browse/FAB-9101) Remove unused godoc package
+* [791330d19](https://github.com/hyperledger/fabric/commit/791330d19) [FAB-9103](https://jira.hyperledger.org/browse/FAB-9103) Improve test time for comm pkg
+* [501e64d23](https://github.com/hyperledger/fabric/commit/501e64d23) [FAB-9085](https://jira.hyperledger.org/browse/FAB-9085) Refactor entities and support ECDSA signer
+* [3bd0f4f0c](https://github.com/hyperledger/fabric/commit/3bd0f4f0c) [FAB-9043](https://jira.hyperledger.org/browse/FAB-9043) Prepare fabric for 1.2 developerment
+* [0b78ca06c](https://github.com/hyperledger/fabric/commit/0b78ca06c) [FAB-9084](https://jira.hyperledger.org/browse/FAB-9084) MockStub extensions
+* [fd3d95eba](https://github.com/hyperledger/fabric/commit/fd3d95eba) [FAB-9082](https://jira.hyperledger.org/browse/FAB-9082) Reformatted Note
+* [ab023eb59](https://github.com/hyperledger/fabric/commit/ab023eb59) Standardize on proper name, "Hyperledger Fabric"
+* [cbf68d60b](https://github.com/hyperledger/fabric/commit/cbf68d60b) Correct single misspelling of "Hyperledgr"
+* [959fc9ce1](https://github.com/hyperledger/fabric/commit/959fc9ce1) [FAB-9063](https://jira.hyperledger.org/browse/FAB-9063) Specify release managers
+* [ccbfd8995](https://github.com/hyperledger/fabric/commit/ccbfd8995) [FAB-9003](https://jira.hyperledger.org/browse/FAB-9003) Add chaincode lifecycle capability
+* [10fdcc9cd](https://github.com/hyperledger/fabric/commit/10fdcc9cd) [FAB-9002](https://jira.hyperledger.org/browse/FAB-9002) Define new application v1.2 capability
+* [149d4f5f9](https://github.com/hyperledger/fabric/commit/149d4f5f9) [FAB-7567](https://jira.hyperledger.org/browse/FAB-7567) Golang client reference implementation
+* [f508c20e8](https://github.com/hyperledger/fabric/commit/f508c20e8) [FAB-9037](https://jira.hyperledger.org/browse/FAB-9037) Revert parallel gossip UT run
+* [291924483](https://github.com/hyperledger/fabric/commit/291924483) [FAB-9027](https://jira.hyperledger.org/browse/FAB-9027) Remove bddtests from fabric
+* [4da504763](https://github.com/hyperledger/fabric/commit/4da504763) [FAB-7629](https://jira.hyperledger.org/browse/FAB-7629) Fix car platform test fixture
+* [254c1b6dd](https://github.com/hyperledger/fabric/commit/254c1b6dd) [FAB-9024](https://jira.hyperledger.org/browse/FAB-9024) Fix vet issues in AuctionApp
+* [542e2e62f](https://github.com/hyperledger/fabric/commit/542e2e62f) [FAB-9022](https://jira.hyperledger.org/browse/FAB-9022) Fix broadcast_config compile issue
+* [a136a8ffd](https://github.com/hyperledger/fabric/commit/a136a8ffd) [FAB-9026](https://jira.hyperledger.org/browse/FAB-9026) - Update maven binary source in javaenv
+* [94ca92e7f](https://github.com/hyperledger/fabric/commit/94ca92e7f) [FAB-9021](https://jira.hyperledger.org/browse/FAB-9021) Fix compilation issue in bddtests
+* [4680c5e62](https://github.com/hyperledger/fabric/commit/4680c5e62) [FAB-9011](https://jira.hyperledger.org/browse/FAB-9011) Typo correction
+* [a8d0253ed](https://github.com/hyperledger/fabric/commit/a8d0253ed) [FAB-8976](https://jira.hyperledger.org/browse/FAB-8976) Move fixtures closer to tests
+* [2235b26d9](https://github.com/hyperledger/fabric/commit/2235b26d9) [FAB-8975](https://jira.hyperledger.org/browse/FAB-8975) Exclude testdata from linting/license
+* [621725f4e](https://github.com/hyperledger/fabric/commit/621725f4e) [FAB-8923](https://jira.hyperledger.org/browse/FAB-8923) Fix example compilation issues
+* [ab5c06055](https://github.com/hyperledger/fabric/commit/ab5c06055) [FAB-8934](https://jira.hyperledger.org/browse/FAB-8934) peer tests use TempDir instead of /var
+* [73e91c57a](https://github.com/hyperledger/fabric/commit/73e91c57a) [FAB-8934](https://jira.hyperledger.org/browse/FAB-8934) qscc tests use TempDir instead of /var
+* [f670ed993](https://github.com/hyperledger/fabric/commit/f670ed993) [FAB-8933](https://jira.hyperledger.org/browse/FAB-8933) Delete dead code
+* [6ebc80807](https://github.com/hyperledger/fabric/commit/6ebc80807) [FAB-8923](https://jira.hyperledger.org/browse/FAB-8923) Fix compilation of examples/ccchecker
+* [6fd18a29b](https://github.com/hyperledger/fabric/commit/6fd18a29b) [FAB-8923](https://jira.hyperledger.org/browse/FAB-8923) remove utxo example
+* [0dab1b19b](https://github.com/hyperledger/fabric/commit/0dab1b19b) [FAB-8923](https://jira.hyperledger.org/browse/FAB-8923) Remove dead chaintool example
+* [a247e07f7](https://github.com/hyperledger/fabric/commit/a247e07f7) [FAB-8906](https://jira.hyperledger.org/browse/FAB-8906) launcher uses canonicalName and version
+* [e9fe06cd6](https://github.com/hyperledger/fabric/commit/e9fe06cd6) [FAB-6735](https://jira.hyperledger.org/browse/FAB-6735) service discovery acl cache
+* [2b3c3971c](https://github.com/hyperledger/fabric/commit/2b3c3971c) [FAB-8972](https://jira.hyperledger.org/browse/FAB-8972) Fix a reST format in channel update doc
+* [7dacae719](https://github.com/hyperledger/fabric/commit/7dacae719) [FAB-8971](https://jira.hyperledger.org/browse/FAB-8971) Update documentation to reflect usage of dep
+* [799f282ad](https://github.com/hyperledger/fabric/commit/799f282ad) [FAB-8918](https://jira.hyperledger.org/browse/FAB-8918) Save viper lookup in GetLocalMSP
+* [f75abd6ad](https://github.com/hyperledger/fabric/commit/f75abd6ad) [FAB-7554](https://jira.hyperledger.org/browse/FAB-7554) Include Envelopes in gossip membership API
+* [569a4e35a](https://github.com/hyperledger/fabric/commit/569a4e35a) [FAB-8951](https://jira.hyperledger.org/browse/FAB-8951): Move tx vscc validator into sep file
+* [d2b5aede0](https://github.com/hyperledger/fabric/commit/d2b5aede0) [FAB-8950](https://jira.hyperledger.org/browse/FAB-8950): Remove env from txVSCCValidator
+* [bb5ad88d6](https://github.com/hyperledger/fabric/commit/bb5ad88d6) Update GitHub ID
+* [f4007a418](https://github.com/hyperledger/fabric/commit/f4007a418) [FAB-7552](https://jira.hyperledger.org/browse/FAB-7552) IdentityInfo in gossip identityStore
+* [d09e2f228](https://github.com/hyperledger/fabric/commit/d09e2f228) [FAB-8061](https://jira.hyperledger.org/browse/FAB-8061) Update grpc-go to latest version
+* [daaf524b0](https://github.com/hyperledger/fabric/commit/daaf524b0) [FAB-8908](https://jira.hyperledger.org/browse/FAB-8908) fix broken links
+* [7ad239c5d](https://github.com/hyperledger/fabric/commit/7ad239c5d) [FAB-8638](https://jira.hyperledger.org/browse/FAB-8638) exterminate vestigial 1.0.x references
+* [893381c54](https://github.com/hyperledger/fabric/commit/893381c54) [FAB-8904](https://jira.hyperledger.org/browse/FAB-8904) Make CCContext implement fmt.Stringer
+* [516ff4db8](https://github.com/hyperledger/fabric/commit/516ff4db8) [FAB-8706](https://jira.hyperledger.org/browse/FAB-8706) Provide defaults for build metadata
+* [ca27b3891](https://github.com/hyperledger/fabric/commit/ca27b3891) [FAB-8909](https://jira.hyperledger.org/browse/FAB-8909) disable d/l images if no docker
+* [0cf1830cd](https://github.com/hyperledger/fabric/commit/0cf1830cd) [FAB-8870](https://jira.hyperledger.org/browse/FAB-8870) Return concrete types from constructors
+* [13840a2dc](https://github.com/hyperledger/fabric/commit/13840a2dc) [FAB-8854](https://jira.hyperledger.org/browse/FAB-8854) Fix link in fabric ca commands page
+* [655537722](https://github.com/hyperledger/fabric/commit/655537722) [FAB-7895](https://jira.hyperledger.org/browse/FAB-7895): New topic (Concept) : Peers
+* [462503048](https://github.com/hyperledger/fabric/commit/462503048) [FAB-8844](https://jira.hyperledger.org/browse/FAB-8844) correct handling of launch errors
+* [b776e88bd](https://github.com/hyperledger/fabric/commit/b776e88bd) [FAB-8790](https://jira.hyperledger.org/browse/FAB-8790): Parallelize gossip state trans. UT
+* [8d8d20d00](https://github.com/hyperledger/fabric/commit/8d8d20d00) [FAB-8361](https://jira.hyperledger.org/browse/FAB-8361): Remove ledger dep. for committer UT
+* [6ca474442](https://github.com/hyperledger/fabric/commit/6ca474442) [FAB-6733](https://jira.hyperledger.org/browse/FAB-6733) service discovery gRPC service
+* [d6b80f2e9](https://github.com/hyperledger/fabric/commit/d6b80f2e9) [FAB-7580](https://jira.hyperledger.org/browse/FAB-7580) simplify READY state
+* [5bf1a6381](https://github.com/hyperledger/fabric/commit/5bf1a6381) [FAB-7083](https://jira.hyperledger.org/browse/FAB-7083) Use dep for dependency management
+* [36a34daf0](https://github.com/hyperledger/fabric/commit/36a34daf0) [FAB-8834](https://jira.hyperledger.org/browse/FAB-8834) Remove fsm from codebase
+* [9239c0aa1](https://github.com/hyperledger/fabric/commit/9239c0aa1) [FAB-8064](https://jira.hyperledger.org/browse/FAB-8064): Add ram ledger for gossip state trans.
+* [00f083e58](https://github.com/hyperledger/fabric/commit/00f083e58) [FAB-7573](https://jira.hyperledger.org/browse/FAB-7573) cleanup chaincode support
+* [9ec39e542](https://github.com/hyperledger/fabric/commit/9ec39e542) [FAB-8799](https://jira.hyperledger.org/browse/FAB-8799) Remove Kafka revalidation comment
+* [47264ca39](https://github.com/hyperledger/fabric/commit/47264ca39) [FAB-5424](https://jira.hyperledger.org/browse/FAB-5424) remove chaincode FSM - phase 1
+* [edddd1e52](https://github.com/hyperledger/fabric/commit/edddd1e52) [FAB-6736](https://jira.hyperledger.org/browse/FAB-6736) ServiceDiscovery: Endorsement descriptors
+* [ced449097](https://github.com/hyperledger/fabric/commit/ced449097) [FAB-6734](https://jira.hyperledger.org/browse/FAB-6734) Define discovery service support interface
+* [df2cdd7c2](https://github.com/hyperledger/fabric/commit/df2cdd7c2) [FAB-7535](https://jira.hyperledger.org/browse/FAB-7535) Signature policy SatisfiedBy set
+* [c6e442f8a](https://github.com/hyperledger/fabric/commit/c6e442f8a) [FAB-7435](https://jira.hyperledger.org/browse/FAB-7435) Graph struct for service discovery
+* [963ee5bf9](https://github.com/hyperledger/fabric/commit/963ee5bf9) [FAB-7378](https://jira.hyperledger.org/browse/FAB-7378) tree utilities for service discovery
+* [879c18ed3](https://github.com/hyperledger/fabric/commit/879c18ed3) [FAB-8067](https://jira.hyperledger.org/browse/FAB-8067) Fine tune gossip UT port ranges
+* [a916f93fa](https://github.com/hyperledger/fabric/commit/a916f93fa) [FAB-8757](https://jira.hyperledger.org/browse/FAB-8757) add Issuer/Subject field to peer.cert
+* [1ac3d3112](https://github.com/hyperledger/fabric/commit/1ac3d3112) [FAB-8763](https://jira.hyperledger.org/browse/FAB-8763) Clarify CLI cc package doc for node cc
+* [5bf93a89f](https://github.com/hyperledger/fabric/commit/5bf93a89f) [FAB-8731](https://jira.hyperledger.org/browse/FAB-8731) Clarify CLI cc install doc for node cc
+* [173c73215](https://github.com/hyperledger/fabric/commit/173c73215) [FAB-8748](https://jira.hyperledger.org/browse/FAB-8748) Get fabric-ca-client binary from bootstrap.sh
+* [0c2d6b72e](https://github.com/hyperledger/fabric/commit/0c2d6b72e) [FAB-8738](https://jira.hyperledger.org/browse/FAB-8738) Document Reserved Field Names in CouchDB
+* [22edea308](https://github.com/hyperledger/fabric/commit/22edea308) [FAB-8691](https://jira.hyperledger.org/browse/FAB-8691) corrected peer --version description
+* [8e0473afb](https://github.com/hyperledger/fabric/commit/8e0473afb) [FAB-8728](https://jira.hyperledger.org/browse/FAB-8728) Typo in peerchannel.md
+* [f922b70ad](https://github.com/hyperledger/fabric/commit/f922b70ad) [FAB-8705](https://jira.hyperledger.org/browse/FAB-8705) Remove samplesyscc package
+* [7af4f2e54](https://github.com/hyperledger/fabric/commit/7af4f2e54) [FAB-8703](https://jira.hyperledger.org/browse/FAB-8703) Enable scc plugin tests on darwin
+* [b1e3e77e2](https://github.com/hyperledger/fabric/commit/b1e3e77e2) [FAB-8700](https://jira.hyperledger.org/browse/FAB-8700) Clarify channel update tutorial leader elec
+* [776d8bdeb](https://github.com/hyperledger/fabric/commit/776d8bdeb) [FAB-2556](https://jira.hyperledger.org/browse/FAB-2556) Remove 'behave' from 'make all' target
+* [72c35e349](https://github.com/hyperledger/fabric/commit/72c35e349) [FAB-8698](https://jira.hyperledger.org/browse/FAB-8698) - Fix broken link
+* [647f80379](https://github.com/hyperledger/fabric/commit/647f80379) [FAB-8674](https://jira.hyperledger.org/browse/FAB-8674) Middleware style authen for cc support
+* [e9dc2a6ea](https://github.com/hyperledger/fabric/commit/e9dc2a6ea) [FAB-8668](https://jira.hyperledger.org/browse/FAB-8668) Use real type on return from VMCProcess
+* [580d091a0](https://github.com/hyperledger/fabric/commit/580d091a0) [FAB-8660](https://jira.hyperledger.org/browse/FAB-8660) Operations and PeerSupport interfaces
+* [387c923e6](https://github.com/hyperledger/fabric/commit/387c923e6) [FAB-8688](https://jira.hyperledger.org/browse/FAB-8688) Gossip onConnect() references wrong field
+* [e1d1effb8](https://github.com/hyperledger/fabric/commit/e1d1effb8) [FAB-7997](https://jira.hyperledger.org/browse/FAB-7997) Fix statecouchdb: rm extra loop & comt.
+* [35f32a750](https://github.com/hyperledger/fabric/commit/35f32a750) [FAB-8658](https://jira.hyperledger.org/browse/FAB-8658) peer mock functions to separate file
+* [90529f90d](https://github.com/hyperledger/fabric/commit/90529f90d) [FAB-8666](https://jira.hyperledger.org/browse/FAB-8666) refactor fabric docs TOC
+* [20de11a04](https://github.com/hyperledger/fabric/commit/20de11a04) [FAB-6741](https://jira.hyperledger.org/browse/FAB-6741) Deprecate stateInfo.Metadata
+* [09e1f8d83](https://github.com/hyperledger/fabric/commit/09e1f8d83) [FAB-6720](https://jira.hyperledger.org/browse/FAB-6720) service discovery proto definitions
+* [368bfc2ff](https://github.com/hyperledger/fabric/commit/368bfc2ff) [FAB-8655](https://jira.hyperledger.org/browse/FAB-8655) remove endorser.Support#ChaincodeByName
+* [bc06d6b43](https://github.com/hyperledger/fabric/commit/bc06d6b43) [FAB-8240](https://jira.hyperledger.org/browse/FAB-8240) Document Orderer.Addresses config setting
+* [d414824d7](https://github.com/hyperledger/fabric/commit/d414824d7) [FAB-8654](https://jira.hyperledger.org/browse/FAB-8654) Upgrade Gradle to version 4.4.1
+* [81f4c5373](https://github.com/hyperledger/fabric/commit/81f4c5373) [FAB-8313](https://jira.hyperledger.org/browse/FAB-8313) Optimize gossip filter selection
+
 ## v1.1.0
 Thu Mar 15 13:49:03 EDT 2018
 

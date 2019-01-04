@@ -21,6 +21,12 @@ import (
 // Gossip is the interface of the gossip component
 type Gossip interface {
 
+	// SelfMembershipInfo returns the peer's membership information
+	SelfMembershipInfo() discovery.NetworkMember
+
+	// SelfChannelInfo returns the peer's latest StateInfo message of a given channel
+	SelfChannelInfo(common.ChainID) *proto.SignedGossipMessage
+
 	// Send sends a message to remote peers
 	Send(msg *proto.GossipMessage, peers ...*comm.RemotePeer)
 
@@ -38,9 +44,13 @@ type Gossip interface {
 	// the peer publishes to other peers
 	UpdateMetadata(metadata []byte)
 
-	// UpdateChannelMetadata updates the self metadata the peer
-	// publishes to other peers about its channel-related state
-	UpdateChannelMetadata(metadata []byte, chainID common.ChainID)
+	// UpdateLedgerHeight updates the ledger height the peer
+	// publishes to other peers in the channel
+	UpdateLedgerHeight(height uint64, chainID common.ChainID)
+
+	// UpdateChaincodes updates the chaincodes the peer publishes
+	// to other peers in the channel
+	UpdateChaincodes(chaincode []*proto.Chaincode, chainID common.ChainID)
 
 	// Gossip sends a message to other peers to the network
 	Gossip(msg *proto.GossipMessage)
@@ -67,6 +77,9 @@ type Gossip interface {
 	// SuspectPeers makes the gossip instance validate identities of suspected peers, and close
 	// any connections to peers with identities that are found invalid
 	SuspectPeers(s api.PeerSuspector)
+
+	// IdentityInfo returns information known peer identities
+	IdentityInfo() api.PeerIdentitySet
 
 	// Stop stops the gossip component
 	Stop()
@@ -118,6 +131,7 @@ type Config struct {
 
 	TLSCerts *common.TLSCertificates // TLS certificates of the peer
 
-	InternalEndpoint string // Endpoint we publish to peers in our organization
-	ExternalEndpoint string // Peer publishes this endpoint instead of SelfEndpoint to foreign organizations
+	InternalEndpoint         string        // Endpoint we publish to peers in our organization
+	ExternalEndpoint         string        // Peer publishes this endpoint instead of SelfEndpoint to foreign organizations
+	TimeForMembershipTracker time.Duration // Determines time for polling with membershipTracker
 }

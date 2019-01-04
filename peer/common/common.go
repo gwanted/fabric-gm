@@ -1,5 +1,5 @@
 /*
-Copyright IBM Corp. 2016-2017 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
 SPDX-License-Identifier: Apache-2.0
 */
@@ -7,10 +7,14 @@ SPDX-License-Identifier: Apache-2.0
 package common
 
 import (
+	"context"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"strings"
+	"time"
 
 	"github.com/hyperledger/fabric/bccsp/factory"
 	"github.com/hyperledger/fabric/common/channelconfig"
@@ -21,25 +25,41 @@ import (
 	"github.com/hyperledger/fabric/core/scc/cscc"
 	"github.com/hyperledger/fabric/msp"
 	mspmgmt "github.com/hyperledger/fabric/msp/mgmt"
+	"github.com/hyperledger/fabric/peer/common/api"
 	pcommon "github.com/hyperledger/fabric/protos/common"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	putils "github.com/hyperledger/fabric/protos/utils"
-	"github.com/op/go-logging"
 	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/net/context"
 )
 
 // UndefinedParamValue defines what undefined parameters in the command line will initialise to
 const UndefinedParamValue = ""
+const CmdRoot = "core"
+
+var mainLogger = flogging.MustGetLogger("main")
+var logOutput = os.Stderr
 
 var (
+	defaultConnTimeout = 3 * time.Second
 	// These function variables (xyzFnc) can be used to invoke corresponding xyz function
 	// this will allow the invoking packages to mock these functions in their unit test cases
 
-	// GetEndorserClientFnc is a function that returns a new endorser client connection,
+	// GetEndorserClientFnc is a function that returns a new endorser client connection
+	// to the provided peer address using the TLS root cert file,
 	// by default it is set to GetEndorserClient function
-	GetEndorserClientFnc func() (pb.EndorserClient, error)
+	GetEndorserClientFnc func(address, tlsRootCertFile string) (pb.EndorserClient, error)
+
+	// GetPeerDeliverClientFnc is a function that returns a new deliver client connection
+	// to the provided peer address using the TLS root cert file,
+	// by default it is set to GetDeliverClient function
+	GetPeerDeliverClientFnc func(address, tlsRootCertFile string) (api.PeerDeliverClient, error)
+
+	// GetDeliverClientFnc is a function that returns a new deliver client connection
+	// to the provided peer address using the TLS root cert file,
+	// by default it is set to GetDeliverClient function
+	GetDeliverClientFnc func(address, tlsRootCertFile string) (pb.Deliver_DeliverClient, error)
 
 	// GetDefaultSignerFnc is a function that returns a default Signer(Default/PERR)
 	// by default it is set to GetDefaultSigner function
@@ -53,10 +73,13 @@ var (
 	// by default it is set to GetOrdererEndpointOfChain function
 	GetOrdererEndpointOfChainFnc func(chainID string, signer msp.SigningIdentity,
 		endorserClient pb.EndorserClient) ([]string, error)
+
+	// GetCertificateFnc is a function that returns the client TLS certificate
+	GetCertificateFnc func() (tls.Certificate, error)
 )
 
 type commonClient struct {
-	comm.GRPCClient
+	*comm.GRPCClient
 	address string
 	sn      string
 }
@@ -66,10 +89,14 @@ func init() {
 	GetDefaultSignerFnc = GetDefaultSigner
 	GetBroadcastClientFnc = GetBroadcastClient
 	GetOrdererEndpointOfChainFnc = GetOrdererEndpointOfChain
+	GetDeliverClientFnc = GetDeliverClient
+	GetPeerDeliverClientFnc = GetPeerDeliverClient
+	GetCertificateFnc = GetCertificate
 }
 
-//InitConfig initializes viper config
+// InitConfig initializes viper config
 func InitConfig(cmdRoot string) error {
+
 	err := config.InitViper(nil, cmdRoot)
 	if err != nil {
 		return err
@@ -77,20 +104,32 @@ func InitConfig(cmdRoot string) error {
 
 	err = viper.ReadInConfig() // Find and read the config file
 	if err != nil {            // Handle errors reading the config file
-		return errors.WithMessage(err, fmt.Sprintf("error when reading %s config file", cmdRoot))
+		// The version of Viper we use claims the config type isn't supported when in fact the file hasn't been found
+		// Display a more helpful message to avoid confusing the user.
+		if strings.Contains(fmt.Sprint(err), "Unsupported Config Type") {
+			return errors.New(fmt.Sprintf("Could not find config file. "+
+				"Please make sure that FABRIC_CFG_PATH is set to a path "+
+				"which contains %s.yaml", cmdRoot))
+		} else {
+			return errors.WithMessage(err, fmt.Sprintf("error when reading %s config file", cmdRoot))
+		}
 	}
 
 	return nil
 }
 
-//InitCrypto initializes crypto for this peer
+// InitCrypto initializes crypto for this peer
 func InitCrypto(mspMgrConfigDir, localMSPID, localMSPType string) error {
 	var err error
-	// Check whenever msp folder exists
-	_, err = os.Stat(mspMgrConfigDir)
-	if os.IsNotExist(err) {
+	// Check whether msp folder exists
+	fi, err := os.Stat(mspMgrConfigDir)
+	if os.IsNotExist(err) || !fi.IsDir() {
 		// No need to try to load MSP from folder which is not available
-		return errors.Errorf("cannot init crypto, missing %s folder", mspMgrConfigDir)
+		return errors.Errorf("cannot init crypto, folder \"%s\" does not exist", mspMgrConfigDir)
+	}
+	// Check whether localMSPID exists
+	if localMSPID == "" {
+		return errors.New("the local MSP must have an ID")
 	}
 
 	// Init the BCCSP
@@ -128,7 +167,6 @@ func GetDefaultSigner() (msp.SigningIdentity, error) {
 
 // GetOrdererEndpointOfChain returns orderer endpoints of given chain
 func GetOrdererEndpointOfChain(chainID string, signer msp.SigningIdentity, endorserClient pb.EndorserClient) ([]string, error) {
-
 	// query cscc for chain config block
 	invocation := &pb.ChaincodeInvocationSpec{
 		ChaincodeSpec: &pb.ChaincodeSpec{
@@ -163,7 +201,7 @@ func GetOrdererEndpointOfChain(chainID string, signer msp.SigningIdentity, endor
 	}
 
 	if proposalResp.Response.Status != 0 && proposalResp.Response.Status != 200 {
-		return nil, errors.Errorf("error bad proposal response %d", proposalResp.Response.Status)
+		return nil, errors.Errorf("error bad proposal response %d: %s", proposalResp.Response.Status, proposalResp.Response.Message)
 	}
 
 	// parse config block
@@ -184,40 +222,23 @@ func GetOrdererEndpointOfChain(chainID string, signer msp.SigningIdentity, endor
 	return bundle.ChannelConfig().OrdererAddresses(), nil
 }
 
-// SetLogLevelFromViper sets the log level for 'module' logger to the value in
-// core.yaml
-func SetLogLevelFromViper(module string) error {
-	var err error
-	if module == "" {
-		return errors.New("log level not set, no module name provided")
-	}
-	logLevelFromViper := viper.GetString("logging." + module)
-	err = CheckLogLevel(logLevelFromViper)
-	if err != nil {
-		return err
-	}
-	// replace period in module name with forward slash to allow override
-	// of logging submodules
-	module = strings.Replace(module, ".", "/", -1)
-	// only set logging modules that begin with the supplied module name here
-	_, err = flogging.SetModuleLevel("^"+module, logLevelFromViper)
-	return err
-}
-
 // CheckLogLevel checks that a given log level string is valid
 func CheckLogLevel(level string) error {
-	_, err := logging.LogLevel(level)
-	if err != nil {
-		err = errors.Errorf("invalid log level provided - %s", level)
+	if !flogging.IsValidLevel(level) {
+		return errors.Errorf("invalid log level provided - %s", level)
 	}
-	return err
+	return nil
 }
 
-func configFromEnv(prefix string) (address, override string,
-	clientConfig comm.ClientConfig, err error) {
+func configFromEnv(prefix string) (address, override string, clientConfig comm.ClientConfig, err error) {
 	address = viper.GetString(prefix + ".address")
 	override = viper.GetString(prefix + ".tls.serverhostoverride")
 	clientConfig = comm.ClientConfig{}
+	connTimeout := viper.GetDuration(prefix + ".client.connTimeout")
+	if connTimeout == time.Duration(0) {
+		connTimeout = defaultConnTimeout
+	}
+	clientConfig.Timeout = connTimeout
 	secOpts := &comm.SecureOptions{
 		UseTLS:            viper.GetBool(prefix + ".tls.enabled"),
 		RequireClientCert: viper.GetBool(prefix + ".tls.clientAuthRequired")}
@@ -248,4 +269,48 @@ func configFromEnv(prefix string) (address, override string,
 	}
 	clientConfig.SecOpts = secOpts
 	return
+}
+
+func InitCmd(cmd *cobra.Command, args []string) {
+	err := InitConfig(CmdRoot)
+	if err != nil { // Handle errors reading the config file
+		mainLogger.Errorf("Fatal error when initializing %s config : %s", CmdRoot, err)
+		os.Exit(1)
+	}
+
+	// read in the legacy logging level settings and, if set,
+	// notify users of the FABRIC_LOGGING_SPEC env variable
+	var loggingLevel string
+	if viper.GetString("logging_level") != "" {
+		loggingLevel = viper.GetString("logging_level")
+	} else {
+		loggingLevel = viper.GetString("logging.level")
+	}
+	if loggingLevel != "" {
+		mainLogger.Warning("CORE_LOGGING_LEVEL is no longer supported, please use the FABRIC_LOGGING_SPEC environment variable")
+	}
+
+	loggingSpec := os.Getenv("FABRIC_LOGGING_SPEC")
+	loggingFormat := os.Getenv("FABRIC_LOGGING_FORMAT")
+
+	flogging.Init(flogging.Config{
+		Format:  loggingFormat,
+		Writer:  logOutput,
+		LogSpec: loggingSpec,
+	})
+
+	// Init the MSP
+	var mspMgrConfigDir = config.GetPath("peer.mspConfigPath")
+	var mspID = viper.GetString("peer.localMspId")
+	var mspType = viper.GetString("peer.localMspType")
+	if mspType == "" {
+		mspType = msp.ProviderTypeToString(msp.FABRIC)
+	}
+	err = InitCrypto(mspMgrConfigDir, mspID, mspType)
+	if err != nil { // Handle errors reading the config file
+		mainLogger.Errorf("Cannot run peer because %s", err.Error())
+		os.Exit(1)
+	}
+
+	runtime.GOMAXPROCS(viper.GetInt("peer.gomaxprocs"))
 }

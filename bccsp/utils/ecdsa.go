@@ -13,8 +13,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-
-	"github.com/tjfoc/gmsm/sm2"
 )
 
 type ECDSASignature struct {
@@ -31,7 +29,6 @@ var (
 		elliptic.P256(): new(big.Int).Rsh(elliptic.P256().Params().N, 1),
 		elliptic.P384(): new(big.Int).Rsh(elliptic.P384().Params().N, 1),
 		elliptic.P521(): new(big.Int).Rsh(elliptic.P521().Params().N, 1),
-		sm2.P256Sm2():   new(big.Int).Rsh(sm2.P256Sm2().Params().N, 1),
 	}
 )
 

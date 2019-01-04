@@ -1,17 +1,7 @@
 /*
-Copyright IBM Corp. 2016 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package historyleveldb
@@ -94,11 +84,6 @@ func (historyDB *historyDB) Commit(block *common.Block) error {
 
 	// Get the invalidation byte array for the block
 	txsFilter := util.TxValidationFlags(block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER])
-	// Initialize txsFilter if it does not yet exist (e.g. during testing, for genesis block, etc)
-	if len(txsFilter) == 0 {
-		txsFilter = util.NewTxValidationFlags(len(block.Data.Data))
-		block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER] = txsFilter
-	}
 
 	// write each tran's write set to history db
 	for _, envBytes := range block.Data.Data {
@@ -211,6 +196,14 @@ func (historyDB *historyDB) ShouldRecover(lastAvailableBlock uint64) (bool, uint
 // CommitLostBlock implements method in interface kvledger.Recoverer
 func (historyDB *historyDB) CommitLostBlock(blockAndPvtdata *ledger.BlockAndPvtData) error {
 	block := blockAndPvtdata.Block
+
+	// log every 1000th block at Info level so that history rebuild progress can be tracked in production envs.
+	if block.Header.Number%1000 == 0 {
+		logger.Infof("Recommitting block [%d] to history database", block.Header.Number)
+	} else {
+		logger.Debugf("Recommitting block [%d] to history database", block.Header.Number)
+	}
+
 	if err := historyDB.Commit(block); err != nil {
 		return err
 	}

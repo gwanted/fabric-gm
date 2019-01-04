@@ -1,4 +1,4 @@
-// +build !nopkcs11
+// +build pkcs11
 
 /*
 Copyright IBM Corp. 2017 All Rights Reserved.
@@ -18,8 +18,6 @@ limitations under the License.
 package factory
 
 import (
-	"strings"
-
 	"github.com/hyperledger/fabric/bccsp"
 	"github.com/hyperledger/fabric/bccsp/pkcs11"
 	"github.com/pkg/errors"
@@ -51,12 +49,9 @@ func setFactories(config *FactoryOpts) error {
 		config = GetDefaultOpts()
 	}
 
-	// if config.ProviderName == "" {
-	// 	config.ProviderName = "GM"
-	// }
-
-	//暂时由GM替代bccsp
-	config.ProviderName = "GM"
+	if config.ProviderName == "" {
+		config.ProviderName = "SW"
+	}
 
 	if config.SwOpts == nil {
 		config.SwOpts = GetDefaultOpts().SwOpts
@@ -67,12 +62,7 @@ func setFactories(config *FactoryOpts) error {
 
 	// Software-Based BCCSP
 	if config.SwOpts != nil {
-		var f BCCSPFactory
-		if strings.ToUpper(config.ProviderName) == "GM" {
-			f = &GMFactory{}
-		} else {
-			f = &SWFactory{}
-		}
+		f := &SWFactory{}
 		err := initBCCSP(f, config)
 		if err != nil {
 			factoriesInitError = errors.Wrap(err, "Failed initializing SW.BCCSP")
@@ -110,8 +100,6 @@ func setFactories(config *FactoryOpts) error {
 func GetBCCSPFromOpts(config *FactoryOpts) (bccsp.BCCSP, error) {
 	var f BCCSPFactory
 	switch config.ProviderName {
-	case "GM":
-		f = &GMFactory{}
 	case "SW":
 		f = &SWFactory{}
 	case "PKCS11":

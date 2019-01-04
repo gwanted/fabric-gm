@@ -8,23 +8,111 @@ First things first, please review the Hyperledger `Code of
 Conduct <https://wiki.hyperledger.org/community/hyperledger-project-code-of-conduct>`__
 before participating. It is important that we keep things civil.
 
-.. toctree::
-   :maxdepth: 1
+Project Governance
+------------------
 
-   MAINTAINERS
-   jira_navigation
-   dev-setup/devenv
-   dev-setup/build
-   Gerrit/lf-account
-   Gerrit/gerrit
-   Gerrit/changes
-   Gerrit/reviewing
-   Gerrit/best-practices
-   testing
-   Style-guides/go-style
+Hyperledger Fabric is managed under an open governance model as described in
+our `charter <https://www.hyperledger.org/about/charter>`__. Projects and
+sub-projects are lead by a set of maintainers. New sub-projects can
+designate an initial set of maintainers that will be approved by the
+top-level project's existing maintainers when the project is first
+approved.
+
+Maintainers
+~~~~~~~~~~~
+
+The Fabric project is lead by the project's top level :doc:`maintainers <MAINTAINERS>`.
+The maintainers are responsible for reviewing and merging all patches submitted
+for review, and they guide the overall technical direction of the project within
+the guidelines established by the Hyperledger Technical Steering Committee (TSC).
+
+Becoming a maintainer
+~~~~~~~~~~~~~~~~~~~~~
+
+The project's maintainers will, from time-to-time, consider
+adding or removing a maintainer. An existing maintainer can submit a
+change set to the :doc:`MAINTAINERS.rst <MAINTAINERS>` file. A nominated
+Contributor may become a Maintainer by a majority approval of the proposal
+by the existing Maintainers. Once approved, the change set is then merged
+and the individual is added to (or alternatively, removed from) the maintainers
+group. Maintainers may be removed by explicit resignation, for prolonged
+inactivity (3 or more months), or for some infraction of the `code of conduct
+<https://wiki.hyperledger.org/community/hyperledger-project-code-of-conduct>`__
+or by consistently demonstrating poor judgement. A maintainer removed for
+inactivity should be restored following a sustained resumption of contributions
+and reviews (a month or more) demonstrating a renewed commitment to the project.
+
+Release cadence
+~~~~~~~~~~~~~~~
+
+The Fabric maintainers have settled on a quarterly (approximately) release
+cadence (see `releases <https://github.com/hyperledger/fabric#releases>`__).
+We are also actively considering adopting an LTS (long term support) release
+process, though the details of this are still being worked out by the
+maintainers. Follow the discussion on the #fabric-maintainers channel in Chat.
+
+Making Feature/Enhancement Proposals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+First, take time to review
+`JIRA <https://jira.hyperledger.org/issues/?filter=12524>`__
+to be sure that there isn't already an open (or recently closed) proposal for the
+same function. If there isn't, to make a proposal we recommend that you open a
+JIRA Epic or Story, whichever seems to best fit the circumstance and
+link or inline a "one pager" of the proposal that states what the feature would
+do and, if possible, how it might be implemented. It would help also to make a
+case for why the feature should be added, such as identifying specific use
+case(s) for which the feature is needed and a case for what the benefit would be
+should the feature be implemented. Once the JIRA issue is created, and the
+"one pager" either attached, inlined in the description field, or a link to a
+publicly accessible document is added to the description, send an introductory
+email to the fabric@lists.hyperledger.org mailing list linking the
+JIRA issue, and soliciting feedback.
+
+Discussion of the proposed feature should be conducted in the JIRA issue itself,
+so that we have a consistent pattern within our community as to where to find
+design discussion.
+
+Getting the support of three or more of the Hyperledger Fabric maintainers for
+the new feature will greatly enhance the probability that the feature's related
+CRs will be included in a subsequent release.
+
+Maintainers meeting
+~~~~~~~~~~~~~~~~~~~
+
+The maintainers hold a bi-weekly meeting every other Wednesday at 9 am ET
+on `Zoom <https://zoom.us/my/hyperledger.community>`__. Please see the
+`community calendar <https://wiki.hyperledger.org/community/calendar-public-meetings>`__
+for details.
+
+The purpose of the maintainers meeting is to plan for and review the progress of
+releases, and to discuss the technical and operational direction of the project
+and sub-projects.
+
+New feature/enhancement proposals as described above should be presented to a
+maintainers meeting for consideration, feedback and acceptance.
+
+Release roadmap
+~~~~~~~~~~~~~~~
+
+The Fabric release roadmap of epics is maintained in
+`JIRA <https://jira.hyperledger.org/secure/Dashboard.jspa?selectPageId=10104>`__.
+
+Communications
+~~~~~~~~~~~~~~
+
+We use `RocketChat <https://chat.hyperledger.org/>`__ for communication
+and Google Hangouts™ for screen sharing between developers. Our
+development planning and prioritization is done in
+`JIRA <https://jira.hyperledger.org>`__, and we take longer running
+discussions/decisions to the `mailing
+list <https://lists.hyperledger.org/mailman/listinfo/hyperledger-fabric>`__.
+
+Contribution guide
+------------------
 
 Install prerequisites
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 Before we begin, if you haven't already done so, you may wish to check that
 you have all the :doc:`prerequisites <prereqs>` installed on the platform(s)
@@ -32,7 +120,7 @@ on which you'll be developing blockchain applications and/or operating
 Hyperledger Fabric.
 
 Getting a Linux Foundation account
-----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to participate in the development of the Hyperledger Fabric
 project, you will need a :doc:`Linux Foundation
@@ -43,7 +131,7 @@ access to all the Hyperledger community development tools, including
 `Wiki <https://wiki.hyperledger.org/start>`__ (for editing, only).
 
 Getting help
-------------
+~~~~~~~~~~~~
 
 If you are looking for something to work on, or need some expert
 assistance in debugging a problem or working out a fix to an issue, our
@@ -51,13 +139,13 @@ assistance in debugging a problem or working out a fix to an issue, our
 help. We hang out on
 `Chat <https://chat.hyperledger.org/channel/fabric/>`__, IRC
 (#hyperledger on freenode.net) and the `mailing
-lists <http://lists.hyperledger.org/>`__. Most of us don't bite :grin:
+lists <https://lists.hyperledger.org/>`__. Most of us don't bite :grin:
 and will be glad to help. The only silly question is the one you don't
 ask. Questions are in fact a great way to help improve the project as
 they highlight where our documentation could be clearer.
 
 Reporting bugs
---------------
+~~~~~~~~~~~~~~
 
 If you are a user and you have found a bug, please submit an issue using
 `JIRA <https://jira.hyperledger.org/secure/Dashboard.jspa?selectPageId=10104>`__.
@@ -67,19 +155,19 @@ reported, then you might add a comment that you also are interested in seeing
 the defect fixed.
 
 .. note:: If the defect is security-related, please follow the Hyperledger
-          `security bug reporting process <https://wiki.hyperledger.org/security/bug-handling-process>`.
+          `security bug reporting process <https://wiki.hyperledger.org/security>`__.
 
 If it has not been previously reported, create a new JIRA. Please try to provide
 sufficient information for someone else to reproduce the
 issue. One of the project's maintainers should respond to your issue within 24
 hours. If not, please bump the issue with a comment and request that it be
 reviewed. You can also post to the relevant Hyperledger Fabric channel in
-`Hyperledger Rocket Chat <https://chat.hyperledger.org>`__.  For example, a doc bug should
+`Hyperledger Chat <https://chat.hyperledger.org>`__.  For example, a doc bug should
 be broadcast to ``#fabric-documentation``, a database bug to ``#fabric-ledger``,
 and so on...
 
 Submitting your fix
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 If you just submitted a JIRA for a bug you've discovered, and would like to
 provide a fix, we would welcome that gladly! Please assign the JIRA issue to
@@ -89,7 +177,7 @@ yourself, then you can submit a change request (CR).
           brief :doc:`tutorial <submit_cr>` for you.
 
 Fixing issues and working stories
----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Review the `issues
 list <https://jira.hyperledger.org/issues/?filter=10580>`__ and find
@@ -103,9 +191,9 @@ saying that you are still actively working the issue if you need a
 little more time.
 
 Reviewing submitted Change Requests (CRs)
------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Another way to contribute and learn about Hyperledgr Fabric is to help the
+Another way to contribute and learn about Hyperledger Fabric is to help the
 maintainers with the review of the CRs that are open. Indeed
 maintainers have the difficult role of having to review all the CRs
 that are being submitted and evaluate whether they should be merged or
@@ -121,40 +209,14 @@ will gain from it.
 Just browse through `the open CRs on Gerrit
 <https://gerrit.hyperledger.org/r/#/q/status:open>`__ to get started.
 
-Making Feature/Enhancement Proposals
-------------------------------------
-
-Review
-`JIRA <https://jira.hyperledger.org/secure/Dashboard.jspa?selectPageId=10104>`__.
-to be sure that there isn't already an open (or recently closed) proposal for the
-same function. If there isn't, to make a proposal we recommend that you open a
-JIRA Epic, Story or Improvement, whichever seems to best fit the circumstance and
-link or inline a "one pager" of the proposal that states what the feature would
-do and, if possible, how it might be implemented. It would help also to make a
-case for why the feature should be added, such as identifying specific use
-case(s) for which the feature is needed and a case for what the benefit would be
-should the feature be implemented. Once the JIRA issue is created, and the
-"one pager" either attached, inlined in the description field, or a link to a
-publicly accessible document is added to the description, send an introductory
-email to the hyperledger-fabric@lists.hyperledger.org mailing list linking the
-JIRA issue, and soliciting feedback.
-
-Discussion of the proposed feature should be conducted in the JIRA issue itself,
-so that we have a consistent pattern within our community as to where to find
-design discussion.
-
-Getting the support of three or more of the Hyperledger Fabric maintainers for the new
-feature will greatly enhance the probability that the feature's related CRs
-will be merged.
-
 Setting up development environment
-----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Next, try :doc:`building the project <dev-setup/build>` in your local
 development environment to ensure that everything is set up correctly.
 
 What makes a good change request?
----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  One change at a time. Not five, not three, not ten. One and only one.
    Why? Because it limits the blast area of the change. If we have a
@@ -193,7 +255,7 @@ What makes a good change request?
    too. If you send a 1,000 or 2,000 LOC change, how long do you think
    it takes to review all of that code? Keep your changes to < 200-300
    LOC, if possible. If you have a larger change, decompose it into
-   multiple independent changess. If you are adding a bunch of new
+   multiple independent changes. If you are adding a bunch of new
    functions to fulfill the requirements of a new capability, add them
    separately with their tests, and then write the code that uses them
    to deliver the capability. Of course, there are always exceptions. If
@@ -212,7 +274,7 @@ What makes a good change request?
    your subsequent requests may be held up because of review comments in the
    preceding requests.
 
--  Write a meaningful commit message. Include a meaningful 50 (or less)
+-  Write a meaningful commit message. Include a meaningful 55 (or less)
    character title, followed by a blank line, followed by a more
    comprehensive description of the change. Each change MUST include the JIRA
    identifier corresponding to the change (e.g. [FAB-1234]). This can be
@@ -235,45 +297,6 @@ comments such that it gets to a point that it requires a rebase. It only
 further delays getting it merged and adds more work for you - to
 remediate the merge conflicts.
 
-Communication
---------------
-
-We use `RocketChat <https://chat.hyperledger.org/>`__ for communication
-and Google Hangouts™ for screen sharing between developers. Our
-development planning and prioritization is done in
-`JIRA <https://jira.hyperledger.org>`__, and we take longer running
-discussions/decisions to the `mailing
-list <http://lists.hyperledger.org/mailman/listinfo/hyperledger-fabric>`__.
-
-Maintainers
------------
-
-The project's :doc:`maintainers <MAINTAINERS>` are responsible for
-reviewing and merging all patches submitted for review and they guide
-the over-all technical direction of the project within the guidelines
-established by the Hyperledger Technical Steering Committee (TSC).
-
-Becoming a maintainer
-~~~~~~~~~~~~~~~~~~~~~
-
-This project is managed under an open governance model as described in
-our `charter <https://www.hyperledger.org/about/charter>`__. Projects or
-sub-projects will be lead by a set of maintainers. New sub-projects can
-designate an initial set of maintainers that will be approved by the
-top-level project's existing maintainers when the project is first
-approved. The project's maintainers will, from time-to-time, consider
-adding or removing a maintainer. An existing maintainer can submit a
-change set to the :doc:`MAINTAINERS.rst <MAINTAINERS>` file. A nominated
-Contributor may become a Maintainer by a majority approval of the proposal
-by the existing Maintainers. Once approved, the change set is then merged
-and the individual is added to (or alternatively, removed from) the maintainers
-group. Maintainers may be removed by explicit resignation, for prolonged
-inactivity (3 or more months), or for some infraction of the `code of conduct
-<https://wiki.hyperledger.org/community/hyperledger-project-code-of-conduct>`__
-or by consistently demonstrating poor judgement. A maintainer removed for
-inactivity should be restored following a sustained resumption of contributions
-and reviews (a month or more) demonstrating a renewed commitment to the project.
-
 Legal stuff
 -----------
 
@@ -285,7 +308,7 @@ We have tried to make it as easy as possible to make contributions. This
 applies to how we handle the legal aspects of contribution. We use the
 same approach—the `Developer's Certificate of Origin 1.1
 (DCO) <https://github.com/hyperledger/fabric/blob/master/docs/source/DCO1.1.txt>`__—that the Linux® Kernel
-`community <http://elinux.org/Developer_Certificate_Of_Origin>`__ uses
+`community <https://elinux.org/Developer_Certificate_Of_Origin>`__ uses
 to manage code contributions.
 
 We simply ask that when submitting a patch for review, the developer
@@ -296,10 +319,28 @@ submitter accepts the DCO:
 
 ::
 
-    Signed-off-by: John Doe <john.doe@hisdomain.com>
+    Signed-off-by: John Doe <john.doe@example.com>
 
 You can include this automatically when you commit a change to your
 local git repository using ``git commit -s``.
+
+Related Topics
+--------------
+
+.. toctree::
+   :maxdepth: 1
+
+   MAINTAINERS
+   jira_navigation
+   dev-setup/devenv
+   dev-setup/build
+   Gerrit/lf-account
+   Gerrit/gerrit
+   Gerrit/changes
+   Gerrit/reviewing
+   Gerrit/best-practices
+   testing
+   Style-guides/go-style
 
 .. Licensed under Creative Commons Attribution 4.0 International License
    https://creativecommons.org/licenses/by/4.0/

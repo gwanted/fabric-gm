@@ -282,7 +282,7 @@ func extend() {
 	}
 
 	for _, orgSpec := range config.OrdererOrgs {
-		renderOrgSpec(&orgSpec, "orderer")
+		err = renderOrgSpec(&orgSpec, "orderer")
 		if err != nil {
 			fmt.Printf("Error processing orderer configuration: %s", err)
 			os.Exit(-1)
@@ -388,7 +388,7 @@ func generate() {
 	}
 
 	for _, orgSpec := range config.OrdererOrgs {
-		renderOrgSpec(&orgSpec, "orderer")
+		err = renderOrgSpec(&orgSpec, "orderer")
 		if err != nil {
 			fmt.Printf("Error processing orderer configuration: %s", err)
 			os.Exit(-1)
@@ -698,23 +698,18 @@ func printVersion() {
 }
 
 func getCA(caDir string, spec OrgSpec, name string) *ca.CA {
-	priv, _, err := csp.LoadPrivateKey(caDir)
-	if err != nil {
-		panic(err)
-	}
-	cert, _ := ca.LoadCertificateGMSM2(caDir)
+	_, signer, _ := csp.LoadPrivateKey(caDir)
+	cert, _ := ca.LoadCertificateECDSA(caDir)
 
 	return &ca.CA{
-		Name: name,
-		// Signer:             signer,
-		// SignCert:           cert,
+		Name:               name,
+		Signer:             signer,
+		SignCert:           cert,
 		Country:            spec.CA.Country,
 		Province:           spec.CA.Province,
 		Locality:           spec.CA.Locality,
 		OrganizationalUnit: spec.CA.OrganizationalUnit,
 		StreetAddress:      spec.CA.StreetAddress,
 		PostalCode:         spec.CA.PostalCode,
-		SignSm2Cert:        cert,
-		Sm2Key:             priv,
 	}
 }

@@ -6,33 +6,6 @@
 ---
 ################################################################################
 #
-#   Profile
-#
-#   - Different configuration profiles may be encoded here to be specified
-#   as parameters to the configtxgen tool
-#
-################################################################################
-Profiles:
-
-    SampleOrg:
-      Orderer:
-        <<: *OrdererDefaults
-        Organizations:
-          - *OrdererOrg
-      Consortiums:
-        SampleConsortium:
-          Organizations:
-            - *OrdererOrg
-            - *Org1
-
-    SampleChannel:
-      Consortium: SampleConsortium
-      Application:
-        Organizations:
-          - *Org1
-
-################################################################################
-#
 #   Section: Organizations
 #
 #   - This section defines the different organizational identities which will
@@ -74,6 +47,20 @@ Organizations:
             # encoded in the genesis block in the Application section context
             - Host: peer1
               Port: 7051
+
+################################################################################
+#
+#   SECTION: Application
+#
+#   - This section defines the values to encode into a config transaction or
+#   genesis block for application related parameters
+#
+################################################################################
+Application: &ApplicationDefaults
+
+    # Organizations is the list of orgs which are defined as participants on
+    # the application side of the network
+    Organizations:
 
 ################################################################################
 #
@@ -125,14 +112,27 @@ Orderer: &OrdererDefaults
 
 ################################################################################
 #
-#   SECTION: Application
+#   Profile
 #
-#   - This section defines the values to encode into a config transaction or
-#   genesis block for application related parameters
+#   - Different configuration profiles may be encoded here to be specified
+#   as parameters to the configtxgen tool
 #
 ################################################################################
-Application: &ApplicationDefaults
+Profiles:
 
-    # Organizations is the list of orgs which are defined as participants on
-    # the application side of the network
-    Organizations:
+    SampleOrg:
+      Orderer:
+        <<: *OrdererDefaults
+        Organizations:
+          - *OrdererOrg
+      Consortiums:
+        SampleConsortium:
+          Organizations:
+            - *OrdererOrg
+            - *Org1
+
+    SampleChannel:
+      Consortium: SampleConsortium
+      Application:
+        Organizations:
+          - *Org1

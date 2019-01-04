@@ -9,13 +9,12 @@ package channelconfig
 import (
 	"math"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/bccsp"
 	cb "github.com/hyperledger/fabric/protos/common"
 	mspprotos "github.com/hyperledger/fabric/protos/msp"
 	ab "github.com/hyperledger/fabric/protos/orderer"
 	pb "github.com/hyperledger/fabric/protos/peer"
-
-	"github.com/golang/protobuf/proto"
 )
 
 const (
@@ -104,11 +103,12 @@ func OrdererAddressesValue(addresses []string) *StandardConfigValue {
 
 // ConsensusTypeValue returns the config definition for the orderer consensus type.
 // It is a value for the /Channel/Orderer group.
-func ConsensusTypeValue(consensusType string) *StandardConfigValue {
+func ConsensusTypeValue(consensusType string, consensusMetadata []byte) *StandardConfigValue {
 	return &StandardConfigValue{
 		key: ConsensusTypeKey,
 		value: &ab.ConsensusType{
-			Type: consensusType,
+			Type:     consensusType,
+			Metadata: consensusMetadata,
 		},
 	}
 }
@@ -203,5 +203,22 @@ func ChannelCreationPolicyValue(policy *cb.Policy) *StandardConfigValue {
 	return &StandardConfigValue{
 		key:   ChannelCreationPolicyKey,
 		value: policy,
+	}
+}
+
+// ACLsValues returns the config definition for an applications resources based ACL definitions.
+// It is a value for the /Channel/Application/.
+func ACLValues(acls map[string]string) *StandardConfigValue {
+	a := &pb.ACLs{
+		Acls: make(map[string]*pb.APIResource),
+	}
+
+	for apiResource, policyRef := range acls {
+		a.Acls[apiResource] = &pb.APIResource{PolicyRef: policyRef}
+	}
+
+	return &StandardConfigValue{
+		key:   ACLsKey,
+		value: a,
 	}
 }

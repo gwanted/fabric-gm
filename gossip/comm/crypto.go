@@ -7,24 +7,24 @@ SPDX-License-Identifier: Apache-2.0
 package comm
 
 import (
+	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/pem"
 	"math/big"
 
-	tls "github.com/tjfoc/gmtls"
-	credentials "github.com/tjfoc/gmtls/gmcredentials"
-
 	"github.com/hyperledger/fabric/common/util"
-	"github.com/tjfoc/gmsm/sm2"
-	"golang.org/x/net/context"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/peer"
 )
 
 // GenerateCertificatesOrPanic generates a a random pair of public and private keys
 // and return TLS certificate
 func GenerateCertificatesOrPanic() tls.Certificate {
-	//privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	privateKey, err := sm2.GenerateKey()
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		panic(err)
 	}
@@ -32,23 +32,16 @@ func GenerateCertificatesOrPanic() tls.Certificate {
 	if err != nil {
 		panic(err)
 	}
-	// template := x509.Certificate{
-	// 	KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-	// 	SerialNumber: sn,
-	// 	ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-	// }
-	//rawBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
-	template := sm2.Certificate{
-		KeyUsage:     sm2.KeyUsageKeyEncipherment | sm2.KeyUsageDigitalSignature,
+	template := x509.Certificate{
+		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		SerialNumber: sn,
-		ExtKeyUsage:  []sm2.ExtKeyUsage{sm2.ExtKeyUsageServerAuth},
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 	}
-	rawBytes, err := sm2.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
+	rawBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
 	if err != nil {
 		panic(err)
 	}
-	//privBytes, err := x509.MarshalECPrivateKey(privateKey)
-	privBytes, err := sm2.MarshalSm2UnecryptedPrivateKey(privateKey)
+	privBytes, err := x509.MarshalECPrivateKey(privateKey)
 	if err != nil {
 		panic(err)
 	}

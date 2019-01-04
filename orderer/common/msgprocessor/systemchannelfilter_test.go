@@ -16,18 +16,18 @@ import (
 	mockconfig "github.com/hyperledger/fabric/common/mocks/config"
 	mockconfigtx "github.com/hyperledger/fabric/common/mocks/configtx"
 	mockcrypto "github.com/hyperledger/fabric/common/mocks/crypto"
+	"github.com/hyperledger/fabric/common/tools/configtxgen/configtxgentest"
 	"github.com/hyperledger/fabric/common/tools/configtxgen/encoder"
 	genesisconfig "github.com/hyperledger/fabric/common/tools/configtxgen/localconfig"
 	cb "github.com/hyperledger/fabric/protos/common"
 	"github.com/hyperledger/fabric/protos/utils"
-
 	"github.com/stretchr/testify/assert"
 )
 
 var validConfig *cb.Config
 
 func init() {
-	cg, err := encoder.NewChannelGroup(genesisconfig.Load(genesisconfig.SampleInsecureSoloProfile))
+	cg, err := encoder.NewChannelGroup(configtxgentest.Load(genesisconfig.SampleInsecureSoloProfile))
 	if err != nil {
 		panic(err)
 	}
@@ -133,7 +133,7 @@ func TestGoodProposal(t *testing.T) {
 
 	mcc := newMockChainCreator()
 
-	configUpdate, err := encoder.MakeChannelCreationTransaction(newChainID, nil, nil, genesisconfig.Load(genesisconfig.SampleSingleMSPChannelProfile))
+	configUpdate, err := encoder.MakeChannelCreationTransaction(newChainID, nil, configtxgentest.Load(genesisconfig.SampleSingleMSPChannelProfile))
 	assert.Nil(t, err, "Error constructing configtx")
 	ingressTx := makeConfigTxFromConfigUpdateTx(configUpdate)
 
@@ -148,7 +148,7 @@ func TestProposalRejectedByConfig(t *testing.T) {
 	mcc := newMockChainCreator()
 	mcc.NewChannelConfigErr = fmt.Errorf("desired err text")
 
-	configUpdate, err := encoder.MakeChannelCreationTransaction(newChainID, nil, nil, genesisconfig.Load(genesisconfig.SampleSingleMSPChannelProfile))
+	configUpdate, err := encoder.MakeChannelCreationTransaction(newChainID, nil, configtxgentest.Load(genesisconfig.SampleSingleMSPChannelProfile))
 	assert.Nil(t, err, "Error constructing configtx")
 	ingressTx := makeConfigTxFromConfigUpdateTx(configUpdate)
 
@@ -168,7 +168,7 @@ func TestNumChainsExceeded(t *testing.T) {
 	mcc.ms.msc.MaxChannelsCountVal = 1
 	mcc.newChains = make([]*cb.Envelope, 2)
 
-	configUpdate, err := encoder.MakeChannelCreationTransaction(newChainID, nil, nil, genesisconfig.Load(genesisconfig.SampleSingleMSPChannelProfile))
+	configUpdate, err := encoder.MakeChannelCreationTransaction(newChainID, nil, configtxgentest.Load(genesisconfig.SampleSingleMSPChannelProfile))
 	assert.Nil(t, err, "Error constructing configtx")
 	ingressTx := makeConfigTxFromConfigUpdateTx(configUpdate)
 

@@ -61,8 +61,7 @@ func GetDefault() bccsp.BCCSP {
 		logger.Warning("Before using BCCSP, please call InitFactories(). Falling back to bootBCCSP.")
 		bootBCCSPInitOnce.Do(func() {
 			var err error
-			// f := &SWFactory{}
-			f := &GMFactory{}
+			f := &SWFactory{}
 			bootBCCSP, err = f.Get(GetDefaultOpts())
 			if err != nil {
 				panic("BCCSP Internal error, failed initialization with GetDefaultOpts!")

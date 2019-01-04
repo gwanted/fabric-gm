@@ -1,7 +1,4 @@
-configtxgen
-=============
-
-## Description
+# configtxgen
 
 The `configtxgen` command allows users to create and inspect channel config
 related artifacts.  The content of the generated artifacts is dictated by the
@@ -12,12 +9,15 @@ contents of `configtx.yaml`.
 The `configtxgen` tool has no sub-commands, but supports flags which can be set
 to accomplish a number of tasks.
 
+## configtxgen
 ```
 Usage of configtxgen:
   -asOrg string
     	Performs the config generation as a particular organization (by name), only including values in the write set that org (likely) has privilege to set
   -channelID string
-    	The channel ID to use in the configtx (default "testchainid")
+    	The channel ID to use in the configtx
+  -configPath string
+    	The path containing the configuration to use (if set)
   -inspectBlock string
     	Prints the configuration contained in the block at the specified path
   -inspectChannelCreateTx string
@@ -124,3 +124,6 @@ Refer to the sample `configtx.yaml` shipped with Fabric for all possible
 configuration options.  You may find this file in the `config` directory of
 the release artifacts tar, or you may find it under the `sampleconfig` folder
 if you are building from source.
+
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.

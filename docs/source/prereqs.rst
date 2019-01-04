@@ -1,6 +1,11 @@
 Prerequisites
 =============
 
+Before we begin, if you haven't already done so, you may wish to check that
+you have all the prerequisites below installed on the platform(s)
+on which you'll be developing blockchain applications and/or operating
+Hyperledger Fabric.
+
 Install cURL
 ------------
 
@@ -18,7 +23,7 @@ Docker and Docker Compose
 You will need the following installed on the platform on which you will be
 operating, or developing on (or for), Hyperledger Fabric:
 
-  - MacOSX, \*nix, or Windows 10: `Docker <https://www.docker.com/products/overview>`__
+  - MacOSX, \*nix, or Windows 10: `Docker <https://www.docker.com/get-docker>`__
     Docker version 17.06.2-ce or greater is required.
   - Older versions of Windows: `Docker
     Toolbox <https://docs.docker.com/toolbox/toolbox_install_windows/>`__ -
@@ -49,32 +54,44 @@ following command from a terminal prompt:
 Go Programming Language
 -----------------------
 
-Hyperledger Fabric uses the Go programming language 1.9.x for many of its
+Hyperledger Fabric uses the Go Programming Language for many of its
 components.
 
-.. note: building with Go version 1.8.x is not supported
+  - `Go <https://golang.org/dl/>`__ version 1.11.x is required.
 
-  - `Go <https://golang.org/>`__ - version 1.9.x
+Given that we will be writing chaincode programs in Go, there are two
+environment variables you will need to set properly; you can make these
+settings permanent by placing them in the appropriate startup file, such
+as your personal ``~/.bashrc`` file if you are using the ``bash`` shell
+under Linux.
 
-Given that we are writing a Go chaincode program, we need to be sure that the
-source code is located somewhere within the ``$GOPATH`` tree. First, you will
-need to check that you have set your ``$GOPATH`` environment variable.
-
-.. code:: bash
-
-  echo $GOPATH
-  /Users/xxx/go
-
-If nothing is displayed when you echo ``$GOPATH``, you will need to set it.
-Typically, the value will be a directory tree child of your development
-workspace, if you have one, or as a child of your $HOME directory. Since we'll
-be doing a bunch of coding in Go, you might want to add the following to your
-``~/.bashrc``:
+First, you must set the environment variable ``GOPATH`` to point at the
+Go workspace containing the downloaded Fabric code base, with something like:
 
 .. code:: bash
 
   export GOPATH=$HOME/go
+
+.. note:: You **must** set the GOPATH variable
+
+  Even though, in Linux, Go's ``GOPATH`` variable can be a colon-separated list
+  of directories, and will use a default value of ``$HOME/go`` if it is unset,
+  the current Fabric build framework still requires you to set and export that
+  variable, and it must contain **only** the single directory name for your Go
+  workspace. (This restriction might be removed in a future release.)
+
+Second, you should (again, in the appropriate startup file) extend your
+command search path to include the Go ``bin`` directory, such as the following
+example for ``bash`` under Linux:
+
+.. code:: bash
+
   export PATH=$PATH:$GOPATH/bin
+
+While this directory may not exist in a new Go workspace installation, it is
+populated later by the Fabric build system with a small number of Go executables
+used by other parts of the build system. So even if you currently have no such
+directory yet, extend your shell search path as above.
 
 Node.js Runtime and NPM
 -----------------------
@@ -83,9 +100,9 @@ If you will be developing applications for Hyperledger Fabric leveraging the
 Hyperledger Fabric SDK for Node.js, you will need to have version 8.9.x of Node.js
 installed.
 
-.. note:: Node.js version 9.x is not supported at this time.
+.. note:: Versions other than the 8.x series are not supported at this time.
 
-  - `Node.js <https://nodejs.org/en/download/>`__ - version 8.9.x or greater
+  - `Node.js <https://nodejs.org/en/download/>`__ - version 8.x
 
 .. note:: Installing Node.js will also install NPM, however it is recommended
           that you confirm the version of NPM installed. You can upgrade
@@ -114,6 +131,8 @@ Check your version(s):
 
   python --version
 
+.. _windows-extras:
+
 Windows extras
 --------------
 
@@ -129,7 +148,7 @@ difficulties with operations involving the ``make`` and ``docker``
 commands.
 
 On Windows 10 you should use the native Docker distribution and you
-may use the Windows PowerShell. However, for the :ref:`binaries`
+may use the Windows PowerShell. However, for the ``binaries``
 command to succeed you will still need to have the ``uname`` command
 available. You can get it as part of Git but beware that only the
 64bit version is supported.

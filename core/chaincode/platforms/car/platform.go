@@ -1,30 +1,20 @@
 /*
-Copyright IBM Corp. 2016 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package car
 
 import (
 	"archive/tar"
-	"io/ioutil"
-	"strings"
-
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"strings"
 
+	"github.com/hyperledger/fabric/core/chaincode/platforms"
 	"github.com/hyperledger/fabric/core/chaincode/platforms/util"
 	cutil "github.com/hyperledger/fabric/core/container/util"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -34,24 +24,29 @@ import (
 type Platform struct {
 }
 
-// ValidateSpec validates the chaincode specification for CAR types to satisfy
+// Name returns the name of this platform
+func (carPlatform *Platform) Name() string {
+	return pb.ChaincodeSpec_CAR.String()
+}
+
+// ValidatePath validates the chaincode path for CAR types to satisfy
 // the platform interface.  This chaincode type currently doesn't
 // require anything specific so we just implicitly approve any spec
-func (carPlatform *Platform) ValidateSpec(spec *pb.ChaincodeSpec) error {
+func (carPlatform *Platform) ValidatePath(path string) error {
 	return nil
 }
 
-func (carPlatform *Platform) ValidateDeploymentSpec(cds *pb.ChaincodeDeploymentSpec) error {
+func (carPlatform *Platform) ValidateCodePackage(codePackage []byte) error {
 	// CAR platform will validate the code package within chaintool
 	return nil
 }
 
-func (carPlatform *Platform) GetDeploymentPayload(spec *pb.ChaincodeSpec) ([]byte, error) {
+func (carPlatform *Platform) GetDeploymentPayload(path string) ([]byte, error) {
 
-	return ioutil.ReadFile(spec.ChaincodeId.Path)
+	return ioutil.ReadFile(path)
 }
 
-func (carPlatform *Platform) GenerateDockerfile(cds *pb.ChaincodeDeploymentSpec) (string, error) {
+func (carPlatform *Platform) GenerateDockerfile() (string, error) {
 
 	var buf []string
 
@@ -64,14 +59,14 @@ func (carPlatform *Platform) GenerateDockerfile(cds *pb.ChaincodeDeploymentSpec)
 	return dockerFileContents, nil
 }
 
-func (carPlatform *Platform) GenerateDockerBuild(cds *pb.ChaincodeDeploymentSpec, tw *tar.Writer) error {
+func (carPlatform *Platform) GenerateDockerBuild(path string, code []byte, tw *tar.Writer) error {
 
 	// Bundle the .car file into a tar stream so it may be transferred to the builder container
 	codepackage, output := io.Pipe()
 	go func() {
 		tw := tar.NewWriter(output)
 
-		err := cutil.WriteBytesToPackage("codepackage.car", cds.CodePackage, tw)
+		err := cutil.WriteBytesToPackage("codepackage.car", code, tw)
 
 		tw.Close()
 		output.CloseWithError(err)
@@ -88,4 +83,9 @@ func (carPlatform *Platform) GenerateDockerBuild(cds *pb.ChaincodeDeploymentSpec
 	}
 
 	return cutil.WriteBytesToPackage("binpackage.tar", binpackage.Bytes(), tw)
+}
+
+//GetMetadataProvider fetches metadata provider given deployment spec
+func (carPlatform *Platform) GetMetadataProvider(code []byte) platforms.MetadataProvider {
+	return &MetadataProvider{}
 }

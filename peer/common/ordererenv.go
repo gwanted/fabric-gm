@@ -6,6 +6,9 @@ SPDX-License-Identifier: Apache-2.0
 package common
 
 import (
+	"os"
+	"time"
+
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,13 +22,25 @@ var (
 	keyFile                    string
 	certFile                   string
 	ordererTLSHostnameOverride string
+	connTimeout                time.Duration
 )
 
 // SetOrdererEnv adds orderer-specific settings to the global Viper environment
 func SetOrdererEnv(cmd *cobra.Command, args []string) {
+	// read in the legacy logging level settings and, if set,
+	// notify users of the FABRIC_LOGGING_SPEC env variable
+	var loggingLevel string
+	if viper.GetString("logging_level") != "" {
+		loggingLevel = viper.GetString("logging_level")
+	} else {
+		loggingLevel = viper.GetString("logging.level")
+	}
+	if loggingLevel != "" {
+		mainLogger.Warning("CORE_LOGGING_LEVEL is no longer supported, please use the FABRIC_LOGGING_SPEC environment variable")
+	}
 	// need to init logging here as cobra does not currently support
 	// chaining PersistentPreRun functions
-	loggingSpec := viper.GetString("logging.level")
+	loggingSpec := os.Getenv("FABRIC_LOGGING_SPEC")
 	flogging.InitFromSpec(loggingSpec)
 	// set the orderer environment from flags
 	viper.Set("orderer.tls.rootcert.file", caFile)
@@ -35,6 +50,7 @@ func SetOrdererEnv(cmd *cobra.Command, args []string) {
 	viper.Set("orderer.tls.serverhostoverride", ordererTLSHostnameOverride)
 	viper.Set("orderer.tls.enabled", tlsEnabled)
 	viper.Set("orderer.tls.clientAuthRequired", clientAuth)
+	viper.Set("orderer.client.connTimeout", connTimeout)
 }
 
 // AddOrdererFlags adds flags for orderer-related commands
@@ -55,4 +71,6 @@ func AddOrdererFlags(cmd *cobra.Command) {
 			"mutual TLS communication with the orderer endpoint")
 	flags.StringVarP(&ordererTLSHostnameOverride, "ordererTLSHostnameOverride",
 		"", "", "The hostname override to use when validating the TLS connection to the orderer.")
+	flags.DurationVarP(&connTimeout, "connTimeout",
+		"", 3*time.Second, "Timeout for client to connect")
 }

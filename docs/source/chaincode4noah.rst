@@ -4,11 +4,11 @@ Chaincode for Operators
 What is Chaincode?
 ------------------
 
-Chaincode is a program, written in `Go <https://golang.org>`_, and eventually
-in other programming languages such as Java, that implements a
-prescribed interface. Chaincode runs in a secured Docker container isolated from
-the endorsing peer process. Chaincode initializes and manages ledger state
-through transactions submitted by applications.
+Chaincode is a program, written in `Go <https://golang.org>`_, `node.js <https://nodejs.org>`_,
+or `Java <https://java.com/en/>`_ that implements a prescribed interface.
+Chaincode runs in a secured Docker container isolated from the endorsing peer
+process. Chaincode initializes and manages ledger state through transactions
+submitted by applications.
 
 A chaincode typically handles business logic agreed to by members of the
 network, so it may be considered as a "smart contract". State created by a
@@ -24,7 +24,7 @@ instantiating and upgrading the chaincode as a function of the chaincode's
 operational lifecycle within a blockchain network.
 
 Chaincode lifecycle
---------------------
+-------------------
 
 The Hyperledger Fabric API enables interaction with the various nodes
 in a blockchain network - the peers, orderers and MSPs - and it also allows
@@ -88,7 +88,7 @@ To create a signed chaincode package, use the following command:
 
 .. code:: bash
 
-    peer chaincode package -n mycc -p github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02 -v 0 -s -S -i "AND('OrgA.admin')" ccpack.out
+    peer chaincode package -n mycc -p github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd -v 0 -s -S -i "AND('OrgA.admin')" ccpack.out
 
 The ``-s`` option creates a package that can be signed by multiple owners as
 opposed to simply creating a raw CDS. When ``-s`` is specified, the ``-S``
@@ -187,8 +187,9 @@ The CLI internally creates the SignedChaincodeDeploymentSpec for **sacc** and
 sends it to the local peer, which calls the ``Install`` method on the LSCC. The
 argument to the ``-p`` option specifies the path to the chaincode, which must be
 located within the source tree of the user's ``GOPATH``, e.g.
-``$GOPATH/src/sacc``. See the `CLI`_ section for a complete description of
-the command options.
+``$GOPATH/src/sacc``. Note if using ``-l node`` or ``-l java`` for node chaincode
+or java chaincode, use ``-p`` with the absolute path of the chaincode location.
+See the :doc:`command_ref` for a complete description of the command options.
 
 Note that in order to install on a peer, the signature of the SignedProposal
 must be from 1 of the peer's local MSP administrators.
@@ -229,11 +230,11 @@ the state with ``john`` and ``0``, the command would look like the following:
 
 .. code:: bash
 
-    peer chaincode instantiate -n sacc -v 1.0 -c '{"Args":["john","0"]}' -P "OR ('Org1.member','Org2.member')"
+    peer chaincode instantiate -n sacc -v 1.0 -c '{"Args":["john","0"]}' -P "AND ('Org1.member','Org2.member')"
 
 .. note:: Note the endorsement policy (CLI uses polish notation), which requires an
-          endorsement from either member of Org1 or Org2 for all transactions to
-          **sacc**. That is, either Org1 or Org2 must sign the
+          endorsement from both a member of Org1 and Org2 for all transactions to
+          **sacc**. That is, both Org1 and Org2 must sign the
           result of executing the `Invoke` on **sacc** for the transactions to
           be valid.
 
@@ -297,68 +298,6 @@ Stop would be useful in the workflow for doing upgrade in controlled manner,
 where a chaincode can be stopped on a channel on all peers before issuing an
 upgrade.
 
-.. _CLI:
-
-CLI
-^^^
-
-.. note:: We are assessing the need to distribute platform-specific binaries
-          for the Hyperledger Fabric ``peer`` binary. For the time being, you
-          can simply invoke the commands from within a running docker container.
-
-To view the currently available CLI commands, execute the following command from
-within a running ``fabric-peer`` Docker container:
-
-.. code:: bash
-
-    docker run -it hyperledger/fabric-peer bash
-    # peer chaincode --help
-
-Which shows output similar to the example below:
-
-.. code:: bash
-
-    Usage:
-      peer chaincode [command]
-
-    Available Commands:
-      install     Package the specified chaincode into a deployment spec and save it on the peer's path.
-      instantiate Deploy the specified chaincode to the network.
-      invoke      Invoke the specified chaincode.
-      list        Get the instantiated chaincodes on a channel or installed chaincodes on a peer.
-      package     Package the specified chaincode into a deployment spec.
-      query       Query using the specified chaincode.
-      signpackage Sign the specified chaincode package
-      upgrade     Upgrade chaincode.
-
-    Flags:
-          --cafile string      Path to file containing PEM-encoded trusted certificate(s) for the ordering endpoint
-      -h, --help               help for chaincode
-      -o, --orderer string     Ordering service endpoint
-          --tls                Use TLS when communicating with the orderer endpoint
-          --transient string   Transient map of arguments in JSON encoding
-
-    Global Flags:
-          --logging-level string       Default logging level and overrides, see core.yaml for full syntax
-          --test.coverprofile string   Done (default "coverage.cov")
-      -v, --version
-
-    Use "peer chaincode [command] --help" for more information about a command.
-
-To facilitate its use in scripted applications, the ``peer`` command always
-produces a non-zero return code in the event of command failure.
-
-Example of chaincode commands:
-
-.. code:: bash
-
-    peer chaincode install -n mycc -v 0 -p path/to/my/chaincode/v0
-    peer chaincode instantiate -n mycc -v 0 -c '{"Args":["a", "b", "c"]}' -C mychannel
-    peer chaincode install -n mycc -v 1 -p path/to/my/chaincode/v1
-    peer chaincode upgrade -n mycc -v 1 -c '{"Args":["d", "e", "f"]}' -C mychannel
-    peer chaincode query -C mychannel -n mycc -c '{"Args":["query","e"]}'
-    peer chaincode invoke -o orderer.example.com:7050  --tls --cafile $ORDERER_CA -C mychannel -n mycc -c '{"Args":["invoke","a","b","10"]}'
-
 .. _System Chaincode:
 
 System chaincode
@@ -372,8 +311,7 @@ and **upgrade** do not apply to system chaincodes.
 The purpose of system chaincode is to shortcut gRPC communication cost between
 peer and chaincode, and tradeoff the flexibility in management. For example, a
 system chaincode can only be upgraded with the peer binary. It must also
-register with a `fixed set of parameters
-<https://github.com/hyperledger/fabric/blob/master/core/scc/importsysccs.go>`_
+register with a `fixed set of parameters <https://github.com/hyperledger/fabric/blob/master/core/scc/importsysccs.go>`_
 compiled in and doesn't have endorsement policies or endorsement policy
 functionality.
 
@@ -390,19 +328,13 @@ The current list of system chaincodes:
 3. `QSCC <https://github.com/hyperledger/fabric/tree/master/core/scc/qscc>`_
    Query system chaincode provides ledger query APIs such as getting blocks and
    transactions.
-4. `ESCC <https://github.com/hyperledger/fabric/tree/master/core/scc/escc>`_
-   Endorsement system chaincode handles endorsement by signing the transaction
-   proposal response.
-5. `VSCC <https://github.com/hyperledger/fabric/tree/master/core/scc/vscc>`_
-   Validation system chaincode handles the transaction validation, including
-   checking endorsement policy and multiversioning concurrency control.
 
-Care must be taken when modifying or replacing these system chaincodes,
-especially LSCC, ESCC and VSCC since they are in the main transaction execution
-path. It is worth noting that as VSCC validates a block before committing it to
-the ledger, it is important that all peers in the channel compute the same
-validation to avoid ledger divergence (non-determinism). So special care is
-needed if VSCC is modified or replaced.
+The former system chaincodes for endorsement and validation have been replaced
+by the pluggable endorsement and validation function as described by the
+:doc:`pluggable_endorsement_and_validation` documentation.
+
+Extreme care must be taken when modifying or replacing these system chaincodes,
+especially LSCC.
 
 .. Licensed under Creative Commons Attribution 4.0 International License
    https://creativecommons.org/licenses/by/4.0/

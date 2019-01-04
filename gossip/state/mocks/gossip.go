@@ -21,12 +21,31 @@ type GossipMock struct {
 	mock.Mock
 }
 
+func (g *GossipMock) SelfMembershipInfo() discovery.NetworkMember {
+	panic("implement me")
+}
+
+func (g *GossipMock) SelfChannelInfo(common.ChainID) *proto.SignedGossipMessage {
+	panic("implement me")
+}
+
 func (*GossipMock) PeerFilter(channel common.ChainID, messagePredicate api.SubChannelSelectionCriteria) (filter.RoutingFilter, error) {
 	panic("implement me")
 }
 
 func (g *GossipMock) SuspectPeers(s api.PeerSuspector) {
 	g.Called(s)
+}
+
+// UpdateLedgerHeight updates the ledger height the peer
+// publishes to other peers in the channel
+func (g *GossipMock) UpdateLedgerHeight(height uint64, chainID common.ChainID) {
+
+}
+
+// UpdateChaincodes updates the chaincodes the peer publishes
+// to other peers in the channel
+func (g *GossipMock) UpdateChaincodes(chaincode []*proto.Chaincode, chainID common.ChainID) {
 
 }
 
@@ -51,9 +70,6 @@ func (g *GossipMock) UpdateMetadata(metadata []byte) {
 	g.Called(metadata)
 }
 
-func (g *GossipMock) UpdateChannelMetadata(metadata []byte, chainID common.ChainID) {
-}
-
 func (g *GossipMock) Gossip(msg *proto.GossipMessage) {
 	g.Called(msg)
 }
@@ -67,6 +83,11 @@ func (g *GossipMock) Accept(acceptor common.MessageAcceptor, passThrough bool) (
 }
 
 func (g *GossipMock) JoinChan(joinMsg api.JoinChannelMessage, chainID common.ChainID) {
+}
+
+// IdentityInfo returns information known peer identities
+func (g *GossipMock) IdentityInfo() api.PeerIdentitySet {
+	panic("not implemented")
 }
 
 func (g *GossipMock) Stop() {

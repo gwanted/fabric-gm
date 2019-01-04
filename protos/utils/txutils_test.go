@@ -1,5 +1,5 @@
 /*
-Copyright IBM Corp. 2017 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
 SPDX-License-Identifier: Apache-2.0
 */
@@ -9,6 +9,7 @@ package utils_test
 import (
 	"encoding/hex"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
@@ -158,16 +159,6 @@ func TestCreateSignedTx(t *testing.T) {
 	})
 	prop.Header = headerBytes
 
-	// bad status
-	responses = []*pb.ProposalResponse{{
-		Payload: []byte("payload"),
-		Response: &pb.Response{
-			Status: int32(100),
-		},
-	}}
-	_, err = utils.CreateSignedTx(prop, signID, responses...)
-	assert.Error(t, err, "Expected error with status code not equal to 200")
-
 	// non-matching responses
 	responses = []*pb.ProposalResponse{{
 		Payload: []byte("payload"),
@@ -232,6 +223,67 @@ func TestCreateSignedTx(t *testing.T) {
 
 }
 
+func TestCreateSignedTxStatus(t *testing.T) {
+	serializedExtension, err := proto.Marshal(&pb.ChaincodeHeaderExtension{})
+	assert.NoError(t, err)
+	serializedChannelHeader, err := proto.Marshal(&cb.ChannelHeader{
+		Extension: serializedExtension,
+	})
+	assert.NoError(t, err)
+
+	signingID, err := mockmsp.NewNoopMsp().GetDefaultSigningIdentity()
+	assert.NoError(t, err)
+	serializedSigningID, err := signingID.Serialize()
+	assert.NoError(t, err)
+	serializedSignatureHeader, err := proto.Marshal(&cb.SignatureHeader{
+		Creator: serializedSigningID,
+	})
+	assert.NoError(t, err)
+
+	header := &cb.Header{
+		ChannelHeader:   serializedChannelHeader,
+		SignatureHeader: serializedSignatureHeader,
+	}
+
+	serializedHeader, err := proto.Marshal(header)
+	assert.NoError(t, err)
+
+	proposal := &pb.Proposal{
+		Header: serializedHeader,
+	}
+
+	tests := []struct {
+		status      int32
+		expectedErr string
+	}{
+		{status: 0, expectedErr: "proposal response was not successful, error code 0, msg response-message"},
+		{status: 199, expectedErr: "proposal response was not successful, error code 199, msg response-message"},
+		{status: 200, expectedErr: ""},
+		{status: 201, expectedErr: ""},
+		{status: 399, expectedErr: ""},
+		{status: 400, expectedErr: "proposal response was not successful, error code 400, msg response-message"},
+	}
+	for _, tc := range tests {
+		t.Run(strconv.Itoa(int(tc.status)), func(t *testing.T) {
+			response := &pb.ProposalResponse{
+				Payload:     []byte("payload"),
+				Endorsement: &pb.Endorsement{},
+				Response: &pb.Response{
+					Status:  tc.status,
+					Message: "response-message",
+				},
+			}
+
+			_, err := utils.CreateSignedTx(proposal, signingID, response)
+			if tc.expectedErr == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tc.expectedErr)
+			}
+		})
+	}
+}
+
 func TestCreateSignedEnvelope(t *testing.T) {
 	var env *cb.Envelope
 	channelID := "mychannelID"
@@ -294,29 +346,6 @@ func TestGetSignedProposal(t *testing.T) {
 	_, err = utils.GetSignedProposal(nil, signID)
 	assert.Error(t, err, "Expected error with nil proposal")
 	_, err = utils.GetSignedProposal(prop, nil)
-	assert.Error(t, err, "Expected error with nil signing identity")
-
-}
-
-func TestGetSignedEvent(t *testing.T) {
-	var signedEvt *pb.SignedEvent
-	var err error
-
-	signID, err := mockmsp.NewNoopMsp().GetDefaultSigningIdentity()
-	assert.NoError(t, err, "Unexpected error getting signing identity")
-
-	evt := &pb.Event{}
-	evtBytes, _ := proto.Marshal(evt)
-	signedEvt, err = utils.GetSignedEvent(evt, signID)
-	assert.NoError(t, err, "Unexpected error getting signed event")
-	assert.Equal(t, evtBytes, signedEvt.EventBytes,
-		"Event bytes did not match expected value")
-	assert.Equal(t, []byte("signature"), signedEvt.Signature,
-		"Signature did not match expected value")
-
-	_, err = utils.GetSignedEvent(nil, signID)
-	assert.Error(t, err, "Expected error with nil event")
-	_, err = utils.GetSignedEvent(evt, nil)
 	assert.Error(t, err, "Expected error with nil signing identity")
 
 }
@@ -454,7 +483,7 @@ func TestCreateProposalResponseFailure(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, int32(500), prespFailure.Response.Status)
+	assert.Equal(t, int32(502), prespFailure.Response.Status)
 	// drilldown into the response to find the chaincode response
 	pRespPayload, err := utils.GetProposalResponsePayload(prespFailure.Payload)
 	assert.NoError(t, err, "Error while unmarshaling proposal response payload: %s", err)

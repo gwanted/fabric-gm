@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package filter
 
 import (
+	"context"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -17,7 +18,6 @@ import (
 	"github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 )
 
 type mutator func([]byte) []byte
@@ -46,7 +46,7 @@ func createIdemixIdentity(t *testing.T) []byte {
 	idemixId := &msp.SerializedIdemixIdentity{
 		NymX: []byte{1, 2, 3},
 		NymY: []byte{1, 2, 3},
-		OU:   []byte("OU1"),
+		Ou:   []byte("OU1"),
 	}
 	idemixBytes, err := proto.Marshal(idemixId)
 	assert.NoError(t, err)

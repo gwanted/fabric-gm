@@ -23,14 +23,12 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/proto"
-
 	"github.com/hyperledger/fabric/peer/common"
 	pcommon "github.com/hyperledger/fabric/protos/common"
 )
 
 //helper to sign an existing package
 func signExistingPackage(env *pcommon.Envelope, infile, outfile string) error {
-	InitMSP()
 	signer, err := common.GetDefaultSigner()
 	if err != nil {
 		return fmt.Errorf("Get default signer error: %v", err)

@@ -1,17 +1,7 @@
 /*
-Copyright IBM Corp. 2016 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-                 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package jsonledger
@@ -27,14 +17,13 @@ import (
 	genesisconfig "github.com/hyperledger/fabric/common/tools/configtxgen/localconfig"
 	cb "github.com/hyperledger/fabric/protos/common"
 	ab "github.com/hyperledger/fabric/protos/orderer"
-
 	"github.com/stretchr/testify/assert"
 )
 
 var genesisBlock = cb.NewBlock(0, nil)
 
 func init() {
-	flogging.SetModuleLevel(pkgLogID, "DEBUG")
+	flogging.ActivateSpec("common.ledger.blockledger.json=DEBUG")
 }
 
 type testEnv struct {
@@ -132,23 +121,9 @@ func TestRetrieval(t *testing.T) {
 	defer it.Close()
 	assert.Equal(t, uint64(0), num, "Expected genesis block iterator, but got %d", num)
 
-	signal := it.ReadyChan()
-	select {
-	case <-signal:
-	default:
-		t.Fatalf("Should be ready for block read")
-	}
-
 	block, status := it.Next()
 	assert.Equal(t, cb.Status_SUCCESS, status, "Expected to successfully read the genesis block")
 	assert.Equal(t, uint64(0), block.Header.Number, "Expected to successfully retrieve the genesis block")
-
-	signal = it.ReadyChan()
-	select {
-	case <-signal:
-	default:
-		t.Fatalf("Should still be ready for block read")
-	}
 
 	block, status = it.Next()
 	assert.Equal(t, cb.Status_SUCCESS, status, "Expected to successfully read the second block")
@@ -165,12 +140,11 @@ func TestRaceCondition(t *testing.T) {
 	it, _ := fl.Iterator(&ab.SeekPosition{Type: &ab.SeekPosition_Specified{Specified: &ab.SeekSpecified{Number: 1}}})
 	defer it.Close()
 
-	var block *cb.Block
 	var status cb.Status
 
 	complete := make(chan struct{})
 	go func() {
-		block, status = it.Next()
+		_, status = it.Next()
 		close(complete)
 	}()
 
@@ -187,19 +161,7 @@ func TestBlockedRetrieval(t *testing.T) {
 	defer it.Close()
 	assert.Equal(t, uint64(1), num, "Expected block iterator at 1, but got %d", num)
 
-	signal := it.ReadyChan()
-	select {
-	case <-signal:
-		t.Fatalf("Should not be ready for block read")
-	default:
-	}
-
 	fl.Append(blockledger.CreateNextBlock(fl, []*cb.Envelope{{Payload: []byte("My Data")}}))
-	select {
-	case <-signal:
-	default:
-		t.Fatalf("Should now be ready for block read")
-	}
 
 	block, status := it.Next()
 	assert.Equal(t, cb.Status_SUCCESS, status, "Expected to successfully read the second block")

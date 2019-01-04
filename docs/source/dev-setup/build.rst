@@ -49,31 +49,6 @@ client SDK is not broken by your changes. To run the Node.js unit tests,
 follow the instructions
 `here <https://github.com/hyperledger/fabric-sdk-node/blob/master/README.md>`__.
 
-Running Behave BDD Tests
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-**Note:** currently, the behave tests must be run from within in the
-Vagrant environment. See the :doc:`development environment <devenv>` setup instructions
-if you have not already set up your Vagrant environment.
-
-`Behave <http://pythonhosted.org/behave/>`__ tests will setup networks
-of peers with different security and consensus configurations and verify
-that transactions run properly. To run these tests
-
-::
-
-    cd $GOPATH/src/github.com/hyperledger/fabric
-    make behave
-
-Some of the Behave tests run inside Docker containers. If a test fails
-and you want to have the logs from the Docker containers, run the tests
-with this option:
-
-::
-
-    cd $GOPATH/src/github.com/hyperledger/fabric/bddtests
-    behave -D logs=Y
-
 Building outside of Vagrant
 ---------------------------
 
@@ -86,7 +61,7 @@ Building on Z
 ~~~~~~~~~~~~~
 
 To make building on Z easier and faster, `this
-script <https://github.com/hyperledger/fabric/tree/master/devenv/setupRHELonZ.sh>`__
+script <https://github.com/hyperledger/fabric/blob/master/devenv/setupRHELonZ.sh>`__
 is provided (which is similar to the `setup
 file <https://github.com/hyperledger/fabric/blob/master/devenv/setup.sh>`__
 provided for vagrant). This script has been tested only on RHEL 7.2 and
@@ -111,7 +86,7 @@ development environment.
 ::
 
     cd $GOPATH/src/github.com/hyperledger/fabric
-    make peer unit-test behave
+    make peer unit-test
 
 Building on Power Platform
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -119,7 +94,7 @@ Building on Power Platform
 Development and build on Power (ppc64le) systems is done outside of
 vagrant as outlined `here <#building-outside-of-vagrant>`__. For ease
 of setting up the dev environment on Ubuntu, invoke `this
-script <https://github.com/hyperledger/fabric/tree/master/devenv/setupUbuntuOnPPC64le.sh>`__
+script <https://github.com/hyperledger/fabric/blob/master/devenv/setupUbuntuOnPPC64le.sh>`__
 as root. This script has been validated on Ubuntu 16.04 and assumes
 certain things (like, development system has OS repositories in place,
 firewall setting etc) and in general can be improvised further.
@@ -137,6 +112,29 @@ the following commands to build the fabric code:
     sudo ./fabric/devenv/setupUbuntuOnPPC64le.sh
     cd $GOPATH/src/github.com/hyperledger/fabric
     make dist-clean all
+
+Building on Centos 7
+~~~~~~~~~~~~~~~~~~~~
+
+You will have to build CouchDB from source because there is no package
+available from the distribution. If you are planning a multi-orderer
+arrangement, you will also need to install Apache Kafka from source.
+Apache Kafka includes both Zookeeper and Kafka executables and
+supporting artifacts.
+
+::
+
+   export GOPATH={directory of your choice}
+   mkdir -p $GOPATH/src/github.com/hyperledger
+   FABRIC=$GOPATH/src/github.com/hyperledger/fabric
+   git clone https://github.com/hyperledger/fabric $FABRIC
+   cd $FABRIC
+   git checkout master # <-- only if you want the master branch
+   export PATH=$GOPATH/bin:$PATH
+   make native
+
+If you are not trying to build for docker, you only need the natives.
+
 
 Configuration
 -------------

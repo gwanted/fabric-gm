@@ -12,5 +12,6 @@ Commands Reference
    commands/peernode.md
    commands/configtxgen.md
    commands/configtxlator.md
-   commands/cryptogen-commands
+   commands/cryptogen.md
+   discovery-cli.md
    commands/fabric-ca-commands

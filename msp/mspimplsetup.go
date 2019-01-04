@@ -8,6 +8,7 @@ package msp
 
 import (
 	"bytes"
+	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
 	"time"
@@ -16,7 +17,6 @@ import (
 	"github.com/hyperledger/fabric/bccsp"
 	m "github.com/hyperledger/fabric/protos/msp"
 	errors "github.com/pkg/errors"
-	"github.com/tjfoc/gmsm/sm2"
 )
 
 func (msp *bccspmsp) getCertifiersIdentifier(certRaw []byte) ([]byte, error) {
@@ -58,9 +58,9 @@ func (msp *bccspmsp) getCertifiersIdentifier(certRaw []byte) ([]byte, error) {
 
 	// 3. get the certification path for it
 	var certifiersIdentifier []byte
-	var chain []*sm2.Certificate
+	var chain []*x509.Certificate
 	if root {
-		chain = []*sm2.Certificate{cert}
+		chain = []*x509.Certificate{cert}
 	} else {
 		chain, err = msp.getValidationChain(cert, true)
 		if err != nil {
@@ -111,7 +111,7 @@ func (msp *bccspmsp) setupCAs(conf *m.FabricMSPConfig) error {
 	// Recall that sanitization is applied also to root CA and intermediate
 	// CA certificates. After their sanitization is done, the opts
 	// will be recreated using the sanitized certs.
-	msp.opts = &sm2.VerifyOptions{Roots: sm2.NewCertPool(), Intermediates: sm2.NewCertPool()}
+	msp.opts = &x509.VerifyOptions{Roots: x509.NewCertPool(), Intermediates: x509.NewCertPool()}
 	for _, v := range conf.RootCerts {
 		cert, err := msp.getCertFromPem(v)
 		if err != nil {
@@ -151,7 +151,7 @@ func (msp *bccspmsp) setupCAs(conf *m.FabricMSPConfig) error {
 	}
 
 	// root CA and intermediate CA certificates are sanitized, they can be reimported
-	msp.opts = &sm2.VerifyOptions{Roots: sm2.NewCertPool(), Intermediates: sm2.NewCertPool()}
+	msp.opts = &x509.VerifyOptions{Roots: x509.NewCertPool(), Intermediates: x509.NewCertPool()}
 	for _, id := range msp.rootCerts {
 		msp.opts.Roots.AddCert(id.(*identity).cert)
 	}
@@ -181,7 +181,7 @@ func (msp *bccspmsp) setupCRLs(conf *m.FabricMSPConfig) error {
 	// setup the CRL (if present)
 	msp.CRL = make([]*pkix.CertificateList, len(conf.RevocationList))
 	for i, crlbytes := range conf.RevocationList {
-		crl, err := sm2.ParseCRL(crlbytes)
+		crl, err := x509.ParseCRL(crlbytes)
 		if err != nil {
 			return errors.Wrap(err, "could not parse RevocationList")
 		}
@@ -197,11 +197,14 @@ func (msp *bccspmsp) setupCRLs(conf *m.FabricMSPConfig) error {
 	return nil
 }
 
-func (msp *bccspmsp) finalizeSetupCAs(config *m.FabricMSPConfig) error {
+func (msp *bccspmsp) finalizeSetupCAs() error {
 	// ensure that our CAs are properly formed and that they are valid
 	for _, id := range append(append([]Identity{}, msp.rootCerts...), msp.intermediateCerts...) {
-		if !isCACert(id.(*identity).cert) {
-			return errors.Errorf("CA Certificate did not have the Subject Key Identifier extension, (SN: %s)", id.(*identity).cert.SerialNumber)
+		if !id.(*identity).cert.IsCA {
+			return errors.Errorf("CA Certificate did not have the CA attribute, (SN: %x)", id.(*identity).cert.SerialNumber)
+		}
+		if _, err := getSubjectKeyIdentifierFromCert(id.(*identity).cert); err != nil {
+			return errors.WithMessage(err, fmt.Sprintf("CA Certificate problem with Subject Key Identifier extension, (SN: %x)", id.(*identity).cert.SerialNumber))
 		}
 
 		if err := msp.validateCAIdentity(id.(*identity)); err != nil {
@@ -228,14 +231,14 @@ func (msp *bccspmsp) finalizeSetupCAs(config *m.FabricMSPConfig) error {
 }
 
 func (msp *bccspmsp) setupNodeOUs(config *m.FabricMSPConfig) error {
-	if config.FabricNodeOUs != nil {
+	if config.FabricNodeOus != nil {
 
-		msp.ouEnforcement = config.FabricNodeOUs.Enable
+		msp.ouEnforcement = config.FabricNodeOus.Enable
 
 		// ClientOU
-		msp.clientOU = &OUIdentifier{OrganizationalUnitIdentifier: config.FabricNodeOUs.ClientOUIdentifier.OrganizationalUnitIdentifier}
-		if len(config.FabricNodeOUs.ClientOUIdentifier.Certificate) != 0 {
-			certifiersIdentifier, err := msp.getCertifiersIdentifier(config.FabricNodeOUs.ClientOUIdentifier.Certificate)
+		msp.clientOU = &OUIdentifier{OrganizationalUnitIdentifier: config.FabricNodeOus.ClientOuIdentifier.OrganizationalUnitIdentifier}
+		if len(config.FabricNodeOus.ClientOuIdentifier.Certificate) != 0 {
+			certifiersIdentifier, err := msp.getCertifiersIdentifier(config.FabricNodeOus.ClientOuIdentifier.Certificate)
 			if err != nil {
 				return err
 			}
@@ -243,9 +246,9 @@ func (msp *bccspmsp) setupNodeOUs(config *m.FabricMSPConfig) error {
 		}
 
 		// PeerOU
-		msp.peerOU = &OUIdentifier{OrganizationalUnitIdentifier: config.FabricNodeOUs.PeerOUIdentifier.OrganizationalUnitIdentifier}
-		if len(config.FabricNodeOUs.PeerOUIdentifier.Certificate) != 0 {
-			certifiersIdentifier, err := msp.getCertifiersIdentifier(config.FabricNodeOUs.PeerOUIdentifier.Certificate)
+		msp.peerOU = &OUIdentifier{OrganizationalUnitIdentifier: config.FabricNodeOus.PeerOuIdentifier.OrganizationalUnitIdentifier}
+		if len(config.FabricNodeOus.PeerOuIdentifier.Certificate) != 0 {
+			certifiersIdentifier, err := msp.getCertifiersIdentifier(config.FabricNodeOus.PeerOuIdentifier.Certificate)
 			if err != nil {
 				return err
 			}
@@ -315,11 +318,11 @@ func (msp *bccspmsp) setupOUs(conf *m.FabricMSPConfig) error {
 
 func (msp *bccspmsp) setupTLSCAs(conf *m.FabricMSPConfig) error {
 
-	opts := &sm2.VerifyOptions{Roots: sm2.NewCertPool(), Intermediates: sm2.NewCertPool()}
+	opts := &x509.VerifyOptions{Roots: x509.NewCertPool(), Intermediates: x509.NewCertPool()}
 
 	// Load TLS root and intermediate CA identities
 	msp.tlsRootCerts = make([][]byte, len(conf.TlsRootCerts))
-	rootCerts := make([]*sm2.Certificate, len(conf.TlsRootCerts))
+	rootCerts := make([]*x509.Certificate, len(conf.TlsRootCerts))
 	for i, trustedCert := range conf.TlsRootCerts {
 		cert, err := msp.getCertFromPem(trustedCert)
 		if err != nil {
@@ -333,7 +336,7 @@ func (msp *bccspmsp) setupTLSCAs(conf *m.FabricMSPConfig) error {
 
 	// make and fill the set of intermediate certs (if present)
 	msp.tlsIntermediateCerts = make([][]byte, len(conf.TlsIntermediateCerts))
-	intermediateCerts := make([]*sm2.Certificate, len(conf.TlsIntermediateCerts))
+	intermediateCerts := make([]*x509.Certificate, len(conf.TlsIntermediateCerts))
 	for i, trustedCert := range conf.TlsIntermediateCerts {
 		cert, err := msp.getCertFromPem(trustedCert)
 		if err != nil {
@@ -346,13 +349,16 @@ func (msp *bccspmsp) setupTLSCAs(conf *m.FabricMSPConfig) error {
 	}
 
 	// ensure that our CAs are properly formed and that they are valid
-	for _, cert := range append(append([]*sm2.Certificate{}, rootCerts...), intermediateCerts...) {
+	for _, cert := range append(append([]*x509.Certificate{}, rootCerts...), intermediateCerts...) {
 		if cert == nil {
 			continue
 		}
 
-		if !isCACert(cert) {
-			return errors.Errorf("CA Certificate did not have the Subject Key Identifier extension, (SN: %s)", cert.SerialNumber)
+		if !cert.IsCA {
+			return errors.Errorf("CA Certificate did not have the CA attribute, (SN: %x)", cert.SerialNumber)
+		}
+		if _, err := getSubjectKeyIdentifierFromCert(cert); err != nil {
+			return errors.WithMessage(err, fmt.Sprintf("CA Certificate problem with Subject Key Identifier extension, (SN: %x)", cert.SerialNumber))
 		}
 
 		if err := msp.validateTLSCAIdentity(cert, opts); err != nil {
@@ -399,7 +405,7 @@ func (msp *bccspmsp) preSetupV1(conf *m.FabricMSPConfig) error {
 	}
 
 	// Finalize setup of the CAs
-	if err := msp.finalizeSetupCAs(conf); err != nil {
+	if err := msp.finalizeSetupCAs(); err != nil {
 		return err
 	}
 

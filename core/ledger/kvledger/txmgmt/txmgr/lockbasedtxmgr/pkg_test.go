@@ -17,20 +17,27 @@ limitations under the License.
 package lockbasedtxmgr
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/common/ledger/testutil"
 	"github.com/hyperledger/fabric/core/ledger"
+	"github.com/hyperledger/fabric/core/ledger/kvledger/bookkeeping"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/privacyenabledstate"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/txmgr"
+	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/version"
+	"github.com/hyperledger/fabric/core/ledger/mock"
+	"github.com/hyperledger/fabric/core/ledger/pvtdatapolicy"
 	"github.com/hyperledger/fabric/core/ledger/util"
 	"github.com/hyperledger/fabric/protos/common"
+	"github.com/hyperledger/fabric/protos/ledger/queryresult"
 	"github.com/hyperledger/fabric/protos/ledger/rwset"
+	"github.com/stretchr/testify/assert"
 )
 
 type testEnv interface {
-	init(t *testing.T, testLedgerID string)
+	init(t *testing.T, testLedgerID string, btlPolicy pvtdatapolicy.BTLPolicy)
 	getName() string
 	getTxMgr() txmgr.TxMgr
 	getVDB() privacyenabledstate.DB
@@ -49,6 +56,11 @@ var testEnvs = []testEnv{
 	&lockBasedEnv{name: couchDBtestEnvName, testDBEnv: &privacyenabledstate.CouchDBCommonStorageTestEnv{}},
 }
 
+var testEnvsMap = map[string]testEnv{
+	levelDBtestEnvName: testEnvs[0],
+	couchDBtestEnvName: testEnvs[1],
+}
+
 ///////////// LevelDB Environment //////////////
 
 type lockBasedEnv struct {
@@ -59,6 +71,8 @@ type lockBasedEnv struct {
 	testDBEnv privacyenabledstate.TestEnv
 	testDB    privacyenabledstate.DB
 
+	testBookkeepingEnv *bookkeeping.TestEnv
+
 	txmgr txmgr.TxMgr
 }
 
@@ -66,13 +80,19 @@ func (env *lockBasedEnv) getName() string {
 	return env.name
 }
 
-func (env *lockBasedEnv) init(t *testing.T, testLedgerID string) {
+func (env *lockBasedEnv) init(t *testing.T, testLedgerID string, btlPolicy pvtdatapolicy.BTLPolicy) {
 	var err error
 	env.t = t
 	env.testDBEnv.Init(t)
 	env.testDB = env.testDBEnv.GetDBHandle(testLedgerID)
-	testutil.AssertNoError(t, err, "")
-	env.txmgr = NewLockBasedTxMgr(testLedgerID, env.testDB, nil)
+	assert.NoError(t, err)
+	env.testBookkeepingEnv = bookkeeping.NewTestEnv(t)
+	env.txmgr, err = NewLockBasedTxMgr(
+		testLedgerID, env.testDB, nil,
+		btlPolicy, env.testBookkeepingEnv.TestProvider,
+		&mock.DeployedChaincodeInfoProvider{})
+	assert.NoError(t, err)
+
 }
 
 func (env *lockBasedEnv) getTxMgr() txmgr.TxMgr {
@@ -86,6 +106,7 @@ func (env *lockBasedEnv) getVDB() privacyenabledstate.DB {
 func (env *lockBasedEnv) cleanup() {
 	env.txmgr.Shutdown()
 	env.testDBEnv.Cleanup()
+	env.testBookkeepingEnv.Cleanup()
 }
 
 //////////// txMgrTestHelper /////////////
@@ -104,8 +125,8 @@ func newTxMgrTestHelper(t *testing.T, txMgr txmgr.TxMgr) *txMgrTestHelper {
 func (h *txMgrTestHelper) validateAndCommitRWSet(txRWSet *rwset.TxReadWriteSet) {
 	rwSetBytes, _ := proto.Marshal(txRWSet)
 	block := h.bg.NextBlock([][]byte{rwSetBytes})
-	err := h.txMgr.ValidateAndPrepare(&ledger.BlockAndPvtData{Block: block, BlockPvtData: nil}, true)
-	testutil.AssertNoError(h.t, err, "")
+	_, err := h.txMgr.ValidateAndPrepare(&ledger.BlockAndPvtData{Block: block, PvtData: nil}, true)
+	assert.NoError(h.t, err)
 	txsFltr := util.TxValidationFlags(block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER])
 	invalidTxNum := 0
 	for i := 0; i < len(block.Data.Data); i++ {
@@ -113,16 +134,16 @@ func (h *txMgrTestHelper) validateAndCommitRWSet(txRWSet *rwset.TxReadWriteSet) 
 			invalidTxNum++
 		}
 	}
-	testutil.AssertEquals(h.t, invalidTxNum, 0)
+	assert.Equal(h.t, 0, invalidTxNum)
 	err = h.txMgr.Commit()
-	testutil.AssertNoError(h.t, err, "")
+	assert.NoError(h.t, err)
 }
 
 func (h *txMgrTestHelper) checkRWsetInvalid(txRWSet *rwset.TxReadWriteSet) {
 	rwSetBytes, _ := proto.Marshal(txRWSet)
 	block := h.bg.NextBlock([][]byte{rwSetBytes})
-	err := h.txMgr.ValidateAndPrepare(&ledger.BlockAndPvtData{Block: block, BlockPvtData: nil}, true)
-	testutil.AssertNoError(h.t, err, "")
+	_, err := h.txMgr.ValidateAndPrepare(&ledger.BlockAndPvtData{Block: block, PvtData: nil}, true)
+	assert.NoError(h.t, err)
 	txsFltr := util.TxValidationFlags(block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER])
 	invalidTxNum := 0
 	for i := 0; i < len(block.Data.Data); i++ {
@@ -130,5 +151,37 @@ func (h *txMgrTestHelper) checkRWsetInvalid(txRWSet *rwset.TxReadWriteSet) {
 			invalidTxNum++
 		}
 	}
-	testutil.AssertEquals(h.t, invalidTxNum, 1)
+	assert.Equal(h.t, 1, invalidTxNum)
+}
+
+func populateCollConfigForTest(t *testing.T, txMgr *LockBasedTxMgr, nsColls []collConfigkey, ht *version.Height) {
+	m := map[string]*common.CollectionConfigPackage{}
+	for _, nsColl := range nsColls {
+		ns, coll := nsColl.ns, nsColl.coll
+		pkg, ok := m[ns]
+		if !ok {
+			pkg = &common.CollectionConfigPackage{}
+			m[ns] = pkg
+		}
+		sCollConfig := &common.CollectionConfig_StaticCollectionConfig{
+			StaticCollectionConfig: &common.StaticCollectionConfig{
+				Name: coll,
+			},
+		}
+		pkg.Config = append(pkg.Config, &common.CollectionConfig{Payload: sCollConfig})
+	}
+	ccInfoProvider := &mock.DeployedChaincodeInfoProvider{}
+	ccInfoProvider.ChaincodeInfoStub = func(ccName string, qe ledger.SimpleQueryExecutor) (*ledger.DeployedChaincodeInfo, error) {
+		fmt.Printf("retrieveing info for [%s] from [%s]\n", ccName, m)
+		return &ledger.DeployedChaincodeInfo{Name: ccName, CollectionConfigPkg: m[ccName]}, nil
+	}
+	txMgr.ccInfoProvider = ccInfoProvider
+}
+
+func testutilPopulateDB(t *testing.T, txMgr *LockBasedTxMgr, ns string, data []*queryresult.KV, version *version.Height) {
+	updates := privacyenabledstate.NewUpdateBatch()
+	for _, kv := range data {
+		updates.PubUpdates.Put(ns, kv.Key, kv.Value, version)
+	}
+	txMgr.db.ApplyPrivacyAwareUpdates(updates, version)
 }

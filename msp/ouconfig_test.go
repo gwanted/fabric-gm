@@ -43,7 +43,7 @@ func TestBadConfigOUCert(t *testing.T) {
 	// testdata/badconfigoucert:
 	// the configuration of the OU identifier points to a
 	// certificate that is neither a CA nor an intermediate CA for the msp.
-	conf, err := GetLocalMspConfig("testdata/badconfigoucert", nil, "DEFAULT")
+	conf, err := GetLocalMspConfig("testdata/badconfigoucert", nil, "SampleOrg")
 	assert.NoError(t, err)
 
 	thisMSP, err := newBccspMsp(MSPv1_0)
@@ -67,14 +67,14 @@ func TestValidateIntermediateConfigOU(t *testing.T) {
 	err = id.Validate()
 	assert.NoError(t, err)
 
-	conf, err := GetLocalMspConfig("testdata/external", nil, "DEFAULT")
+	conf, err := GetLocalMspConfig("testdata/external", nil, "SampleOrg")
 	assert.NoError(t, err)
 
 	thisMSP, err = newBccspMsp(MSPv1_0)
 	assert.NoError(t, err)
 	ks, err := sw.NewFileBasedKeyStore(nil, filepath.Join("testdata/external", "keystore"), true)
 	assert.NoError(t, err)
-	csp, err := sw.New(256, "SHA2", ks)
+	csp, err := sw.NewWithParams(256, "SHA2", ks)
 	assert.NoError(t, err)
 	thisMSP.(*bccspmsp).bccsp = csp
 

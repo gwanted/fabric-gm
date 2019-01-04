@@ -17,6 +17,7 @@ limitations under the License.
 package channel
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -26,7 +27,6 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
 	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 )
 
 type endorserClient struct {
@@ -40,6 +40,11 @@ func listCmd(cf *ChannelCmdFactory) *cobra.Command {
 		Short: "List of channels peer has joined.",
 		Long:  "List of channels peer has joined.",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 0 {
+				return fmt.Errorf("trailing args detected: %s", args)
+			}
+			// Parsing of the command line is done so silence cmd usage
+			cmd.SilenceUsage = true
 			return list(cf)
 		},
 	}
@@ -75,7 +80,7 @@ func (cc *endorserClient) getChannels() ([]*pb.ChannelInfo, error) {
 	}
 
 	if proposalResp.Response == nil || proposalResp.Response.Status != 200 {
-		return nil, errors.New(fmt.Sprint("Received bad response, status", proposalResp.Response.Status))
+		return nil, errors.New(fmt.Sprintf("Received bad response, status %d: %s", proposalResp.Response.Status, proposalResp.Response.Message))
 	}
 
 	var channelQueryResponse pb.ChannelQueryResponse
@@ -90,7 +95,7 @@ func (cc *endorserClient) getChannels() ([]*pb.ChannelInfo, error) {
 func list(cf *ChannelCmdFactory) error {
 	var err error
 	if cf == nil {
-		cf, err = InitCmdFactory(EndorserRequired, OrdererNotRequired)
+		cf, err = InitCmdFactory(EndorserRequired, PeerDeliverNotRequired, OrdererNotRequired)
 		if err != nil {
 			return err
 		}

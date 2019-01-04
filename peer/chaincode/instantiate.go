@@ -1,22 +1,13 @@
 /*
-Copyright IBM Corp. 2016 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package chaincode
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -24,7 +15,6 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
 	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 )
 
 var chaincodeInstantiateCmd *cobra.Command
@@ -54,6 +44,9 @@ func instantiateCmd(cf *ChaincodeCmdFactory) *cobra.Command {
 		"escc",
 		"vscc",
 		"collections-config",
+		"peerAddresses",
+		"tlsRootCertFiles",
+		"connectionProfile",
 	}
 	attachFlags(chaincodeInstantiateCmd, flagList)
 
@@ -69,35 +62,36 @@ func instantiate(cmd *cobra.Command, cf *ChaincodeCmdFactory) (*protcommon.Envel
 
 	cds, err := getChaincodeDeploymentSpec(spec, false)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting chaincode code %s: %s", chainFuncName, err)
+		return nil, fmt.Errorf("error getting chaincode code %s: %s", chaincodeName, err)
 	}
 
 	creator, err := cf.Signer.Serialize()
 	if err != nil {
-		return nil, fmt.Errorf("Error serializing identity for %s: %s", cf.Signer.GetIdentifier(), err)
+		return nil, fmt.Errorf("error serializing identity for %s: %s", cf.Signer.GetIdentifier(), err)
 	}
 
 	prop, _, err := utils.CreateDeployProposalFromCDS(channelID, cds, creator, policyMarshalled, []byte(escc), []byte(vscc), collectionConfigBytes)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating proposal  %s: %s", chainFuncName, err)
+		return nil, fmt.Errorf("error creating proposal  %s: %s", chainFuncName, err)
 	}
 
 	var signedProp *pb.SignedProposal
 	signedProp, err = utils.GetSignedProposal(prop, cf.Signer)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating signed proposal  %s: %s", chainFuncName, err)
+		return nil, fmt.Errorf("error creating signed proposal  %s: %s", chainFuncName, err)
 	}
 
-	proposalResponse, err := cf.EndorserClient.ProcessProposal(context.Background(), signedProp)
+	// instantiate is currently only supported for one peer
+	proposalResponse, err := cf.EndorserClients[0].ProcessProposal(context.Background(), signedProp)
 	if err != nil {
-		return nil, fmt.Errorf("Error endorsing %s: %s", chainFuncName, err)
+		return nil, fmt.Errorf("error endorsing %s: %s", chainFuncName, err)
 	}
 
 	if proposalResponse != nil {
 		// assemble a signed transaction (it's an Envelope message)
 		env, err := utils.CreateSignedTx(prop, cf.Signer, proposalResponse)
 		if err != nil {
-			return nil, fmt.Errorf("Could not assemble transaction, err %s", err)
+			return nil, fmt.Errorf("could not assemble transaction, err %s", err)
 		}
 
 		return env, nil
@@ -113,9 +107,12 @@ func chaincodeDeploy(cmd *cobra.Command, args []string, cf *ChaincodeCmdFactory)
 	if channelID == "" {
 		return errors.New("The required parameter 'channelID' is empty. Rerun the command with -C flag")
 	}
+	// Parsing of the command line is done so silence cmd usage
+	cmd.SilenceUsage = true
+
 	var err error
 	if cf == nil {
-		cf, err = InitCmdFactory(true, true)
+		cf, err = InitCmdFactory(cmd.Name(), true, true)
 		if err != nil {
 			return err
 		}

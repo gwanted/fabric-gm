@@ -124,7 +124,25 @@ func (ga *gossipAdapterImpl) GetConf() channel.Config {
 		RequestStateInfoInterval:    ga.conf.RequestStateInfoInterval,
 		BlockExpirationInterval:     ga.conf.PullInterval * 100,
 		StateInfoCacheSweepInterval: ga.conf.PullInterval * 5,
+		TimeForMembershipTracker:    ga.conf.TimeForMembershipTracker,
 	}
+}
+
+func (ga *gossipAdapterImpl) Sign(msg *proto.GossipMessage) (*proto.SignedGossipMessage, error) {
+	signer := func(msg []byte) ([]byte, error) {
+		return ga.mcs.Sign(msg)
+	}
+	sMsg := &proto.SignedGossipMessage{
+		GossipMessage: msg,
+	}
+	e, err := sMsg.Sign(signer)
+	if err != nil {
+		return nil, err
+	}
+	return &proto.SignedGossipMessage{
+		Envelope:      e,
+		GossipMessage: msg,
+	}, nil
 }
 
 // Gossip gossips a message

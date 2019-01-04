@@ -16,7 +16,6 @@ import (
 	"github.com/hyperledger/fabric/common/capabilities"
 	cb "github.com/hyperledger/fabric/protos/common"
 	ab "github.com/hyperledger/fabric/protos/orderer"
-
 	"github.com/pkg/errors"
 )
 
@@ -35,7 +34,7 @@ const (
 	// BatchTimeoutKey is the cb.ConfigItem type key name for the BatchTimeout message
 	BatchTimeoutKey = "BatchTimeout"
 
-	// ChannelRestrictions is the key name for the ChannelRestrictions message
+	// ChannelRestrictionsKey is the key name for the ChannelRestrictions message
 	ChannelRestrictionsKey = "ChannelRestrictions"
 
 	// KafkaBrokersKey is the cb.ConfigItem type key name for the KafkaBrokers message
@@ -87,6 +86,11 @@ func NewOrdererConfig(ordererGroup *cb.ConfigGroup, mspConfig *MSPConfigHandler)
 // ConsensusType returns the configured consensus type
 func (oc *OrdererConfig) ConsensusType() string {
 	return oc.protos.ConsensusType.Type
+}
+
+// ConsensusMetadata returns the metadata associated with the consensus type.
+func (oc *OrdererConfig) ConsensusMetadata() []byte {
+	return oc.protos.ConsensusType.Metadata
 }
 
 // BatchSize returns the maximum number of messages to include in a block

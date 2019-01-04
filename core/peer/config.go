@@ -20,12 +20,11 @@ SPDX-License-Identifier: Apache-2.0
 package peer
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"path/filepath"
-
-	tls "github.com/tjfoc/gmtls"
 
 	"github.com/hyperledger/fabric/core/comm"
 	"github.com/hyperledger/fabric/core/config"
@@ -167,7 +166,7 @@ func GetServerConfig() (comm.ServerConfig, error) {
 		}
 	}
 	// get the default keepalive options
-	serverConfig.KaOpts = comm.DefaultKeepaliveOptions()
+	serverConfig.KaOpts = comm.DefaultKeepaliveOptions
 	// check to see if minInterval is set for the env
 	if viper.IsSet("peer.keepalive.minInterval") {
 		serverConfig.KaOpts.ServerMinInterval = viper.GetDuration("peer.keepalive.minInterval")
@@ -195,7 +194,7 @@ func GetClientCertificate() (tls.Certificate, error) {
 	} else {
 		// use the TLS server keypair
 		keyPath = viper.GetString("peer.tls.key.file")
-		certPath = viper.GetString("peer.tls.key.file")
+		certPath = viper.GetString("peer.tls.cert.file")
 
 		if keyPath != "" || certPath != "" {
 			// need both keyPath and certPath to be set

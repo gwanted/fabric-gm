@@ -1,4 +1,4 @@
-// +build nopkcs11
+// +build !pkcs11
 
 /*
 Copyright IBM Corp. 2017 All Rights Reserved.
@@ -18,8 +18,6 @@ limitations under the License.
 package factory
 
 import (
-	"strings"
-
 	"github.com/hyperledger/fabric/bccsp"
 	"github.com/pkg/errors"
 )
@@ -55,12 +53,7 @@ func InitFactories(config *FactoryOpts) error {
 
 		// Software-Based BCCSP
 		if config.SwOpts != nil {
-			var f BCCSPFactory
-			if strings.ToUpper(config.ProviderName) == "GM" {
-				f = &GMFactory{}
-			} else {
-				f = &SWFactory{}
-			}
+			f := &SWFactory{}
 			err := initBCCSP(f, config)
 			if err != nil {
 				factoriesInitError = errors.Wrapf(err, "Failed initializing BCCSP.")
@@ -92,8 +85,6 @@ func GetBCCSPFromOpts(config *FactoryOpts) (bccsp.BCCSP, error) {
 	switch config.ProviderName {
 	case "SW":
 		f = &SWFactory{}
-	case "GM":
-		f = &GMFactory{}
 	case "PLUGIN":
 		f = &PluginFactory{}
 	default:
