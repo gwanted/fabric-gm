@@ -2,7 +2,7 @@ package sarama
 
 import (
 	"compress/gzip"
-	"crypto/tls"
+	tls "github.com/tjfoc/gmtls"
 	"fmt"
 	"io/ioutil"
 	"net"

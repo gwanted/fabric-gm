@@ -8,10 +8,11 @@ package comm
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"net"
 
+	tls "github.com/tjfoc/gmtls"
+	"github.com/tjfoc/gmtls/gmcredentials"
 	"github.com/hyperledger/fabric/common/flogging"
 	"google.golang.org/grpc/credentials"
 )
@@ -67,7 +68,7 @@ func (sc *serverCreds) ServerHandshake(rawConn net.Conn) (net.Conn, credentials.
 		}
 		return nil, nil, err
 	}
-	return conn, credentials.TLSInfo{State: conn.ConnectionState()}, nil
+	return conn, gmcredentials.TLSInfo{State: conn.ConnectionState()}, nil
 }
 
 // Info provides the ProtocolInfo of this TransportCredentials.

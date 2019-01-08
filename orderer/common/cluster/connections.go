@@ -8,16 +8,17 @@ package cluster
 
 import (
 	"bytes"
-	"crypto/x509"
+	// "crypto/x509"
 	"sync"
 	"sync/atomic"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"github.com/tjfoc/gmsm/sm2"
 )
 
 // RemoteVerifier verifies the connection to the remote host
-type RemoteVerifier func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error
+type RemoteVerifier func(rawCerts [][]byte, verifiedChains [][]*sm2.Certificate) error
 
 //go:generate mockery -dir . -name SecureDialer -case underscore -output ./mocks/
 
@@ -55,7 +56,7 @@ func NewConnectionStore(dialer SecureDialer) *ConnectionStore {
 // verifyHandshake returns a predicate that verifies that the remote node authenticates
 // itself with the given TLS certificate
 func (c *ConnectionStore) verifyHandshake(endpoint string, certificate []byte) RemoteVerifier {
-	return func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+	return func(rawCerts [][]byte, verifiedChains [][]*sm2.Certificate) error {
 		if bytes.Equal(certificate, rawCerts[0]) {
 			return nil
 		}
