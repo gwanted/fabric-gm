@@ -214,6 +214,10 @@ func DERToPrivateKey(der []byte) (key interface{}, err error) {
 		return
 	}
 
+	if key, err := sm2.ParsePKCS8UnecryptedPrivateKey(der); err == nil {
+		return key, nil
+	}
+
 	return nil, errors.New("Invalid key type. The DER must contain an rsa.PrivateKey or ecdsa.PrivateKey")
 }
 
