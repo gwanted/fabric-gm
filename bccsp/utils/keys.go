@@ -202,6 +202,7 @@ func DERToPrivateKey(der []byte) (key interface{}, err error) {
 	}
 
 	if key, err = x509.ParsePKCS8PrivateKey(der); err == nil {
+		fmt.Printf("Are you kidding me444? %T",key)
 		switch key.(type) {
 		case *rsa.PrivateKey, *ecdsa.PrivateKey:
 			return
@@ -211,11 +212,15 @@ func DERToPrivateKey(der []byte) (key interface{}, err error) {
 	}
 
 	if key, err = x509.ParseECPrivateKey(der); err == nil {
+		fmt.Printf("Are you kidding me555? %T",key)
 		return
 	}
-
+	
 	if key, err := sm2.ParsePKCS8UnecryptedPrivateKey(der); err == nil {
+		fmt.Printf("Are you kidding me666? %T",key)
 		return key, nil
+	}else {
+		fmt.Printf("error!!!!! %s",err.Error())
 	}
 
 	return nil, errors.New("Invalid key type. The DER must contain an rsa.PrivateKey or ecdsa.PrivateKey")
