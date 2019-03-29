@@ -435,8 +435,8 @@ func (ka *ecdheKeyAgreement) processServerKeyExchange(config *Config, clientHell
 				return errors.New("tls: SM2 verification failure")
 			}
 		default:
-			if !ecdsa.Verify(pubKey, digest, ecdsaSig.R, ecdsaSig.S) {
-				return errors.New("tls: ECDSA verification failure")
+			if !sm2.Verify(pubKey, digest, ecdsaSig.R, ecdsaSig.S) {
+				return errors.New("tls: ECDSA-->SM2 verification failure")
 			}
 		}
 	case signatureRSA:
