@@ -779,7 +779,7 @@ func (hs *serverHandshakeState) processCertsFromClient(certificates [][]byte) (c
 
 	var pub crypto.PublicKey
 	switch key := certs[0].PublicKey.(type) {
-	case *ecdsa.PublicKey, *rsa.PublicKey:
+	case *ecdsa.PublicKey, *rsa.PublicKey, *sm2.PublicKey:
 		pub = key
 	default:
 		c.sendAlert(alertUnsupportedCertificate)
