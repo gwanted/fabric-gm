@@ -161,10 +161,10 @@ func (id *identity) Verify(msg []byte, sig []byte) error {
 		return errors.WithMessage(err, "failed computing digest")
 	}
 
-	if mspIdentityLogger.IsEnabledFor(logging.DEBUG) {
+	// if mspIdentityLogger.IsEnabledFor(logging.DEBUG) {
 		mspIdentityLogger.Debugf("Verify: digest = %s", hex.Dump(digest))
 		mspIdentityLogger.Debugf("Verify: sig = %s", hex.Dump(sig))
-	}
+	// }
 
 	valid, err := id.msp.bccsp.Verify(id.pk, sig, digest, nil)
 	if err != nil {
