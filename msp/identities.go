@@ -17,6 +17,7 @@ limitations under the License.
 package msp
 
 import (
+	"fmt"
 	"crypto"
 	"crypto/rand"
 	"encoding/hex"
@@ -161,7 +162,7 @@ func (id *identity) Verify(msg []byte, sig []byte) error {
 		return errors.WithMessage(err, "failed computing digest")
 	}
 	fmt.Printf("Verify: digest = %s", hex.Dump(digest))
-	fmt.Printf("Verify: hashOpt = %s", hex.Dump(hashOpt))
+	fmt.Printf("Verify: hashOpt = %v", hashOpt)
 
 	// if mspIdentityLogger.IsEnabledFor(logging.DEBUG) {
 		mspIdentityLogger.Debugf("Verify: digest = %s", hex.Dump(digest))
