@@ -160,6 +160,8 @@ func (id *identity) Verify(msg []byte, sig []byte) error {
 	if err != nil {
 		return errors.WithMessage(err, "failed computing digest")
 	}
+	fmt.Printf("Verify: digest = %s", hex.Dump(digest))
+	fmt.Printf("Verify: hashOpt = %s", hex.Dump(hashOpt))
 
 	// if mspIdentityLogger.IsEnabledFor(logging.DEBUG) {
 		mspIdentityLogger.Debugf("Verify: digest = %s", hex.Dump(digest))
@@ -170,7 +172,7 @@ func (id *identity) Verify(msg []byte, sig []byte) error {
 	if err != nil {
 		return errors.WithMessage(err, "could not determine the validity of the signature")
 	} else if !valid {
-		return errors.New("The signature is invalid")
+		return errors.New("The signature is invalidaaa")
 	}
 
 	return nil
