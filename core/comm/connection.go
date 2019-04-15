@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package comm
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
@@ -20,7 +21,6 @@ import (
 	"github.com/tjfoc/gmsm/sm2"
 	tls "github.com/tjfoc/gmtls"
 	"github.com/tjfoc/gmtls/gmcredentials"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -198,7 +198,7 @@ func NewClientConnectionWithAddress(peerAddress string, block bool, tslEnabled b
 		opts = ClientKeepaliveOptions(ka)
 	} else {
 		// set to the default options
-		opts = ClientKeepaliveOptions(DefaultKeepaliveOptions())
+		opts = ClientKeepaliveOptions(DefaultKeepaliveOptions)
 	}
 
 	if tslEnabled {
@@ -209,10 +209,12 @@ func NewClientConnectionWithAddress(peerAddress string, block bool, tslEnabled b
 	if block {
 		opts = append(opts, grpc.WithBlock())
 	}
-	opts = append(opts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize()),
-		grpc.MaxCallSendMsgSize(MaxSendMsgSize())))
-	ctx := context.Background()
-	ctx, _ = context.WithTimeout(ctx, defaultTimeout)
+	opts = append(opts, grpc.WithDefaultCallOptions(
+		grpc.MaxCallRecvMsgSize(MaxRecvMsgSize),
+		grpc.MaxCallSendMsgSize(MaxSendMsgSize),
+	))
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
 	conn, err := grpc.DialContext(ctx, peerAddress, opts...)
 	if err != nil {
 		return nil, err

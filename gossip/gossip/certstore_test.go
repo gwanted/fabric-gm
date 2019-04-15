@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package gossip
 
 import (
+	"bytes"
 	"sync"
 	"testing"
 	"time"
@@ -160,7 +161,7 @@ func TestCertRevocation(t *testing.T) {
 					DataDig: &proto.DataDigest{
 						Nonce:   hello.Nonce,
 						MsgType: proto.PullMsgType_IDENTITY_MSG,
-						Digests: []string{"B"},
+						Digests: [][]byte{[]byte("B")},
 					},
 				},
 			}
@@ -219,14 +220,6 @@ func TestCertExpiration(t *testing.T) {
 	// Restore original usageThreshold value
 	defer identity.SetIdentityUsageThreshold(idUsageThreshold)
 
-	// Backup original identityInactivityCheckInterval value
-	usageThreshold := identity.GetIdentityUsageThreshold()
-	identity.SetIdentityUsageThreshold(time.Second)
-	// Restore original identityInactivityCheckInterval value
-	defer func() {
-		identity.SetIdentityUsageThreshold(usageThreshold)
-	}()
-
 	g1 := newGossipInstance(4321, 0, 0, 1)
 	defer g1.Stop()
 	time.Sleep(identity.GetIdentityUsageThreshold() * 2)
@@ -240,7 +233,7 @@ func TestCertExpiration(t *testing.T) {
 		m := o.(proto.ReceivedMessage).GetGossipMessage()
 		if m.IsPullMsg() && m.IsDigestMsg() {
 			for _, dig := range m.GetDataDig().Digests {
-				if dig == "localhost:4321" {
+				if bytes.Equal(dig, []byte("localhost:4321")) {
 					identitiesGotViaPull <- struct{}{}
 				}
 			}
@@ -395,7 +388,7 @@ func createDigest(nonce uint64) proto.ReceivedMessage {
 			DataDig: &proto.DataDigest{
 				Nonce:   nonce,
 				MsgType: proto.PullMsgType_IDENTITY_MSG,
-				Digests: []string{"A", "C"},
+				Digests: [][]byte{[]byte("A"), []byte("C")},
 			},
 		},
 	}
@@ -437,7 +430,7 @@ func createObjects(updateFactory func(uint64) proto.ReceivedMessage, msgCons pro
 		Mediator: pullMediator,
 	}, identity.NewIdentityMapper(cs, selfIdentity, func(pkiID common.PKIidType, _ api.PeerIdentityType) {
 		pullMediator.Remove(string(pkiID))
-	}), selfIdentity, cs)
+	}, cs), selfIdentity, cs)
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)

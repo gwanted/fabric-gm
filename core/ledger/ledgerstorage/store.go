@@ -1,32 +1,27 @@
 /*
-Copyright IBM Corp. 2017 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package ledgerstorage
 
 import (
-	"fmt"
 	"sync"
 
+	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/common/ledger/blkstorage"
 	"github.com/hyperledger/fabric/common/ledger/blkstorage/fsblkstorage"
 	"github.com/hyperledger/fabric/core/ledger"
 	"github.com/hyperledger/fabric/core/ledger/ledgerconfig"
+	"github.com/hyperledger/fabric/core/ledger/pvtdatapolicy"
 	"github.com/hyperledger/fabric/core/ledger/pvtdatastorage"
+	lutil "github.com/hyperledger/fabric/core/ledger/util"
 	"github.com/hyperledger/fabric/protos/common"
+	"github.com/pkg/errors"
 )
+
+var logger = flogging.MustGetLogger("ledgerstorage")
 
 // Provider encapusaltes two providers 1) block store provider and 2) and pvt data store provider
 type Provider struct {
@@ -86,22 +81,101 @@ func (p *Provider) Close() {
 	p.pvtdataStoreProvider.Close()
 }
 
+// Init initializes store with essential configurations
+func (s *Store) Init(btlPolicy pvtdatapolicy.BTLPolicy) {
+	s.pvtdataStore.Init(btlPolicy)
+}
+
 // CommitWithPvtData commits the block and the corresponding pvt data in an atomic operation
 func (s *Store) CommitWithPvtData(blockAndPvtdata *ledger.BlockAndPvtData) error {
+	blockNum := blockAndPvtdata.Block.Header.Number
 	s.rwlock.Lock()
 	defer s.rwlock.Unlock()
-	var pvtdata []*ledger.TxPvtData
-	for _, v := range blockAndPvtdata.BlockPvtData {
-		pvtdata = append(pvtdata, v)
-	}
-	if err := s.pvtdataStore.Prepare(blockAndPvtdata.Block.Header.Number, pvtdata); err != nil {
+
+	pvtBlkStoreHt, err := s.pvtdataStore.LastCommittedBlockHeight()
+	if err != nil {
 		return err
 	}
+
+	writtenToPvtStore := false
+	if pvtBlkStoreHt < blockNum+1 { // The pvt data store sanity check does not allow rewriting the pvt data.
+		// when re-processing blocks (rejoin the channel or re-fetching last few block),
+		// skip the pvt data commit to the pvtdata blockstore
+		logger.Debugf("Writing block [%d] to pvt block store", blockNum)
+		// as the ledger has already validated all txs in this block, we need to
+		// use the validated info to commit only the pvtData of valid tx.
+		// TODO: FAB-12924 Having said the above, there is a corner case that we
+		// need to think about. If a state fork occurs during a regular block commit,
+		// we have a mechanism to drop all blocks followed by refetching of blocks
+		// and re-processing them. In the current way of doing this, we only drop
+		// the block files (and related artifacts) but we do not drop/overwrite the
+		// pvtdatastorage - because the assumption so far was to store full data
+		// (for valid and invalid transactions). Now, we will have to allow dropping
+		// of pvtdatastorage as well. However, the issue is that its shared across
+		// channels (unlike block files).
+		// The side effect of not dropping pvtdatastorage is that we may actually
+		// have some missing data entries sitting in the pvtdatastore for the invalid
+		// transactions which break our goal of storing only the pvtdata of valid tx.
+		// We might also miss pvtData of a valid transaction. Note that the
+		// RemoveStaleAndCommitPvtDataOfOldBlocks() in stateDB txmgr expects only
+		// valid transactions' pvtdata. Hence, it is necessary to rebuild pvtdatastore
+		// along with the blockstore to keep only valid tx data in the pvtdatastore.
+		validTxPvtData, validTxMissingPvtData := constructValidTxPvtDataAndMissingData(blockAndPvtdata)
+		if err := s.pvtdataStore.Prepare(blockAndPvtdata.Block.Header.Number, validTxPvtData, validTxMissingPvtData); err != nil {
+			return err
+		}
+		writtenToPvtStore = true
+	} else {
+		logger.Debugf("Skipping writing block [%d] to pvt block store as the store height is [%d]", blockNum, pvtBlkStoreHt)
+	}
+
 	if err := s.AddBlock(blockAndPvtdata.Block); err != nil {
 		s.pvtdataStore.Rollback()
 		return err
 	}
-	return s.pvtdataStore.Commit()
+
+	if writtenToPvtStore {
+		return s.pvtdataStore.Commit()
+	}
+	return nil
+}
+
+func constructValidTxPvtDataAndMissingData(blockAndPvtData *ledger.BlockAndPvtData) ([]*ledger.TxPvtData,
+	ledger.TxMissingPvtDataMap) {
+
+	var validTxPvtData []*ledger.TxPvtData
+	validTxMissingPvtData := make(ledger.TxMissingPvtDataMap)
+
+	txsFilter := lutil.TxValidationFlags(blockAndPvtData.Block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER])
+	numTxs := uint64(len(blockAndPvtData.Block.Data.Data))
+
+	// for all valid tx, construct pvtdata and missing pvtdata list
+	for txNum := uint64(0); txNum < numTxs; txNum++ {
+		if txsFilter.IsInvalid(int(txNum)) {
+			continue
+		}
+
+		if pvtdata, ok := blockAndPvtData.PvtData[txNum]; ok {
+			validTxPvtData = append(validTxPvtData, pvtdata)
+		}
+
+		if missingPvtData, ok := blockAndPvtData.MissingPvtData[txNum]; ok {
+			for _, missing := range missingPvtData {
+				validTxMissingPvtData.Add(txNum, missing.Namespace,
+					missing.Collection, missing.IsEligible)
+			}
+		}
+	}
+	return validTxPvtData, validTxMissingPvtData
+}
+
+// CommitPvtDataOfOldBlocks commits the pvtData of old blocks
+func (s *Store) CommitPvtDataOfOldBlocks(blocksPvtData map[uint64][]*ledger.TxPvtData) error {
+	err := s.pvtdataStore.CommitPvtDataOfOldBlocks(blocksPvtData)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetPvtDataAndBlockByNum returns the block and the corresponding pvt data.
@@ -119,7 +193,7 @@ func (s *Store) GetPvtDataAndBlockByNum(blockNum uint64, filter ledger.PvtNsColl
 	if pvtdata, err = s.getPvtDataByNumWithoutLock(blockNum, filter); err != nil {
 		return nil, err
 	}
-	return &ledger.BlockAndPvtData{Block: block, BlockPvtData: constructPvtdataMap(pvtdata)}, nil
+	return &ledger.BlockAndPvtData{Block: block, PvtData: constructPvtdataMap(pvtdata)}, nil
 }
 
 // GetPvtDataByNum returns only the pvt data  corresponding to the given block number
@@ -133,7 +207,7 @@ func (s *Store) GetPvtDataByNum(blockNum uint64, filter ledger.PvtNsCollFilter) 
 
 // getPvtDataByNumWithoutLock returns only the pvt data  corresponding to the given block number.
 // This function does not acquire a readlock and it is expected that in most of the circumstances, the caller
-// posesses a read lock on `s.rwlock`
+// possesses a read lock on `s.rwlock`
 func (s *Store) getPvtDataByNumWithoutLock(blockNum uint64, filter ledger.PvtNsCollFilter) ([]*ledger.TxPvtData, error) {
 	var pvtdata []*ledger.TxPvtData
 	var err error
@@ -141,6 +215,30 @@ func (s *Store) getPvtDataByNumWithoutLock(blockNum uint64, filter ledger.PvtNsC
 		return nil, err
 	}
 	return pvtdata, nil
+}
+
+// GetMissingPvtDataInfoForMostRecentBlocks invokes the function on underlying pvtdata store
+func (s *Store) GetMissingPvtDataInfoForMostRecentBlocks(maxBlock int) (ledger.MissingPvtDataInfo, error) {
+	// it is safe to not acquire a read lock on s.rwlock. Without a lock, the value of
+	// lastCommittedBlock can change due to a new block commit. As a result, we may not
+	// be able to fetch the missing data info of truly the most recent blocks. This
+	// decision was made to ensure that the regular block commit rate is not affected.
+	return s.pvtdataStore.GetMissingPvtDataInfoForMostRecentBlocks(maxBlock)
+}
+
+// ProcessCollsEligibilityEnabled invokes the function on underlying pvtdata store
+func (s *Store) ProcessCollsEligibilityEnabled(committingBlk uint64, nsCollMap map[string][]string) error {
+	return s.pvtdataStore.ProcessCollsEligibilityEnabled(committingBlk, nsCollMap)
+}
+
+// GetLastUpdatedOldBlocksPvtData invokes the function on underlying pvtdata store
+func (s *Store) GetLastUpdatedOldBlocksPvtData() (map[uint64][]*ledger.TxPvtData, error) {
+	return s.pvtdataStore.GetLastUpdatedOldBlocksPvtData()
+}
+
+// ResetLastUpdatedOldBlocksList invokes the function on underlying pvtdata store
+func (s *Store) ResetLastUpdatedOldBlocksList() error {
+	return s.pvtdataStore.ResetLastUpdatedOldBlocksList()
 }
 
 // init first invokes function `initFromExistingBlockchain`
@@ -162,7 +260,7 @@ func (s *Store) init() error {
 // This situation is expected to happen when a peer is upgrated from version 1.0
 // and an existing blockchain is present that was generated with version 1.0.
 // Under this scenario, the pvtdata store is brought upto the point as if it has
-// processed exisitng blocks with no pvt data. This function returns true if the
+// processed existing blocks with no pvt data. This function returns true if the
 // above mentioned condition is found to be true and pvtdata store is successfully updated
 func (s *Store) initPvtdataStoreFromExistingBlockchain() (bool, error) {
 	var bcInfo *common.BlockchainInfo
@@ -218,7 +316,7 @@ func (s *Store) syncPvtdataStoreWithBlockStore() error {
 		return s.pvtdataStore.Commit()
 	}
 
-	return fmt.Errorf("This is not expected. blockStoreHeight=%d, pvtdataStoreHeight=%d", bcInfo.Height, pvtdataStoreHt)
+	return errors.Errorf("This is not expected. blockStoreHeight=%d, pvtdataStoreHeight=%d", bcInfo.Height, pvtdataStoreHt)
 }
 
 func constructPvtdataMap(pvtdata []*ledger.TxPvtData) map[uint64]*ledger.TxPvtData {

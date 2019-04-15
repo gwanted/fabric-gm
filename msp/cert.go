@@ -138,7 +138,7 @@ func certFromSM2Cert(cert *sm2.Certificate) (certificate, error) {
 	var newCert certificate
 	_, err := asn1.Unmarshal(cert.Raw, &newCert)
 	if err != nil {
-		return certificate{}, err
+		return certificate{}, errors.Wrap(err, "unmarshalling of the certificate failed")
 	}
 	return newCert, nil
 }

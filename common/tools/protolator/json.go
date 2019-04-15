@@ -28,6 +28,21 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+// MostlyDeterministicMarshal is _NOT_ the function you are looking for.
+// It causes protobuf serialization consistent within a single build.  It
+// does not guarantee that the serialization is deterministic across proto
+// versions or proto implementations.  It is useful for situations where
+// the same process wants to compare binary messages for equality without
+// needing to unmarshal first, but should not be used generally.
+func MostlyDeterministicMarshal(msg proto.Message) ([]byte, error) {
+	buffer := proto.NewBuffer(make([]byte, 0))
+	buffer.SetDeterministic(true)
+	if err := buffer.Marshal(msg); err != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
+}
+
 type protoFieldFactory interface {
 	// Handles should return whether or not this particular protoFieldFactory instance
 	// is responsible for the given proto's field
@@ -79,6 +94,10 @@ type plainField struct {
 }
 
 func (pf *plainField) PopulateFrom(source interface{}) error {
+	if source == nil {
+		return nil
+	}
+
 	if !reflect.TypeOf(source).AssignableTo(pf.fType) {
 		return fmt.Errorf("expected field %s for message %T to be assignable from %v but was not.  Is %T", pf.name, pf.msg, pf.fType, source)
 	}
@@ -94,6 +113,14 @@ func (pf *plainField) PopulateTo() (interface{}, error) {
 	if !pf.value.Type().AssignableTo(pf.vType) {
 		return nil, fmt.Errorf("expected field %s for message %T to be assignable to %v but was not. Got %T.", pf.name, pf.msg, pf.fType, pf.value)
 	}
+
+	kind := pf.value.Type().Kind()
+	// Do not try to deeply encode nil fields, as without correct type info etc. they
+	// may return errors
+	if (kind == reflect.Ptr || kind == reflect.Slice || kind == reflect.Map) && pf.value.IsNil() {
+		return nil, nil
+	}
+
 	value, err := pf.populateTo(pf.value)
 	if err != nil {
 		return nil, fmt.Errorf("error in PopulateTo for field %s for message %T: %s", pf.name, pf.msg, err)
@@ -140,6 +167,10 @@ func (mf *mapField) PopulateTo() (interface{}, error) {
 		}
 
 		subValue := mf.value.MapIndex(key)
+		kind := subValue.Type().Kind()
+		if (kind == reflect.Ptr || kind == reflect.Slice || kind == reflect.Map) && subValue.IsNil() {
+			continue
+		}
 
 		if !subValue.Type().AssignableTo(mf.vType.Elem()) {
 			return nil, fmt.Errorf("expected map field %s with key %s for message %T to be assignable to %v but was not. Got %v.", mf.name, k, mf.msg, mf.vType.Elem(), subValue.Type())
@@ -188,6 +219,11 @@ func (sf *sliceField) PopulateTo() (interface{}, error) {
 	result := make([]interface{}, sf.value.Len())
 	for i := range result {
 		subValue := sf.value.Index(i)
+		kind := subValue.Type().Kind()
+		if (kind == reflect.Ptr || kind == reflect.Slice || kind == reflect.Map) && subValue.IsNil() {
+			continue
+		}
+
 		if !subValue.Type().AssignableTo(sf.vType.Elem()) {
 			return nil, fmt.Errorf("expected slice field %s at index %d for message %T to be assignable to %v but was not. Got %v.", sf.name, i, sf.msg, sf.vType.Elem(), subValue.Type())
 		}
@@ -213,6 +249,9 @@ func stringInSlice(target string, slice []string) bool {
 
 // protoToJSON is a simple shortcut wrapper around the proto JSON marshaler
 func protoToJSON(msg proto.Message) ([]byte, error) {
+	if reflect.ValueOf(msg).IsNil() {
+		panic("We're nil here")
+	}
 	var b bytes.Buffer
 	m := jsonpb.Marshaler{
 		EnumsAsInts:  false,

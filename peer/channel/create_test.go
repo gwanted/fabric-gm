@@ -1,17 +1,7 @@
 /*
- Copyright Digital Asset Holdings, LLC 2017 All Rights Reserved.
+Copyright Digital Asset Holdings, LLC All Rights Reserved.
 
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package channel
@@ -27,12 +17,15 @@ import (
 	"regexp"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric/core/config/configtest"
 	"github.com/hyperledger/fabric/msp/mgmt/testtools"
 	"github.com/hyperledger/fabric/peer/common"
 	cb "github.com/hyperledger/fabric/protos/common"
 	"github.com/hyperledger/fabric/protos/orderer"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 )
@@ -52,7 +45,6 @@ func newOrderer(port int, t *testing.T) *timeoutOrderer {
 	if err != nil {
 		panic(err)
 	}
-	go srv.Serve(lsnr)
 	o := &timeoutOrderer{Server: srv,
 		Listener:         lsnr,
 		t:                t,
@@ -61,6 +53,7 @@ func newOrderer(port int, t *testing.T) *timeoutOrderer {
 		counter:          int(1),
 	}
 	orderer.RegisterAtomicBroadcastServer(srv, o)
+	go srv.Serve(lsnr)
 	return o
 }
 
@@ -114,15 +107,15 @@ func (m *mockDeliverClient) readBlock() (*cb.Block, error) {
 	return &cb.Block{}, nil
 }
 
-func (m *mockDeliverClient) getSpecifiedBlock(num uint64) (*cb.Block, error) {
+func (m *mockDeliverClient) GetSpecifiedBlock(num uint64) (*cb.Block, error) {
 	return m.readBlock()
 }
 
-func (m *mockDeliverClient) getOldestBlock() (*cb.Block, error) {
+func (m *mockDeliverClient) GetOldestBlock() (*cb.Block, error) {
 	return m.readBlock()
 }
 
-func (m *mockDeliverClient) getNewestBlock() (*cb.Block, error) {
+func (m *mockDeliverClient) GetNewestBlock() (*cb.Block, error) {
 	return m.readBlock()
 }
 
@@ -147,7 +140,11 @@ func mockBroadcastClientFactory() (common.BroadcastClient, error) {
 }
 
 func TestCreateChain(t *testing.T) {
+	defer resetFlags()
+
 	InitMSP()
+	cleanup := configtest.SetDevFabricConfigPath(t)
+	defer cleanup()
 
 	mockchain := "mockchain"
 
@@ -175,10 +172,61 @@ func TestCreateChain(t *testing.T) {
 		t.Fail()
 		t.Errorf("expected create command to succeed")
 	}
+
+	filename := mockchain + ".block"
+	if _, err := os.Stat(filename); err != nil {
+		t.Fail()
+		t.Errorf("expected %s to exist", filename)
+	}
+}
+
+func TestCreateChainWithOutputBlock(t *testing.T) {
+	defer resetFlags()
+
+	InitMSP()
+	cleanup := configtest.SetDevFabricConfigPath(t)
+	defer cleanup()
+
+	mockchain := "mockchain"
+
+	signer, err := common.GetDefaultSigner()
+	if err != nil {
+		t.Fatalf("Get default signer error: %v", err)
+	}
+
+	mockCF := &ChannelCmdFactory{
+		BroadcastFactory: mockBroadcastClientFactory,
+		Signer:           signer,
+		DeliverClient:    &mockDeliverClient{},
+	}
+
+	cmd := createCmd(mockCF)
+	AddFlags(cmd)
+
+	tempDir, err := ioutil.TempDir("", "create-output")
+	if err != nil {
+		t.Fatalf("failed to create temporary directory")
+	}
+	defer os.RemoveAll(tempDir)
+
+	outputBlockPath := filepath.Join(tempDir, "output.block")
+	args := []string{"-c", mockchain, "-o", "localhost:7050", "--outputBlock", outputBlockPath}
+	cmd.SetArgs(args)
+	defer func() { outputBlock = "" }()
+
+	err = cmd.Execute()
+	assert.NoError(t, err, "execute should succeed")
+
+	_, err = os.Stat(outputBlockPath)
+	assert.NoErrorf(t, err, "expected %s to exist", outputBlockPath)
 }
 
 func TestCreateChainWithDefaultAnchorPeers(t *testing.T) {
+	defer resetFlags()
+
 	InitMSP()
+	cleanup := configtest.SetDevFabricConfigPath(t)
+	defer cleanup()
 
 	mockchain := "mockchain"
 
@@ -196,9 +244,7 @@ func TestCreateChainWithDefaultAnchorPeers(t *testing.T) {
 	}
 
 	cmd := createCmd(mockCF)
-
 	AddFlags(cmd)
-
 	args := []string{"-c", mockchain, "-o", "localhost:7050"}
 	cmd.SetArgs(args)
 
@@ -209,7 +255,11 @@ func TestCreateChainWithDefaultAnchorPeers(t *testing.T) {
 }
 
 func TestCreateChainWithWaitSuccess(t *testing.T) {
+	defer resetFlags()
+
 	InitMSP()
+	cleanup := configtest.SetDevFabricConfigPath(t)
+	defer cleanup()
 
 	mockchain := "mockchain"
 
@@ -221,16 +271,14 @@ func TestCreateChainWithWaitSuccess(t *testing.T) {
 	mockCF := &ChannelCmdFactory{
 		BroadcastFactory: mockBroadcastClientFactory,
 		Signer:           signer,
-		DeliverClient:    &mockDeliverClient{nil},
+		DeliverClient:    &mockDeliverClient{err: nil},
 	}
 	fakeOrderer := newOrderer(8101, t)
 	defer fakeOrderer.Shutdown()
 
 	cmd := createCmd(mockCF)
-
 	AddFlags(cmd)
-
-	args := []string{"-c", mockchain, "-o", "localhost:8101", "-t", "10"}
+	args := []string{"-c", mockchain, "-o", "localhost:8101", "-t", "10s"}
 	cmd.SetArgs(args)
 
 	if err := cmd.Execute(); err != nil {
@@ -240,7 +288,12 @@ func TestCreateChainWithWaitSuccess(t *testing.T) {
 }
 
 func TestCreateChainWithTimeoutErr(t *testing.T) {
+	defer viper.Reset()
+	defer resetFlags()
+
 	InitMSP()
+	cleanup := configtest.SetDevFabricConfigPath(t)
+	defer cleanup()
 
 	mockchain := "mockchain"
 
@@ -249,34 +302,45 @@ func TestCreateChainWithTimeoutErr(t *testing.T) {
 		t.Fatalf("Get default signer error: %v", err)
 	}
 
-	sendErr := errors.New("timeout waiting for channel creation")
 	mockCF := &ChannelCmdFactory{
 		BroadcastFactory: mockBroadcastClientFactory,
 		Signer:           signer,
-		DeliverClient:    &mockDeliverClient{sendErr},
+		DeliverClient:    &mockDeliverClient{err: errors.New("bobsled")},
 	}
 	fakeOrderer := newOrderer(8102, t)
 	defer fakeOrderer.Shutdown()
 
+	// failure - connects to orderer but times out waiting for channel to
+	// be created
 	cmd := createCmd(mockCF)
 	AddFlags(cmd)
 	channelCmd.AddCommand(cmd)
-
-	args := []string{"create", "-c", mockchain, "-o", "localhost:8102", "-t", "1"}
+	args := []string{"create", "-c", mockchain, "-o", "localhost:8102", "-t", "10ms"}
 	channelCmd.SetArgs(args)
 
-	expectedErrMsg := sendErr.Error()
 	if err := channelCmd.Execute(); err == nil {
-		t.Error("expected create chain to fail with broadcast error")
+		t.Error("expected create chain to fail with deliver error")
 	} else {
-		if err.Error() != expectedErrMsg {
-			t.Errorf("Run create chain get unexpected error: %s(expected %s)", err.Error(), expectedErrMsg)
-		}
+		assert.Contains(t, err.Error(), "timeout waiting for channel creation")
+	}
+
+	// failure - point to bad port and time out connecting to orderer
+	args = []string{"create", "-c", mockchain, "-o", "localhost:0", "--connTimeout", "10ms"}
+	channelCmd.SetArgs(args)
+
+	if err := channelCmd.Execute(); err == nil {
+		t.Error("expected create chain to fail with deliver error")
+	} else {
+		assert.Contains(t, err.Error(), "failed connecting")
 	}
 }
 
 func TestCreateChainBCFail(t *testing.T) {
+	defer resetFlags()
+
 	InitMSP()
+	cleanup := configtest.SetDevFabricConfigPath(t)
+	defer cleanup()
 
 	mockchain := "mockchain"
 
@@ -287,8 +351,7 @@ func TestCreateChainBCFail(t *testing.T) {
 		t.Fatalf("Get default signer error: %v", err)
 	}
 
-	sendErr := errors.New("send create tx failed")
-
+	sendErr := errors.New("luge")
 	mockCF := &ChannelCmdFactory{
 		BroadcastFactory: func() (common.BroadcastClient, error) {
 			return common.GetMockBroadcastClient(sendErr), nil
@@ -298,9 +361,7 @@ func TestCreateChainBCFail(t *testing.T) {
 	}
 
 	cmd := createCmd(mockCF)
-
 	AddFlags(cmd)
-
 	args := []string{"-c", mockchain, "-o", "localhost:7050"}
 	cmd.SetArgs(args)
 
@@ -315,7 +376,11 @@ func TestCreateChainBCFail(t *testing.T) {
 }
 
 func TestCreateChainDeliverFail(t *testing.T) {
+	defer resetFlags()
+
 	InitMSP()
+	cleanup := configtest.SetDevFabricConfigPath(t)
+	defer cleanup()
 
 	mockchain := "mockchain"
 
@@ -326,20 +391,16 @@ func TestCreateChainDeliverFail(t *testing.T) {
 		t.Fatalf("Get default signer error: %v", err)
 	}
 
-	sendErr := fmt.Errorf("failed connecting")
-
+	sendErr := fmt.Errorf("skeleton")
 	mockCF := &ChannelCmdFactory{
 		BroadcastFactory: func() (common.BroadcastClient, error) {
 			return common.GetMockBroadcastClient(sendErr), nil
 		},
 		Signer:        signer,
-		DeliverClient: &mockDeliverClient{sendErr},
+		DeliverClient: &mockDeliverClient{err: sendErr},
 	}
-
 	cmd := createCmd(mockCF)
-
 	AddFlags(cmd)
-
 	args := []string{"-c", mockchain, "-o", "localhost:7050"}
 	cmd.SetArgs(args)
 
@@ -380,10 +441,13 @@ func createTxFile(filename string, typ cb.HeaderType, channelID string) (*cb.Env
 }
 
 func TestCreateChainFromTx(t *testing.T) {
+	defer resetFlags()
 	InitMSP()
+	cleanup := configtest.SetDevFabricConfigPath(t)
+	defer cleanup()
 
 	mockchannel := "mockchannel"
-	dir, err := ioutil.TempDir("/tmp", "createtestfromtx-")
+	dir, err := ioutil.TempDir("", "createtestfromtx-")
 	if err != nil {
 		t.Fatalf("couldn't create temp dir")
 	}
@@ -412,7 +476,7 @@ func TestCreateChainFromTx(t *testing.T) {
 	cmd.SetArgs(args)
 	err = cmd.Execute()
 	assert.Error(t, err, "Create command should have failed because channel ID is not specified")
-	assert.Contains(t, err.Error(), "Must supply channel ID")
+	assert.Contains(t, err.Error(), "must supply channel ID")
 
 	// Error case 1
 	args = []string{"-c", mockchannel, "-f", file, "-o", "localhost:7050"}
@@ -438,11 +502,15 @@ func TestCreateChainFromTx(t *testing.T) {
 }
 
 func TestCreateChainInvalidTx(t *testing.T) {
+	defer resetFlags()
+
 	InitMSP()
+	cleanup := configtest.SetDevFabricConfigPath(t)
+	defer cleanup()
 
 	mockchannel := "mockchannel"
 
-	dir, err := ioutil.TempDir("/tmp", "createinvaltest-")
+	dir, err := ioutil.TempDir("", "createinvaltest-")
 	if err != nil {
 		t.Fatalf("couldn't create temp dir")
 	}
@@ -509,9 +577,15 @@ func TestCreateChainInvalidTx(t *testing.T) {
 }
 
 func TestCreateChainNilCF(t *testing.T) {
+	defer viper.Reset()
+	defer resetFlags()
+
 	InitMSP()
+	cleanup := configtest.SetDevFabricConfigPath(t)
+	defer cleanup()
+
 	mockchannel := "mockchannel"
-	dir, err := ioutil.TempDir("/tmp", "createinvaltest-")
+	dir, err := ioutil.TempDir("", "createinvaltest-")
 	assert.NoError(t, err, "Couldn't create temp dir")
 	defer os.RemoveAll(dir) // clean up
 
@@ -520,6 +594,7 @@ func TestCreateChainNilCF(t *testing.T) {
 	file := filepath.Join(dir, mockchannel)
 
 	// Error case: grpc error
+	viper.Set("orderer.client.connTimeout", 10*time.Millisecond)
 	cmd := createCmd(nil)
 	AddFlags(cmd)
 	args := []string{"-c", mockchannel, "-f", file, "-o", "localhost:7050"}
@@ -547,6 +622,8 @@ func TestCreateChainNilCF(t *testing.T) {
 }
 
 func TestSanityCheckAndSignChannelCreateTx(t *testing.T) {
+	defer resetFlags()
+
 	// Error case 1
 	env := &cb.Envelope{}
 	env.Payload = make([]byte, 10)

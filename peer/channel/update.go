@@ -17,14 +17,12 @@ limitations under the License.
 package channel
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 
-	"errors"
-
 	"github.com/hyperledger/fabric/peer/common"
 	"github.com/hyperledger/fabric/protos/utils"
-
 	"github.com/spf13/cobra"
 )
 
@@ -55,10 +53,12 @@ func update(cmd *cobra.Command, args []string, cf *ChannelCmdFactory) error {
 	if channelTxFile == "" {
 		return InvalidCreateTx("No configtx file name supplied")
 	}
+	// Parsing of the command line is done so silence cmd usage
+	cmd.SilenceUsage = true
 
 	var err error
 	if cf == nil {
-		cf, err = InitCmdFactory(EndorserNotRequired, OrdererRequired)
+		cf, err = InitCmdFactory(EndorserNotRequired, PeerDeliverNotRequired, OrdererRequired)
 		if err != nil {
 			return err
 		}

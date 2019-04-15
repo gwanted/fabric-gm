@@ -10,15 +10,13 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric/protos/ledger/rwset/kvrwset"
-	"github.com/hyperledger/fabric/protos/peer"
-
 	"github.com/hyperledger/fabric/common/ledger/testutil"
-	lgrutil "github.com/hyperledger/fabric/core/ledger/util"
-
 	"github.com/hyperledger/fabric/core/ledger"
 	"github.com/hyperledger/fabric/core/ledger/customtx"
+	lgrutil "github.com/hyperledger/fabric/core/ledger/util"
 	"github.com/hyperledger/fabric/protos/common"
+	"github.com/hyperledger/fabric/protos/ledger/rwset/kvrwset"
+	"github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,7 +41,7 @@ func (ctp *customTxProcessor) GenerateSimulationResults(txEnvelop *common.Envelo
 func TestCustomProcessor(t *testing.T) {
 	env := newTestEnv(t)
 	defer env.cleanup()
-	provider, _ := NewProvider()
+	provider := testutilNewProvider(t)
 	defer provider.Close()
 
 	// create a custom tx processor and register it to handle '100 and 101' type of transaction

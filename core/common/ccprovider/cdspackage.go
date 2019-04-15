@@ -17,14 +17,12 @@ limitations under the License.
 package ccprovider
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 
 	"github.com/golang/protobuf/proto"
-
-	"bytes"
-
 	"github.com/hyperledger/fabric/bccsp"
 	"github.com/hyperledger/fabric/bccsp/factory"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -184,6 +182,16 @@ func (ccpack *CDSPackage) ValidateCC(ccdata *ChaincodeData) error {
 		return fmt.Errorf("nil data")
 	}
 
+	// This is a hack. LSCC expects a specific LSCC error when names are invalid so it
+	// has its own validation code. We can't use that error because of import cycles.
+	// Unfortunately, we also need to check if what have makes some sort of sense as
+	// protobuf will gladly deserialize garbage and there are paths where we assume that
+	// a successful unmarshal means everything works but, if it fails, we try to unmarshal
+	// into something different.
+	if !isPrintable(ccdata.Name) {
+		return fmt.Errorf("invalid chaincode name: %q", ccdata.Name)
+	}
+
 	if ccdata.Name != ccpack.depSpec.ChaincodeSpec.ChaincodeId.Name || ccdata.Version != ccpack.depSpec.ChaincodeSpec.ChaincodeId.Version {
 		return fmt.Errorf("invalid chaincode data %v (%v)", ccdata, ccpack.depSpec.ChaincodeSpec.ChaincodeId)
 	}
@@ -227,20 +235,30 @@ func (ccpack *CDSPackage) InitFromBuffer(buf []byte) (*ChaincodeData, error) {
 }
 
 //InitFromFS returns the chaincode and its package from the file system
-func (ccpack *CDSPackage) InitFromFS(ccname string, ccversion string) ([]byte, *pb.ChaincodeDeploymentSpec, error) {
+func (ccpack *CDSPackage) InitFromPath(ccname string, ccversion string, path string) ([]byte, *pb.ChaincodeDeploymentSpec, error) {
 	//incase ccpack is reused
 	ccpack.reset()
 
-	buf, err := GetChaincodePackage(ccname, ccversion)
+	buf, err := GetChaincodePackageFromPath(ccname, ccversion, path)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	if _, err = ccpack.InitFromBuffer(buf); err != nil {
+	ccdata, err := ccpack.InitFromBuffer(buf)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if err := ccpack.ValidateCC(ccdata); err != nil {
 		return nil, nil, err
 	}
 
 	return ccpack.buf, ccpack.depSpec, nil
+}
+
+//InitFromFS returns the chaincode and its package from the file system
+func (ccpack *CDSPackage) InitFromFS(ccname string, ccversion string) ([]byte, *pb.ChaincodeDeploymentSpec, error) {
+	return ccpack.InitFromPath(ccname, ccversion, chaincodeInstallPath)
 }
 
 //PutChaincodeToFS - serializes chaincode to a package on the file system

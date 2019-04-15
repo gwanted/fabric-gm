@@ -1199,6 +1199,7 @@ func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (interface{
 		if x == nil {
 			return nil, errors.New("x509: failed to unmarshal elliptic curve point")
 		}
+
 		pub := &PublicKey{
 			Curve: namedCurve,
 			X:     x,

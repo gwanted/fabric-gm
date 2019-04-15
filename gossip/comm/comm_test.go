@@ -8,6 +8,7 @@ package comm
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"crypto/tls"
@@ -17,19 +18,21 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/hyperledger/fabric/bccsp/factory"
-	"github.com/hyperledger/fabric/core/config"
+	"github.com/hyperledger/fabric/core/config/configtest"
 	"github.com/hyperledger/fabric/gossip/api"
 	"github.com/hyperledger/fabric/gossip/common"
 	"github.com/hyperledger/fabric/gossip/identity"
+	"github.com/hyperledger/fabric/gossip/mocks"
 	"github.com/hyperledger/fabric/gossip/util"
 	proto "github.com/hyperledger/fabric/protos/gossip"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
+	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -38,6 +41,7 @@ func init() {
 	util.SetupTestLogging()
 	rand.Seed(time.Now().UnixNano())
 	factory.InitFactories(nil)
+	naiveSec.On("OrgByPeerIdentity", mock.Anything).Return(api.OrgIdentityType{})
 }
 
 func acceptAll(msg interface{}) bool {
@@ -54,6 +58,11 @@ var (
 )
 
 type naiveSecProvider struct {
+	mocks.SecurityAdvisor
+}
+
+func (nsp *naiveSecProvider) OrgByPeerIdentity(identity api.PeerIdentityType) api.OrgIdentityType {
+	return nsp.SecurityAdvisor.Called(identity).Get(0).(api.OrgIdentityType)
 }
 
 func (*naiveSecProvider) Expiration(peerIdentity api.PeerIdentityType) (time.Time, error) {
@@ -102,10 +111,10 @@ func (*naiveSecProvider) VerifyByChannel(_ common.ChainID, _ api.PeerIdentityTyp
 	return nil
 }
 
-func newCommInstance(port int, sec api.MessageCryptoService) (Comm, error) {
+func newCommInstance(port int, sec *naiveSecProvider) (Comm, error) {
 	endpoint := fmt.Sprintf("localhost:%d", port)
 	id := []byte(endpoint)
-	inst, err := NewCommInstanceWithServer(port, identity.NewIdentityMapper(sec, id, noopPurgeIdentity), id, nil)
+	inst, err := NewCommInstanceWithServer(port, identity.NewIdentityMapper(sec, id, noopPurgeIdentity, sec), id, nil, sec)
 	return inst, err
 }
 
@@ -134,8 +143,8 @@ func handshaker(endpoint string, comm Comm, t *testing.T, connMutator msgMutator
 		secureOpts = grpc.WithInsecure()
 	}
 	acceptChan := comm.Accept(acceptAll)
-	ctx := context.Background()
-	ctx, _ = context.WithTimeout(ctx, time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
 	conn, err := grpc.DialContext(ctx, "localhost:9611", secureOpts, grpc.WithBlock())
 	assert.NoError(t, err, "%v", err)
 	if err != nil {
@@ -184,7 +193,7 @@ func handshaker(endpoint string, comm Comm, t *testing.T, connMutator msgMutator
 func TestViperConfig(t *testing.T) {
 	viper.SetConfigName("core")
 	viper.SetEnvPrefix("CORE")
-	config.AddDevConfigPath(nil)
+	configtest.AddDevConfigPath(nil)
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
@@ -196,6 +205,50 @@ func TestViperConfig(t *testing.T) {
 	assert.Equal(t, time.Duration(300)*time.Millisecond, util.GetDurationOrDefault("peer.gossip.dialTimeout", 0))
 	assert.Equal(t, 20, util.GetIntOrDefault("peer.gossip.recvBuffSize", 0))
 	assert.Equal(t, 200, util.GetIntOrDefault("peer.gossip.sendBuffSize", 0))
+}
+
+func TestMutualParallelSendWithAck(t *testing.T) {
+	t.Parallel()
+
+	// This test tests concurrent and parallel sending of many (1000) messages
+	// from 2 instances to one another at the same time.
+
+	msgNum := 1000
+
+	comm1, _ := newCommInstance(15201, naiveSec)
+	comm2, _ := newCommInstance(15202, naiveSec)
+	defer comm1.Stop()
+	defer comm2.Stop()
+
+	acceptData := func(o interface{}) bool {
+		return o.(proto.ReceivedMessage).GetGossipMessage().IsDataMsg()
+	}
+
+	inc1 := comm1.Accept(acceptData)
+	inc2 := comm2.Accept(acceptData)
+
+	// Send a message from comm1 to comm2, to make the instances establish a preliminary connection
+	comm1.Send(createGossipMsg(), remotePeer(15202))
+	// Wait for the message to be received in comm2
+	<-inc2
+
+	for i := 0; i < msgNum; i++ {
+		go comm1.SendWithAck(createGossipMsg(), time.Second*5, 1, remotePeer(15202))
+	}
+
+	for i := 0; i < msgNum; i++ {
+		go comm2.SendWithAck(createGossipMsg(), time.Second*5, 1, remotePeer(15201))
+	}
+
+	go func() {
+		for i := 0; i < msgNum; i++ {
+			<-inc1
+		}
+	}()
+
+	for i := 0; i < msgNum; i++ {
+		<-inc2
+	}
 }
 
 func TestHandshake(t *testing.T) {
@@ -222,10 +275,10 @@ func TestHandshake(t *testing.T) {
 	assert.NoError(t, err)
 	s := grpc.NewServer()
 	id := []byte("localhost:9611")
-	idMapper := identity.NewIdentityMapper(naiveSec, id, noopPurgeIdentity)
+	idMapper := identity.NewIdentityMapper(naiveSec, id, noopPurgeIdentity, naiveSec)
 	inst, err := NewCommInstance(s, nil, idMapper, api.PeerIdentityType("localhost:9611"), func() []grpc.DialOption {
 		return []grpc.DialOption{grpc.WithInsecure()}
-	})
+	}, naiveSec)
 	go s.Serve(ll)
 	assert.NoError(t, err)
 	var msg proto.ReceivedMessage
@@ -348,20 +401,87 @@ func TestBasic(t *testing.T) {
 	waitForMessages(t, out, 2, "Didn't receive 2 messages")
 }
 
+func TestConnectUnexpectedPeer(t *testing.T) {
+	t.Parallel()
+	// Scenarios: In both scenarios, comm1 connects to comm2 or comm3.
+	// and expects to see a PKI-ID which is equal to comm4's PKI-ID.
+	// The connection attempt would succeed or fail based on whether comm2 or comm3
+	// are in the same org as comm4
+	comm1Port := 1548
+	comm2Port := 1549
+	comm3Port := 1550
+	comm4Port := 1551
+
+	identityByPort := func(port int) api.PeerIdentityType {
+		return api.PeerIdentityType(fmt.Sprintf("localhost:%d", port))
+	}
+
+	customNaiveSec := &naiveSecProvider{}
+	customNaiveSec.On("OrgByPeerIdentity", identityByPort(comm1Port)).Return(api.OrgIdentityType("O"))
+	customNaiveSec.On("OrgByPeerIdentity", identityByPort(comm2Port)).Return(api.OrgIdentityType("A"))
+	customNaiveSec.On("OrgByPeerIdentity", identityByPort(comm3Port)).Return(api.OrgIdentityType("B"))
+	customNaiveSec.On("OrgByPeerIdentity", identityByPort(comm4Port)).Return(api.OrgIdentityType("A"))
+
+	comm1, _ := newCommInstance(comm1Port, customNaiveSec)
+	comm2, _ := newCommInstance(comm2Port, naiveSec)
+	comm3, _ := newCommInstance(comm3Port, naiveSec)
+	comm4, _ := newCommInstance(comm4Port, naiveSec)
+
+	defer comm1.Stop()
+	defer comm2.Stop()
+	defer comm3.Stop()
+	defer comm4.Stop()
+
+	messagesForComm1 := comm1.Accept(acceptAll)
+	messagesForComm2 := comm2.Accept(acceptAll)
+	messagesForComm3 := comm3.Accept(acceptAll)
+
+	// Have comm4 send a message to comm1
+	// in order for comm1 to know comm4
+	comm4.Send(createGossipMsg(), remotePeer(comm1Port))
+	<-messagesForComm1
+	// Close the connection with comm4
+	comm1.CloseConn(remotePeer(comm4Port))
+	// At this point, comm1 knows comm4's identity and organization
+
+	t.Run("Same organization", func(t *testing.T) {
+		unexpectedRemotePeer := remotePeer(comm2Port)
+		unexpectedRemotePeer.PKIID = remotePeer(comm4Port).PKIID
+		comm1.Send(createGossipMsg(), unexpectedRemotePeer)
+		select {
+		case <-messagesForComm2:
+		case <-time.After(time.Second * 5):
+			assert.Fail(t, "Didn't receive a message within a timely manner")
+			util.PrintStackTrace()
+		}
+	})
+
+	t.Run("Unexpected organization", func(t *testing.T) {
+		unexpectedRemotePeer := remotePeer(comm3Port)
+		unexpectedRemotePeer.PKIID = remotePeer(comm4Port).PKIID
+		comm1.Send(createGossipMsg(), unexpectedRemotePeer)
+		select {
+		case <-messagesForComm3:
+			assert.Fail(t, "Message shouldn't have been received")
+		case <-time.After(time.Second * 5):
+		}
+	})
+}
+
 func TestProdConstructor(t *testing.T) {
 	t.Parallel()
 	srv, lsnr, dialOpts, certs := createGRPCLayer(20000)
 	defer srv.Stop()
 	defer lsnr.Close()
 	id := []byte("localhost:20000")
-	comm1, _ := NewCommInstance(srv, certs, identity.NewIdentityMapper(naiveSec, id, noopPurgeIdentity), id, dialOpts)
+	comm1, _ := NewCommInstance(srv, certs, identity.NewIdentityMapper(naiveSec, id, noopPurgeIdentity, naiveSec), id, dialOpts, naiveSec)
 	go srv.Serve(lsnr)
 
 	srv, lsnr, dialOpts, certs = createGRPCLayer(30000)
 	defer srv.Stop()
 	defer lsnr.Close()
 	id = []byte("localhost:30000")
-	comm2, _ := NewCommInstance(srv, certs, identity.NewIdentityMapper(naiveSec, id, noopPurgeIdentity), id, dialOpts)
+	comm2, _ := NewCommInstance(srv, certs, identity.NewIdentityMapper(naiveSec, id, noopPurgeIdentity, naiveSec), id, dialOpts, naiveSec)
 	go srv.Serve(lsnr)
 	defer comm1.Stop()
 	defer comm2.Stop()
@@ -410,8 +530,8 @@ func TestCloseConn(t *testing.T) {
 	}
 	ta := credentials.NewTLS(tlsCfg)
 
-	ctx := context.Background()
-	ctx, _ = context.WithTimeout(ctx, time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
 	conn, err := grpc.DialContext(ctx, "localhost:1611", grpc.WithTransportCredentials(ta), grpc.WithBlock())
 	assert.NoError(t, err, "%v", err)
 	cl := proto.NewGossipClient(conn)
@@ -799,4 +919,31 @@ func TestMain(m *testing.M) {
 
 	ret := m.Run()
 	os.Exit(ret)
+}
+
+func TestConcurrentCloseSend(t *testing.T) {
+	t.Parallel()
+	var stopping int32
+
+	comm1, _ := newCommInstance(1111, naiveSec)
+	comm2, _ := newCommInstance(2222, naiveSec)
+	m := comm2.Accept(acceptAll)
+	comm1.Send(createGossipMsg(), remotePeer(2222))
+	<-m
+	ready := make(chan struct{})
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+
+		comm1.Send(createGossipMsg(), remotePeer(2222))
+		close(ready)
+
+		for atomic.LoadInt32(&stopping) == int32(0) {
+			comm1.Send(createGossipMsg(), remotePeer(2222))
+		}
+	}()
+	<-ready
+	comm2.Stop()
+	atomic.StoreInt32(&stopping, int32(1))
+	<-done
 }

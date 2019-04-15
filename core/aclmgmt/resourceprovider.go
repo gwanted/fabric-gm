@@ -9,8 +9,7 @@ package aclmgmt
 import (
 	"fmt"
 
-	"github.com/hyperledger/fabric/common/resourcesconfig"
-	"github.com/hyperledger/fabric/core/peer"
+	"github.com/hyperledger/fabric/common/channelconfig"
 	"github.com/hyperledger/fabric/protos/common"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
@@ -42,11 +41,16 @@ type policyEvaluator interface {
 
 //policyEvaluatorImpl implements policyEvaluator
 type policyEvaluatorImpl struct {
-	bundle resourcesconfig.Resources
+	bundle channelconfig.Resources
 }
 
 func (pe *policyEvaluatorImpl) PolicyRefForAPI(resName string) string {
-	pm := pe.bundle.APIPolicyMapper()
+	app, exists := pe.bundle.ApplicationConfig()
+	if !exists {
+		return ""
+	}
+
+	pm := app.APIPolicyMapper()
 	if pm == nil {
 		return ""
 	}
@@ -135,24 +139,20 @@ func (rp *aclmgmtPolicyProviderImpl) CheckACL(polName string, idinfo interface{}
 
 //-------- resource provider - entry point API used by aclmgmtimpl for doing resource based ACL ----------
 
-//resource getter gets resourcesconfig.Resources given channel ID
-type resourceGetter func(channelID string) resourcesconfig.Resources
+//resource getter gets channelconfig.Resources given channel ID
+type ResourceGetter func(channelID string) channelconfig.Resources
 
 //resource provider that uses the resource configuration information to provide ACL support
 type resourceProvider struct {
 	//resource getter
-	resGetter resourceGetter
+	resGetter ResourceGetter
 
 	//default provider to be used for undefined resources
 	defaultProvider ACLProvider
 }
 
 //create a new resourceProvider
-func newResourceProvider(rg resourceGetter, defprov ACLProvider) *resourceProvider {
-	if rg == nil {
-		rg = peer.GetResourcesConfig
-	}
-
+func newResourceProvider(rg ResourceGetter, defprov ACLProvider) *resourceProvider {
 	return &resourceProvider{rg, defprov}
 }
 
@@ -163,10 +163,11 @@ func (rp *resourceProvider) CheckACL(resName string, channelID string, idinfo in
 	if resCfg != nil {
 		pp := &aclmgmtPolicyProviderImpl{&policyEvaluatorImpl{resCfg}}
 		policyName := pp.GetPolicyName(resName)
-
 		if policyName != "" {
+			aclLogger.Debugf("acl policy %s found in config for resource %s", policyName, resName)
 			return pp.CheckACL(policyName, idinfo)
 		}
+		aclLogger.Debugf("acl policy not found in config for resource %s", resName)
 	}
 
 	return rp.defaultProvider.CheckACL(resName, channelID, idinfo)

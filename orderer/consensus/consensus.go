@@ -32,13 +32,6 @@ type Consenter interface {
 // 1. Messages are ordered into a stream, the stream is cut into blocks, the blocks are committed (solo, kafka)
 // 2. Messages are cut into blocks, the blocks are ordered, then the blocks are committed (sbft)
 type Chain interface {
-	// NOTE: The kafka consenter has not been updated to perform the revalidation
-	// checks conditionally.  For now, Order/Configure are essentially Enqueue as before.
-	// This does not cause data inconsistency, but it wastes cycles and will be required
-	// to properly support the ConfigUpdate concept once introduced
-	// Once this is done, the MsgClassification logic in msgprocessor should return error
-	// for non ConfigUpdate/Normal msg types
-
 	// Order accepts a message which has been processed at a given configSeq.
 	// If the configSeq advances, it is the responsibility of the consenter
 	// to revalidate and potentially discard the message
@@ -74,10 +67,16 @@ type Chain interface {
 	Halt()
 }
 
+//go:generate counterfeiter -o mocks/mock_consenter_support.go . ConsenterSupport
+
 // ConsenterSupport provides the resources available to a Consenter implementation.
 type ConsenterSupport interface {
 	crypto.LocalSigner
 	msgprocessor.Processor
+
+	// VerifyBlockSignature verifies a signature of a block with a given optional
+	// configuration (can be nil).
+	VerifyBlockSignature([]*cb.SignedData, *cb.ConfigEnvelope) error
 
 	// BlockCutter returns the block cutting helper for this channel.
 	BlockCutter() blockcutter.Receiver
@@ -88,6 +87,10 @@ type ConsenterSupport interface {
 	// CreateNextBlock takes a list of messages and creates the next block based on the block with highest block number committed to the ledger
 	// Note that either WriteBlock or WriteConfigBlock must be called before invoking this method a second time.
 	CreateNextBlock(messages []*cb.Envelope) *cb.Block
+
+	// Block returns a block with the given number,
+	// or nil if such a block doesn't exist.
+	Block(number uint64) *cb.Block
 
 	// WriteBlock commits a block to the ledger.
 	WriteBlock(block *cb.Block, encodedMetadataValue []byte)

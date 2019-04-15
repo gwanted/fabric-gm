@@ -7,11 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 package channel
 
 import (
-	"fmt"
-
-	"github.com/pkg/errors"
-
+	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/core/scc/qscc"
@@ -19,8 +17,8 @@ import (
 	cb "github.com/hyperledger/fabric/protos/common"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 )
 
 func getinfoCmd(cf *ChannelCmdFactory) *cobra.Command {
@@ -29,7 +27,7 @@ func getinfoCmd(cf *ChannelCmdFactory) *cobra.Command {
 		Short: "get blockchain information of a specified channel.",
 		Long:  "get blockchain information of a specified channel. Requires '-c'.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return getinfo(cf)
+			return getinfo(cmd, cf)
 		},
 	}
 	flagList := []string{
@@ -69,7 +67,7 @@ func (cc *endorserClient) getBlockChainInfo() (*cb.BlockchainInfo, error) {
 	}
 
 	if proposalResp.Response == nil || proposalResp.Response.Status != 200 {
-		return nil, errors.Errorf("received bad response, status %d", proposalResp.Response.Status)
+		return nil, errors.Errorf("received bad response, status %d: %s", proposalResp.Response.Status, proposalResp.Response.Message)
 	}
 
 	blockChainInfo := &cb.BlockchainInfo{}
@@ -82,15 +80,17 @@ func (cc *endorserClient) getBlockChainInfo() (*cb.BlockchainInfo, error) {
 
 }
 
-func getinfo(cf *ChannelCmdFactory) error {
+func getinfo(cmd *cobra.Command, cf *ChannelCmdFactory) error {
 	//the global chainID filled by the "-c" command
 	if channelID == common.UndefinedParamValue {
 		return errors.New("Must supply channel ID")
 	}
+	// Parsing of the command line is done so silence cmd usage
+	cmd.SilenceUsage = true
 
 	var err error
 	if cf == nil {
-		cf, err = InitCmdFactory(EndorserRequired, OrdererNotRequired)
+		cf, err = InitCmdFactory(EndorserRequired, PeerDeliverNotRequired, OrdererNotRequired)
 		if err != nil {
 			return err
 		}

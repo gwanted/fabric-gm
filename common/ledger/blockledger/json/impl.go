@@ -1,17 +1,7 @@
 /*
-Copyright IBM Corp. 2016 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-                 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package jsonledger
@@ -23,23 +13,20 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/common/ledger/blockledger"
 	cb "github.com/hyperledger/fabric/protos/common"
 	ab "github.com/hyperledger/fabric/protos/orderer"
-	"github.com/op/go-logging"
-
-	"github.com/golang/protobuf/jsonpb"
+	"github.com/pkg/errors"
 )
 
-const pkgLogID = "orderer/ledger/jsonledger"
+var logger = flogging.MustGetLogger("common.ledger.blockledger.json")
 
-var logger *logging.Logger
 var closedChan chan struct{}
 var fileLock sync.Mutex
 
 func init() {
-	logger = flogging.MustGetLogger(pkgLogID)
 	closedChan = make(chan struct{})
 	close(closedChan)
 }
@@ -57,9 +44,11 @@ type cursor struct {
 type jsonLedger struct {
 	directory string
 	height    uint64
-	signal    chan struct{}
 	lastHash  []byte
 	marshaler *jsonpb.Marshaler
+
+	mutex  sync.Mutex
+	signal chan struct{}
 }
 
 // readBlock returns the block or nil, and whether the block was found or not, (nil,true) generally indicates an irrecoverable problem
@@ -99,17 +88,14 @@ func (cu *cursor) Next() (*cb.Block, cb.Status) {
 			cu.blockNumber++
 			return block, cb.Status_SUCCESS
 		}
-		<-cu.jl.signal
-	}
-}
 
-// ReadyChan supplies a channel which will block until Next will not block
-func (cu *cursor) ReadyChan() <-chan struct{} {
-	signal := cu.jl.signal
-	if _, err := os.Stat(cu.jl.blockFilename(cu.blockNumber)); os.IsNotExist(err) {
-		return signal
+		// copy the signal channel under lock to avoid race
+		// with new signal channel in append
+		cu.jl.mutex.Lock()
+		signal := cu.jl.signal
+		cu.jl.mutex.Unlock()
+		<-signal
 	}
-	return closedChan
 }
 
 func (cu *cursor) Close() {}
@@ -141,18 +127,22 @@ func (jl *jsonLedger) Height() uint64 {
 // Append appends a new block to the ledger
 func (jl *jsonLedger) Append(block *cb.Block) error {
 	if block.Header.Number != jl.height {
-		return fmt.Errorf("Block number should have been %d but was %d", jl.height, block.Header.Number)
+		return errors.Errorf("block number should have been %d but was %d", jl.height, block.Header.Number)
 	}
 
 	if !bytes.Equal(block.Header.PreviousHash, jl.lastHash) {
-		return fmt.Errorf("Block should have had previous hash of %x but was %x", jl.lastHash, block.Header.PreviousHash)
+		return errors.Errorf("block should have had previous hash of %x but was %x", jl.lastHash, block.Header.PreviousHash)
 	}
 
 	jl.writeBlock(block)
 	jl.lastHash = block.Header.Hash()
 	jl.height++
+
+	// Manage the signal channel under lock to avoid race with read in Next
+	jl.mutex.Lock()
 	close(jl.signal)
 	jl.signal = make(chan struct{})
+	jl.mutex.Unlock()
 	return nil
 }
 
@@ -172,7 +162,7 @@ func (jl *jsonLedger) writeBlock(block *cb.Block) {
 	err = jl.marshaler.Marshal(file, block)
 	logger.Debugf("Wrote block %d", block.Header.Number)
 	if err != nil {
-		logger.Panic(err)
+		logger.Panicf("Error marshalling with block number [%d]: %s", block.Header.Number, err)
 	}
 }
 

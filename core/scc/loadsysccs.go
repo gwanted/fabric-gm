@@ -34,7 +34,7 @@ var once sync.Once
 var sccPlugins []*SystemChaincode
 
 // loadSysCCs reads system chaincode plugin configuration and loads them
-func loadSysCCs() []*SystemChaincode {
+func loadSysCCs(p *Provider) []*SystemChaincode {
 	once.Do(func() {
 		var config []*PluginConfig
 		err := viperutil.EnhancedExactUnmarshalKey("chaincode.systemPlugins", &config)

@@ -37,10 +37,6 @@ General:
         ClientAuthRequired: false
         ClientRootCAs:
 
-    # Log Level: The level at which to log. This accepts logging specifications
-    # per: fabric/docs/Setup/logging-control.md
-    LogLevel: debug
-
     # Genesis method: The method by which the genesis block for the orderer
     # system channel is specified. Available options are "provisional", "file":
     #  - provisional: Utilizes a genesis profile, specified by GenesisProfile,
@@ -69,7 +65,7 @@ General:
     # manager. IMPORTANT: The local MSP ID of an orderer needs to match the MSP
     # ID of one of the organizations defined in the orderer system channel's
     # /Channel/Orderer configuration. The sample organization defined in the
-    # sample configuration provided has an MSP ID of "DEFAULT".
+    # sample configuration provided has an MSP ID of "SampleOrg".
     LocalMSPID: OrdererMSP
 
     # Enable an HTTP service for Go "pprof" profiling as documented at:

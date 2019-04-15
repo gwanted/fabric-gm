@@ -26,6 +26,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestToGossipMessageNilEnvelope(t *testing.T) {
+	memReq := &MembershipRequest{}
+	_, err := memReq.SelfInformation.ToGossipMessage()
+	assert.EqualError(t, err, "nil envelope")
+}
+
 func TestToString(t *testing.T) {
 	// Ensure we don't print the byte content when we
 	// log messages.
@@ -386,7 +392,7 @@ func TestCheckGossipMessageTypes(t *testing.T) {
 		DataReq: &DataRequest{
 			MsgType: PullMsgType_UNDEFINED,
 			Nonce:   0,
-			Digests: []string{"msg1", "msg2", "msg3"},
+			Digests: [][]byte{[]byte("msg1"), []byte("msg2"), []byte("msg3")},
 		},
 	})
 	assert.True(t, msg.IsDataReq())
@@ -397,7 +403,7 @@ func TestCheckGossipMessageTypes(t *testing.T) {
 		DataDig: &DataDigest{
 			MsgType: PullMsgType_UNDEFINED,
 			Nonce:   0,
-			Digests: []string{"msg1", "msg2", "msg3"},
+			Digests: [][]byte{[]byte("msg1"), []byte("msg2"), []byte("msg3")},
 		},
 	})
 	assert.True(t, msg.IsDigestMsg())
@@ -466,7 +472,7 @@ func TestGossipPullMessageType(t *testing.T) {
 		DataDig: &DataDigest{
 			MsgType: PullMsgType_IDENTITY_MSG,
 			Nonce:   0,
-			Digests: []string{"msg1", "msg2", "msg3"},
+			Digests: [][]byte{[]byte("msg1"), []byte("msg2"), []byte("msg3")},
 		},
 	})
 	assert.True(t, msg.IsDigestMsg())
@@ -478,7 +484,7 @@ func TestGossipPullMessageType(t *testing.T) {
 		DataReq: &DataRequest{
 			MsgType: PullMsgType_BLOCK_MSG,
 			Nonce:   0,
-			Digests: []string{"msg1", "msg2", "msg3"},
+			Digests: [][]byte{[]byte("msg1"), []byte("msg2"), []byte("msg3")},
 		},
 	})
 	assert.True(t, msg.IsDataReq())
@@ -823,7 +829,6 @@ func leadershipMessage(incNum uint64, seqNum uint64, pkid []byte) *GossipMessage
 func stateInfoMessage(incNum uint64, seqNum uint64, pkid []byte, mac []byte) *GossipMessage_StateInfo {
 	return &GossipMessage_StateInfo{
 		StateInfo: &StateInfo{
-			Metadata: []byte{},
 			Timestamp: &PeerTime{
 				IncNum: incNum,
 				SeqNum: seqNum,

@@ -7,38 +7,32 @@ SPDX-License-Identifier: Apache-2.0
 package encoder
 
 import (
+	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/common/cauthdsl"
 	"github.com/hyperledger/fabric/common/channelconfig"
 	"github.com/hyperledger/fabric/common/crypto"
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/common/genesis"
 	"github.com/hyperledger/fabric/common/policies"
-	"github.com/hyperledger/fabric/common/resourcesconfig"
 	genesisconfig "github.com/hyperledger/fabric/common/tools/configtxgen/localconfig"
 	"github.com/hyperledger/fabric/common/tools/configtxlator/update"
 	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/msp"
 	cb "github.com/hyperledger/fabric/protos/common"
+	"github.com/hyperledger/fabric/protos/orderer/etcdraft"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
-
-	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 )
 
 const (
-	pkgLogID                = "common/tools/configtxgen/encoder"
 	ordererAdminsPolicyName = "/Channel/Orderer/Admins"
 
 	msgVersion = int32(0)
 	epoch      = 0
 )
 
-var logger = flogging.MustGetLogger(pkgLogID)
-
-func init() {
-	flogging.SetModuleLevel(pkgLogID, "info")
-}
+var logger = flogging.MustGetLogger("common.tools.configtxgen.encoder")
 
 const (
 	// ConsensusTypeSolo identifies the solo consensus implementation.
@@ -51,6 +45,12 @@ const (
 
 	// OrdererAdminsPolicy is the absolute path to the orderer admins policy
 	OrdererAdminsPolicy = "/Channel/Orderer/Admins"
+
+	// SignaturePolicyType is the 'Type' string for signature policies
+	SignaturePolicyType = "Signature"
+
+	// ImplicitMetaPolicyType is the 'Type' string for implicit meta policies
+	ImplicitMetaPolicyType = "ImplicitMeta"
 )
 
 func addValue(cg *cb.ConfigGroup, value channelconfig.ConfigValue, modPolicy string) {
@@ -67,6 +67,40 @@ func addPolicy(cg *cb.ConfigGroup, policy policies.ConfigPolicy, modPolicy strin
 	}
 }
 
+func addPolicies(cg *cb.ConfigGroup, policyMap map[string]*genesisconfig.Policy, modPolicy string) error {
+	for policyName, policy := range policyMap {
+		switch policy.Type {
+		case ImplicitMetaPolicyType:
+			imp, err := policies.ImplicitMetaFromString(policy.Rule)
+			if err != nil {
+				return errors.Wrapf(err, "invalid implicit meta policy rule '%s'", policy.Rule)
+			}
+			cg.Policies[policyName] = &cb.ConfigPolicy{
+				ModPolicy: modPolicy,
+				Policy: &cb.Policy{
+					Type:  int32(cb.Policy_IMPLICIT_META),
+					Value: utils.MarshalOrPanic(imp),
+				},
+			}
+		case SignaturePolicyType:
+			sp, err := cauthdsl.FromString(policy.Rule)
+			if err != nil {
+				return errors.Wrapf(err, "invalid signature policy rule '%s'", policy.Rule)
+			}
+			cg.Policies[policyName] = &cb.ConfigPolicy{
+				ModPolicy: modPolicy,
+				Policy: &cb.Policy{
+					Type:  int32(cb.Policy_SIGNATURE),
+					Value: utils.MarshalOrPanic(sp),
+				},
+			}
+		default:
+			return errors.Errorf("unknown policy type: %s", policy.Type)
+		}
+	}
+	return nil
+}
+
 // addImplicitMetaPolicyDefaults adds the Readers/Writers/Admins policies, with Any/Any/Majority rules respectively.
 func addImplicitMetaPolicyDefaults(cg *cb.ConfigGroup) {
 	addPolicy(cg, policies.ImplicitMetaMajorityPolicy(channelconfig.AdminsPolicyKey), channelconfig.AdminsPolicyKey)
@@ -79,6 +113,7 @@ func addImplicitMetaPolicyDefaults(cg *cb.ConfigGroup) {
 // the admin role principal.
 func addSignaturePolicyDefaults(cg *cb.ConfigGroup, mspID string, devMode bool) {
 	if devMode {
+		logger.Warningf("Specifying AdminPrincipal is deprecated and will be removed in a future release, override the admin principal with explicit policies.")
 		addPolicy(cg, policies.SignaturePolicy(channelconfig.AdminsPolicyKey, cauthdsl.SignedByMspMember(mspID)), channelconfig.AdminsPolicyKey)
 	} else {
 		addPolicy(cg, policies.SignaturePolicy(channelconfig.AdminsPolicyKey, cauthdsl.SignedByMspAdmin(mspID)), channelconfig.AdminsPolicyKey)
@@ -98,7 +133,15 @@ func NewChannelGroup(conf *genesisconfig.Profile) (*cb.ConfigGroup, error) {
 	}
 
 	channelGroup := cb.NewConfigGroup()
-	addImplicitMetaPolicyDefaults(channelGroup)
+	if len(conf.Policies) == 0 {
+		logger.Warningf("Default policy emission is deprecated, please include policy specifications for the channel group in configtx.yaml")
+		addImplicitMetaPolicyDefaults(channelGroup)
+	} else {
+		if err := addPolicies(channelGroup, conf.Policies, channelconfig.AdminsPolicyKey); err != nil {
+			return nil, errors.Wrapf(err, "error adding policies to channel group")
+		}
+	}
+
 	addValue(channelGroup, channelconfig.HashingAlgorithmValue(), channelconfig.AdminsPolicyKey)
 	addValue(channelGroup, channelconfig.BlockDataHashingStructureValue(), channelconfig.AdminsPolicyKey)
 	addValue(channelGroup, channelconfig.OrdererAddressesValue(conf.Orderer.Addresses), ordererAdminsPolicyName)
@@ -140,12 +183,18 @@ func NewChannelGroup(conf *genesisconfig.Profile) (*cb.ConfigGroup, error) {
 // It sets the mod_policy of all elements to "Admins".  This group is always present in any channel configuration.
 func NewOrdererGroup(conf *genesisconfig.Orderer) (*cb.ConfigGroup, error) {
 	ordererGroup := cb.NewConfigGroup()
-	addImplicitMetaPolicyDefaults(ordererGroup)
+	if len(conf.Policies) == 0 {
+		logger.Warningf("Default policy emission is deprecated, please include policy specifications for the orderer group in configtx.yaml")
+		addImplicitMetaPolicyDefaults(ordererGroup)
+	} else {
+		if err := addPolicies(ordererGroup, conf.Policies, channelconfig.AdminsPolicyKey); err != nil {
+			return nil, errors.Wrapf(err, "error adding policies to orderer group")
+		}
+	}
 	ordererGroup.Policies[BlockValidationPolicyKey] = &cb.ConfigPolicy{
 		Policy:    policies.ImplicitMetaAnyPolicy(channelconfig.WritersPolicyKey).Value(),
 		ModPolicy: channelconfig.AdminsPolicyKey,
 	}
-	addValue(ordererGroup, channelconfig.ConsensusTypeValue(conf.OrdererType), channelconfig.AdminsPolicyKey)
 	addValue(ordererGroup, channelconfig.BatchSizeValue(
 		conf.BatchSize.MaxMessageCount,
 		conf.BatchSize.AbsoluteMaxBytes,
@@ -158,13 +207,22 @@ func NewOrdererGroup(conf *genesisconfig.Orderer) (*cb.ConfigGroup, error) {
 		addValue(ordererGroup, channelconfig.CapabilitiesValue(conf.Capabilities), channelconfig.AdminsPolicyKey)
 	}
 
+	var consensusMetadata []byte
+	var err error
+
 	switch conf.OrdererType {
 	case ConsensusTypeSolo:
 	case ConsensusTypeKafka:
 		addValue(ordererGroup, channelconfig.KafkaBrokersValue(conf.Kafka.Brokers), channelconfig.AdminsPolicyKey)
+	case etcdraft.TypeKey:
+		if consensusMetadata, err = etcdraft.Marshal(conf.EtcdRaft); err != nil {
+			return nil, errors.Errorf("cannot marshal metadata for orderer type %s: %s", etcdraft.TypeKey, err)
+		}
 	default:
 		return nil, errors.Errorf("unknown orderer type: %s", conf.OrdererType)
 	}
+
+	addValue(ordererGroup, channelconfig.ConsensusTypeValue(conf.OrdererType, consensusMetadata), channelconfig.AdminsPolicyKey)
 
 	for _, org := range conf.Organizations {
 		var err error
@@ -187,7 +245,15 @@ func NewOrdererOrgGroup(conf *genesisconfig.Organization) (*cb.ConfigGroup, erro
 	}
 
 	ordererOrgGroup := cb.NewConfigGroup()
-	addSignaturePolicyDefaults(ordererOrgGroup, conf.ID, conf.AdminPrincipal != genesisconfig.AdminRoleAdminPrincipal)
+	if len(conf.Policies) == 0 {
+		logger.Warningf("Default policy emission is deprecated, please include policy specifications for the orderer org group %s in configtx.yaml", conf.Name)
+		addSignaturePolicyDefaults(ordererOrgGroup, conf.ID, conf.AdminPrincipal != genesisconfig.AdminRoleAdminPrincipal)
+	} else {
+		if err := addPolicies(ordererOrgGroup, conf.Policies, channelconfig.AdminsPolicyKey); err != nil {
+			return nil, errors.Wrapf(err, "error adding policies to orderer org group '%s'", conf.Name)
+		}
+	}
+
 	addValue(ordererOrgGroup, channelconfig.MSPValue(mspConfig), channelconfig.AdminsPolicyKey)
 
 	ordererOrgGroup.ModPolicy = channelconfig.AdminsPolicyKey
@@ -198,7 +264,18 @@ func NewOrdererOrgGroup(conf *genesisconfig.Organization) (*cb.ConfigGroup, erro
 // in application logic like chaincodes, and how these members may interact with the orderer.  It sets the mod_policy of all elements to "Admins".
 func NewApplicationGroup(conf *genesisconfig.Application) (*cb.ConfigGroup, error) {
 	applicationGroup := cb.NewConfigGroup()
-	addImplicitMetaPolicyDefaults(applicationGroup)
+	if len(conf.Policies) == 0 {
+		logger.Warningf("Default policy emission is deprecated, please include policy specifications for the application group in configtx.yaml")
+		addImplicitMetaPolicyDefaults(applicationGroup)
+	} else {
+		if err := addPolicies(applicationGroup, conf.Policies, channelconfig.AdminsPolicyKey); err != nil {
+			return nil, errors.Wrapf(err, "error adding policies to application group")
+		}
+	}
+
+	if len(conf.ACLs) > 0 {
+		addValue(applicationGroup, channelconfig.ACLValues(conf.ACLs), channelconfig.AdminsPolicyKey)
+	}
 
 	if len(conf.Capabilities) > 0 {
 		addValue(applicationGroup, channelconfig.CapabilitiesValue(conf.Capabilities), channelconfig.AdminsPolicyKey)
@@ -221,11 +298,18 @@ func NewApplicationGroup(conf *genesisconfig.Application) (*cb.ConfigGroup, erro
 func NewApplicationOrgGroup(conf *genesisconfig.Organization) (*cb.ConfigGroup, error) {
 	mspConfig, err := msp.GetVerifyingMspConfig(conf.MSPDir, conf.ID, conf.MSPType)
 	if err != nil {
-		return nil, errors.Wrapf(err, "1 - Error loading MSP configuration for org %s: %s", conf.Name)
+		return nil, errors.Wrapf(err, "1 - Error loading MSP configuration for org %s", conf.Name)
 	}
 
 	applicationOrgGroup := cb.NewConfigGroup()
-	addSignaturePolicyDefaults(applicationOrgGroup, conf.ID, conf.AdminPrincipal != genesisconfig.AdminRoleAdminPrincipal)
+	if len(conf.Policies) == 0 {
+		logger.Warningf("Default policy emission is deprecated, please include policy specifications for the application org group %s in configtx.yaml", conf.Name)
+		addSignaturePolicyDefaults(applicationOrgGroup, conf.ID, conf.AdminPrincipal != genesisconfig.AdminRoleAdminPrincipal)
+	} else {
+		if err := addPolicies(applicationOrgGroup, conf.Policies, channelconfig.AdminsPolicyKey); err != nil {
+			return nil, errors.Wrapf(err, "error adding policies to application org group %s", conf.Name)
+		}
+	}
 	addValue(applicationOrgGroup, channelconfig.MSPValue(mspConfig), channelconfig.AdminsPolicyKey)
 
 	var anchorProtos []*pb.AnchorPeer
@@ -284,7 +368,7 @@ func NewConsortiumGroup(conf *genesisconfig.Consortium) (*cb.ConfigGroup, error)
 
 // NewChannelCreateConfigUpdate generates a ConfigUpdate which can be sent to the orderer to create a new channel.  Optionally, the channel group of the
 // ordering system channel may be passed in, and the resulting ConfigUpdate will extract the appropriate versions from this file.
-func NewChannelCreateConfigUpdate(channelID string, orderingSystemChannelGroup *cb.ConfigGroup, conf *genesisconfig.Profile) (*cb.ConfigUpdate, error) {
+func NewChannelCreateConfigUpdate(channelID string, conf *genesisconfig.Profile) (*cb.ConfigUpdate, error) {
 	if conf.Application == nil {
 		return nil, errors.New("cannot define a new channel with no Application section")
 	}
@@ -293,65 +377,24 @@ func NewChannelCreateConfigUpdate(channelID string, orderingSystemChannelGroup *
 		return nil, errors.New("cannot define a new channel with no Consortium value")
 	}
 
-	// Otherwise, parse only the application section, and encapsulate it inside a channel group
+	// Parse only the application section, and encapsulate it inside a channel group
 	ag, err := NewApplicationGroup(conf.Application)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not turn channel application profile into application group")
 	}
 
-	agc, err := channelconfig.NewApplicationConfig(ag, channelconfig.NewMSPConfigHandler(msp.MSPv1_1))
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not parse application to application group")
-	}
-
 	var template, newChannelGroup *cb.ConfigGroup
 
-	if orderingSystemChannelGroup != nil {
-		// In the case that a ordering system channel definition was provided, use it to compute the update
-		if orderingSystemChannelGroup.Groups == nil {
-			return nil, errors.New("missing all channel groups")
-		}
-
-		consortiums, ok := orderingSystemChannelGroup.Groups[channelconfig.ConsortiumsGroupKey]
-		if !ok {
-			return nil, errors.New("bad consortiums group")
-		}
-
-		consortium, ok := consortiums.Groups[conf.Consortium]
-		if !ok {
-			return nil, errors.Errorf("bad consortium: %s", conf.Consortium)
-		}
-
-		template = proto.Clone(orderingSystemChannelGroup).(*cb.ConfigGroup)
-		template.Groups[channelconfig.ApplicationGroupKey] = proto.Clone(consortium).(*cb.ConfigGroup)
-		// This is a bit of a hack. If the channel config specifies all consortium members, then it does not look
-		// like a modification.  The below adds a fake org with an illegal name which cannot actually exist, which
-		// will always appear to be deleted, triggering the correct update computation.
-		template.Groups[channelconfig.ApplicationGroupKey].Groups["*IllegalKey*!"] = &cb.ConfigGroup{}
-		delete(template.Groups, channelconfig.ConsortiumsGroupKey)
-
-		newChannelGroup = proto.Clone(orderingSystemChannelGroup).(*cb.ConfigGroup)
-		delete(newChannelGroup.Groups, channelconfig.ConsortiumsGroupKey)
-		newChannelGroup.Groups[channelconfig.ApplicationGroupKey].Values = ag.Values
-		newChannelGroup.Groups[channelconfig.ApplicationGroupKey].Policies = ag.Policies
-
-		for orgName, org := range template.Groups[channelconfig.ApplicationGroupKey].Groups {
-			if _, ok := ag.Groups[orgName]; ok {
-				newChannelGroup.Groups[channelconfig.ApplicationGroupKey].Groups[orgName] = org
-			}
-		}
-	} else {
-		newChannelGroup = &cb.ConfigGroup{
-			Groups: map[string]*cb.ConfigGroup{
-				channelconfig.ApplicationGroupKey: ag,
-			},
-		}
-
-		// Otherwise assume the orgs have not been modified
-		template = proto.Clone(newChannelGroup).(*cb.ConfigGroup)
-		template.Groups[channelconfig.ApplicationGroupKey].Values = nil
-		template.Groups[channelconfig.ApplicationGroupKey].Policies = nil
+	newChannelGroup = &cb.ConfigGroup{
+		Groups: map[string]*cb.ConfigGroup{
+			channelconfig.ApplicationGroupKey: ag,
+		},
 	}
+
+	// Assume the orgs have not been modified
+	template = proto.Clone(newChannelGroup).(*cb.ConfigGroup)
+	template.Groups[channelconfig.ApplicationGroupKey].Values = nil
+	template.Groups[channelconfig.ApplicationGroupKey].Policies = nil
 
 	updt, err := update.Compute(&cb.Config{ChannelGroup: template}, &cb.Config{ChannelGroup: newChannelGroup})
 	if err != nil {
@@ -368,39 +411,12 @@ func NewChannelCreateConfigUpdate(channelID string, orderingSystemChannelGroup *
 		}),
 	}
 
-	// If this channel uses the new lifecycle config, specify the seed data
-	if agc.Capabilities().ResourcesTree() {
-		defaultModPolicy := policies.ChannelApplicationAdmins
-		if conf.Application.Resources != nil {
-			defaultModPolicy = conf.Application.Resources.DefaultModPolicy
-		}
-		updt.IsolatedData = map[string][]byte{
-			pb.ResourceConfigSeedDataKey: utils.MarshalOrPanic(&cb.Config{
-				Type: int32(cb.ConfigType_RESOURCE),
-				ChannelGroup: &cb.ConfigGroup{
-					Groups: map[string]*cb.ConfigGroup{
-						resourcesconfig.ChaincodesGroupKey: {
-							ModPolicy: defaultModPolicy,
-						},
-						resourcesconfig.PeerPoliciesGroupKey: {
-							ModPolicy: defaultModPolicy,
-						},
-						resourcesconfig.APIsGroupKey: {
-							ModPolicy: defaultModPolicy,
-						},
-					},
-					ModPolicy: defaultModPolicy,
-				},
-			}),
-		}
-	}
-
 	return updt, nil
 }
 
 // MakeChannelCreationTransaction is a handy utility function for creating transactions for channel creation
-func MakeChannelCreationTransaction(channelID string, signer crypto.LocalSigner, orderingSystemChannelConfigGroup *cb.ConfigGroup, conf *genesisconfig.Profile) (*cb.Envelope, error) {
-	newChannelConfigUpdate, err := NewChannelCreateConfigUpdate(channelID, orderingSystemChannelConfigGroup, conf)
+func MakeChannelCreationTransaction(channelID string, signer crypto.LocalSigner, conf *genesisconfig.Profile) (*cb.Envelope, error) {
+	newChannelConfigUpdate, err := NewChannelCreateConfigUpdate(channelID, conf)
 	if err != nil {
 		return nil, errors.Wrap(err, "config update generation failure")
 	}

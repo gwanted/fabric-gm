@@ -1,30 +1,15 @@
-#!/bin/bash -e
+#!/bin/bash
 #
 # Copyright IBM Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 
+set -e
+
 # regexes for packages to exclude from unit test
 excluded_packages=(
-    "github.com/hyperledger/fabric/bccsp/factory" # this package's tests need to be mocked
-    "github.com/hyperledger/fabric/bccsp/mocks"
-    "github.com/hyperledger/fabric/bddtests"
-    "github.com/hyperledger/fabric/build/"
-    "github.com/hyperledger/fabric/common/ledger/testutil"
-    "github.com/hyperledger/fabric/common/mocks"
-    "github.com/hyperledger/fabric/core/chaincode/platforms/car/test" # until FAB-7629 is resolved
-    "github.com/hyperledger/fabric/core/deliverservice/mocks"
-    "github.com/hyperledger/fabric/core/ledger/kvledger/example"
-    "github.com/hyperledger/fabric/core/ledger/kvledger/marble_example"
-    "github.com/hyperledger/fabric/core/ledger/testutil"
-    "github.com/hyperledger/fabric/core/mocks"
-    "github.com/hyperledger/fabric/core/testutil"
-    "github.com/hyperledger/fabric/examples"
-    "github.com/hyperledger/fabric/orderer/mocks"
-    "github.com/hyperledger/fabric/orderer/sample_clients"
-    "github.com/hyperledger/fabric/test"
-    "github.com/hyperledger/fabric/vendor/"
+    "/integration(/|$)"
 )
 
 # regexes for packages that must be run serially
@@ -37,6 +22,11 @@ plugin_packages=(
     "github.com/hyperledger/fabric/core/scc"
 )
 
+# packages which need to be tested with build tag pkcs11
+pkcs11_packages=(
+    "github.com/hyperledger/fabric/bccsp/..."
+)
+
 # obtain packages changed since some git refspec
 packages_diff() {
     git -C "${GOPATH}/src/github.com/hyperledger/fabric" diff --no-commit-id --name-only -r "${1:-HEAD}" |
@@ -47,54 +37,76 @@ packages_diff() {
 
 # "go list" packages and filter out excluded packages
 list_and_filter() {
-    go list $@ 2>/dev/null | grep -Ev $(local IFS='|' ; echo "${excluded_packages[*]}") || true
+    local filter=$(local IFS='|' ; echo "${excluded_packages[*]}")
+    if [ -n "$filter" ]; then
+        go list $@ 2>/dev/null | grep -Ev "${filter}" || true
+    else
+        go list $@ 2>/dev/null
+    fi
 }
 
 # remove packages that must be tested serially
 parallel_test_packages() {
-    echo "$@" | grep -Ev $(local IFS='|' ; echo "${serial_packages[*]}") || true
+    local filter=$(local IFS='|' ; echo "${serial_packages[*]}")
+    if [ -n "$filter" ]; then
+        echo "$@" | grep -Ev $(local IFS='|' ; echo "${serial_packages[*]}") || true
+    else
+        echo "$@"
+    fi
 }
 
 # get packages that must be tested serially
 serial_test_packages() {
-    echo "$@" | grep -E $(local IFS='|' ; echo "${serial_packages[*]}") || true
+    local filter=$(local IFS='|' ; echo "${serial_packages[*]}")
+    if [ -n "$filter" ]; then
+        echo "$@" | grep -E "${filter}" || true
+    else
+        echo "$@"
+    fi
 }
 
-# "go test" the provided packages. Packages that are not prsent in the serial package list
+# "go test" the provided packages. Packages that are not present in the serial package list
 # will be tested in parallel
 run_tests() {
-    echo ${GO_TAGS}
-    flags="-cover"
+    local flags="-cover"
     if [ -n "${VERBOSE}" ]; then
-      flags="-v -cover"
+        flags="${flags} -v"
     fi
 
-    local parallel=$(parallel_test_packages "$@")
-    if [ -n "${parallel}" ]; then
-        time go test ${flags} -tags "$GO_TAGS" -ldflags "$GO_LDFLAGS" ${parallel[@]} -short -timeout=20m
+    local race_flags=""
+    if [[ "$(uname -m)" == "x86_64" ]]; then
+        export GORACE=atexit_sleep_ms=0 # reduce overhead of race
+        race_flags="-race"
     fi
 
-    local serial=$(serial_test_packages "$@")
-    if [ -n "${serial}" ]; then
-        time go test ${flags} -tags "$GO_TAGS" -ldflags "$GO_LDFLAGS" ${serial[@]} -short -p 1 -timeout=20m
-    fi
+    echo ${GO_TAGS}
+
+    time {
+        local parallel=$(parallel_test_packages "$@")
+        if [ -n "${parallel}" ]; then
+            go test ${flags} ${race_flags} -tags "$GO_TAGS" ${parallel[@]} -short -timeout=20m
+        fi
+
+        local serial=$(serial_test_packages "$@") # race is disabled as well
+        if [ -n "${serial}" ]; then
+            go test ${flags} -tags "$GO_TAGS" ${serial[@]} -short -p 1 -timeout=20m
+        fi
+    }
 }
 
-# "go test" the provided packages and generate code coverage reports. Until go 1.10 is released,
-# profile reports can only be generated one package at a time.
+# "go test" the provided packages and generate code coverage reports.
 run_tests_with_coverage() {
-    # Initialize profile.cov
-    for pkg in $@; do
-        :> profile_tmp.cov
-        go test -cover -coverprofile=profile_tmp.cov -tags "$GO_TAGS" -ldflags "$GO_LDFLAGS" $pkg -timeout=20m
-        tail -n +2 profile_tmp.cov >> profile.cov || echo "Unable to append coverage for $pkg"
-    done
-
-    # convert to cobertura format
-    gocov convert profile.cov | gocov-xml > report.xml
+    # run the tests serially
+    time go test -p 1 -cover -coverprofile=profile_tmp.cov -tags "$GO_TAGS" $@ -timeout=20m
+    tail -n +2 profile_tmp.cov >> profile.cov && rm profile_tmp.cov
 }
 
 main() {
+    # place the cache directory into the default build tree if it exists
+    if [ -d "${GOPATH}/src/github.com/hyperledger/fabric/.build" ]; then
+        export GOCACHE="${GOPATH}/src/github.com/hyperledger/fabric/.build/go-cache"
+    fi
+
     # default behavior is to run all tests
     local package_spec=${TEST_PKGS:-github.com/hyperledger/fabric/...}
 
@@ -125,9 +137,12 @@ main() {
         echo "mode: set" > profile.cov
         run_tests_with_coverage "${packages[@]}"
         GO_TAGS="${GO_TAGS} pluginsenabled" run_tests_with_coverage "${plugin_packages[@]}"
+        GO_TAGS="${GO_TAGS} pkcs11" run_tests_with_coverage "${pkcs11_packages[@]}"
+        gocov convert profile.cov | gocov-xml > report.xml
     else
         run_tests "${packages[@]}"
         GO_TAGS="${GO_TAGS} pluginsenabled" run_tests "${plugin_packages[@]}"
+        GO_TAGS="${GO_TAGS} pkcs11" run_tests "${pkcs11_packages[@]}"
     fi
 }
 

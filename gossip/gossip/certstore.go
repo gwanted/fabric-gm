@@ -8,6 +8,7 @@ package gossip
 
 import (
 	"bytes"
+	"encoding/hex"
 
 	"github.com/hyperledger/fabric/gossip/api"
 	"github.com/hyperledger/fabric/gossip/common"
@@ -15,7 +16,6 @@ import (
 	"github.com/hyperledger/fabric/gossip/identity"
 	"github.com/hyperledger/fabric/gossip/util"
 	proto "github.com/hyperledger/fabric/protos/gossip"
-	"github.com/op/go-logging"
 	"github.com/pkg/errors"
 )
 
@@ -24,13 +24,13 @@ type certStore struct {
 	selfIdentity api.PeerIdentityType
 	idMapper     identity.Mapper
 	pull         pull.Mediator
-	logger       *logging.Logger
+	logger       util.Logger
 	mcs          api.MessageCryptoService
 }
 
 func newCertStore(puller pull.Mediator, idMapper identity.Mapper, selfIdentity api.PeerIdentityType, mcs api.MessageCryptoService) *certStore {
 	selfPKIID := idMapper.GetPKIidOfCert(selfIdentity)
-	logger := util.GetLogger(util.LoggingGossipModule, string(selfPKIID))
+	logger := util.GetLogger(util.GossipLogger, hex.EncodeToString(selfPKIID))
 
 	certStore := &certStore{
 		mcs:          mcs,

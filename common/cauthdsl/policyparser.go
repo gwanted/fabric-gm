@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/Knetic/govaluate"
 	"github.com/hyperledger/fabric/protos/common"
@@ -28,8 +29,29 @@ import (
 	"github.com/hyperledger/fabric/protos/utils"
 )
 
-var regex *regexp.Regexp = regexp.MustCompile("^([[:alnum:].-]+)([.])(member|admin|client|peer|orderer)$")
-var regexErr *regexp.Regexp = regexp.MustCompile("^No parameter '([^']+)' found[.]$")
+// Gate values
+const (
+	GateAnd   = "And"
+	GateOr    = "Or"
+	GateOutOf = "OutOf"
+)
+
+// Role values for principals
+const (
+	RoleAdmin  = "admin"
+	RoleMember = "member"
+	RoleClient = "client"
+	RolePeer   = "peer"
+	// RoleOrderer = "orderer" TODO
+)
+
+var (
+	regex = regexp.MustCompile(
+		fmt.Sprintf("^([[:alnum:].-]+)([.])(%s|%s|%s|%s)$",
+			RoleAdmin, RoleMember, RoleClient, RolePeer),
+	)
+	regexErr = regexp.MustCompile("^No parameter '([^']+)' found[.]$")
+)
 
 // a stub function - it returns the same string as it's passed.
 // This will be evaluated by second/third passes to convert to a proto policy
@@ -125,10 +147,10 @@ func secondPass(args ...interface{}) (interface{}, error) {
 	}
 
 	/* get the n in the t out of n */
-	var n int = len(args) - 1
+	var n int = len(args) - 2
 
-	/* sanity check - t better be <= n */
-	if t > n {
+	/* sanity check - t should be positive, permit equal to n+1, but disallow over n+1 */
+	if t < 0 || t > n+1 {
 		return nil, fmt.Errorf("Invalid t-out-of-n predicate, t %d, n %d", t, n)
 	}
 
@@ -150,13 +172,13 @@ func secondPass(args ...interface{}) (interface{}, error) {
 			/* get the right role */
 			var r msp.MSPRole_MSPRoleType
 			switch subm[0][3] {
-			case "member":
+			case RoleMember:
 				r = msp.MSPRole_MEMBER
-			case "admin":
+			case RoleAdmin:
 				r = msp.MSPRole_ADMIN
-			case "client":
+			case RoleClient:
 				r = msp.MSPRole_CLIENT
-			case "peer":
+			case RolePeer:
 				r = msp.MSPRole_PEER
 			default:
 				return nil, fmt.Errorf("Error parsing role %s", t)
@@ -203,24 +225,37 @@ func newContext() *context {
 
 // FromString takes a string representation of the policy,
 // parses it and returns a SignaturePolicyEnvelope that
-// implements that policy. The supported language is as follows
+// implements that policy. The supported language is as follows:
 //
 // GATE(P[, P])
 //
-// where
+// where:
 //	- GATE is either "and" or "or"
 //	- P is either a principal or another nested call to GATE
 //
-// a principal is defined as
+// A principal is defined as:
 //
 // ORG.ROLE
 //
-// where
+// where:
 //	- ORG is a string (representing the MSP identifier)
-//	- ROLE is either the string "member", "admin", "client", "peer", or the string "orderer" representing the required role
+//	- ROLE takes the value of any of the RoleXXX constants representing
+//    the required role
 func FromString(policy string) (*common.SignaturePolicyEnvelope, error) {
 	// first we translate the and/or business into outof gates
-	intermediate, err := govaluate.NewEvaluableExpressionWithFunctions(policy, map[string]govaluate.ExpressionFunction{"AND": and, "and": and, "OR": or, "or": or, "OUTOF": outof, "outof": outof, "OutOf": outof})
+	intermediate, err := govaluate.NewEvaluableExpressionWithFunctions(
+		policy, map[string]govaluate.ExpressionFunction{
+			GateAnd:                    and,
+			strings.ToLower(GateAnd):   and,
+			strings.ToUpper(GateAnd):   and,
+			GateOr:                     or,
+			strings.ToLower(GateOr):    or,
+			strings.ToUpper(GateOr):    or,
+			GateOutOf:                  outof,
+			strings.ToLower(GateOutOf): outof,
+			strings.ToUpper(GateOutOf): outof,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -237,6 +272,10 @@ func FromString(policy string) (*common.SignaturePolicyEnvelope, error) {
 
 		return nil, err
 	}
+	resStr, ok := intermediateRes.(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid policy string '%s'", policy)
+	}
 
 	// we still need two passes. The first pass just adds an extra
 	// argument ID to each of the outof calls. This is
@@ -244,7 +283,7 @@ func FromString(policy string) (*common.SignaturePolicyEnvelope, error) {
 	// to user-implemented functions other than via arguments.
 	// We need this argument because we need a global place where
 	// we put the identities that the policy requires
-	exp, err := govaluate.NewEvaluableExpressionWithFunctions(intermediateRes.(string), map[string]govaluate.ExpressionFunction{"outof": firstPass})
+	exp, err := govaluate.NewEvaluableExpressionWithFunctions(resStr, map[string]govaluate.ExpressionFunction{"outof": firstPass})
 	if err != nil {
 		return nil, err
 	}
@@ -261,12 +300,16 @@ func FromString(policy string) (*common.SignaturePolicyEnvelope, error) {
 
 		return nil, err
 	}
+	resStr, ok = res.(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid policy string '%s'", policy)
+	}
 
 	ctx := newContext()
 	parameters := make(map[string]interface{}, 1)
 	parameters["ID"] = ctx
 
-	exp, err = govaluate.NewEvaluableExpressionWithFunctions(res.(string), map[string]govaluate.ExpressionFunction{"outof": secondPass})
+	exp, err = govaluate.NewEvaluableExpressionWithFunctions(resStr, map[string]govaluate.ExpressionFunction{"outof": secondPass})
 	if err != nil {
 		return nil, err
 	}
@@ -283,11 +326,15 @@ func FromString(policy string) (*common.SignaturePolicyEnvelope, error) {
 
 		return nil, err
 	}
+	rule, ok := res.(*common.SignaturePolicy)
+	if !ok {
+		return nil, fmt.Errorf("invalid policy string '%s'", policy)
+	}
 
 	p := &common.SignaturePolicyEnvelope{
 		Identities: ctx.principals,
 		Version:    0,
-		Rule:       res.(*common.SignaturePolicy),
+		Rule:       rule,
 	}
 
 	return p, nil

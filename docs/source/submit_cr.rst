@@ -130,7 +130,7 @@ where you will fill in a commit message. Add a commit message.
 
    I made a change
 
-   Signed-off-by: John Doe <cjohn.doe@example.com>
+   Signed-off-by: John Doe <john.doe@example.com>
 
    # Please enter the commit message for your changes. Lines starting
    # with '#' will be ignored, and an empty message aborts the commit.
@@ -215,7 +215,7 @@ If you see nothing wrong with your CR it might be that the CI process
 simply failed for some reason unrelated to your change. In that case
 you may want to restart the CI process by posting a reply to your CR
 with the simple content "reverify".  Check the `CI management page
-<https://github.com/hyperledger/ci-management/blob/master/docs/fabric_ci_process.md>`__
+<https://github.com/hyperledger/ci-management/blob/master/docs/source/fabric_ci_process.rst>`__
 for additional information and options on this.
 
 Modifying your change request

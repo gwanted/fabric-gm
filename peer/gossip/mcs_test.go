@@ -19,6 +19,7 @@ package gossip
 import (
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -44,7 +45,7 @@ import (
 
 func TestPKIidOfCert(t *testing.T) {
 	deserializersManager := &mocks.DeserializersManager{
-		LocalDeserializer: &mocks.IdentityDeserializer{[]byte("Alice"), []byte("msg1"), mock.Mock{}},
+		LocalDeserializer: &mocks.IdentityDeserializer{Identity: []byte("Alice"), Msg: []byte("msg1"), Mock: mock.Mock{}},
 	}
 	msgCryptoService := NewMCS(&mocks.ChannelPolicyManagerGetterWithManager{},
 		&mockscrypto.LocalSigner{Identity: []byte("Alice")},
@@ -65,9 +66,16 @@ func TestPKIidOfCert(t *testing.T) {
 	assert.NoError(t, err, "Failed computing digest of serialized identity [% x]", []byte(peerIdentity))
 	assert.Equal(t, digest, []byte(pkid), "PKID must be the SHA2-256 of peerIdentity")
 
-	//  The PKI-ID is calculated by concatenating the MspId with IdBytes. Ensure that additional fields haven't been introduced in the code
-	v := reflect.Indirect(reflect.ValueOf(id))
-	assert.Equal(t, 2, v.NumField())
+	//  The PKI-ID is calculated by concatenating the MspId with IdBytes.
+	// Ensure that additional fields haven't been introduced in the code
+	v := reflect.Indirect(reflect.ValueOf(id)).Type()
+	fieldsThatStartWithXXX := 0
+	for i := 0; i < v.NumField(); i++ {
+		if strings.Index(v.Field(i).Name, "XXX_") == 0 {
+			fieldsThatStartWithXXX++
+		}
+	}
+	assert.Equal(t, 2+fieldsThatStartWithXXX, v.NumField())
 }
 
 func TestPKIidOfNil(t *testing.T) {
@@ -80,9 +88,9 @@ func TestPKIidOfNil(t *testing.T) {
 
 func TestValidateIdentity(t *testing.T) {
 	deserializersManager := &mocks.DeserializersManager{
-		LocalDeserializer: &mocks.IdentityDeserializer{[]byte("Alice"), []byte("msg1"), mock.Mock{}},
+		LocalDeserializer: &mocks.IdentityDeserializer{Identity: []byte("Alice"), Msg: []byte("msg1"), Mock: mock.Mock{}},
 		ChannelDeserializers: map[string]msp.IdentityDeserializer{
-			"A": &mocks.IdentityDeserializer{[]byte("Bob"), []byte("msg2"), mock.Mock{}},
+			"A": &mocks.IdentityDeserializer{Identity: []byte("Bob"), Msg: []byte("msg2"), Mock: mock.Mock{}},
 		},
 	}
 	msgCryptoService := NewMCS(
@@ -131,19 +139,23 @@ func TestSign(t *testing.T) {
 func TestVerify(t *testing.T) {
 	msgCryptoService := NewMCS(
 		&mocks.ChannelPolicyManagerGetterWithManager{
-			map[string]policies.Manager{
-				"A": &mocks.ChannelPolicyManager{&mocks.Policy{&mocks.IdentityDeserializer{[]byte("Bob"), []byte("msg2"), mock.Mock{}}}},
-				"B": &mocks.ChannelPolicyManager{&mocks.Policy{&mocks.IdentityDeserializer{[]byte("Charlie"), []byte("msg3"), mock.Mock{}}}},
+			Managers: map[string]policies.Manager{
+				"A": &mocks.ChannelPolicyManager{
+					Policy: &mocks.Policy{Deserializer: &mocks.IdentityDeserializer{Identity: []byte("Bob"), Msg: []byte("msg2"), Mock: mock.Mock{}}},
+				},
+				"B": &mocks.ChannelPolicyManager{
+					Policy: &mocks.Policy{Deserializer: &mocks.IdentityDeserializer{Identity: []byte("Charlie"), Msg: []byte("msg3"), Mock: mock.Mock{}}},
+				},
 				"C": nil,
 			},
 		},
 		&mockscrypto.LocalSigner{Identity: []byte("Alice")},
 		&mocks.DeserializersManager{
-			LocalDeserializer: &mocks.IdentityDeserializer{[]byte("Alice"), []byte("msg1"), mock.Mock{}},
+			LocalDeserializer: &mocks.IdentityDeserializer{Identity: []byte("Alice"), Msg: []byte("msg1"), Mock: mock.Mock{}},
 			ChannelDeserializers: map[string]msp.IdentityDeserializer{
-				"A": &mocks.IdentityDeserializer{[]byte("Bob"), []byte("msg2"), mock.Mock{}},
-				"B": &mocks.IdentityDeserializer{[]byte("Charlie"), []byte("msg3"), mock.Mock{}},
-				"C": &mocks.IdentityDeserializer{[]byte("Dave"), []byte("msg4"), mock.Mock{}},
+				"A": &mocks.IdentityDeserializer{Identity: []byte("Bob"), Msg: []byte("msg2"), Mock: mock.Mock{}},
+				"B": &mocks.IdentityDeserializer{Identity: []byte("Charlie"), Msg: []byte("msg3"), Mock: mock.Mock{}},
+				"C": &mocks.IdentityDeserializer{Identity: []byte("Dave"), Msg: []byte("msg4"), Mock: mock.Mock{}},
 			},
 		},
 	)
@@ -174,11 +186,19 @@ func TestVerify(t *testing.T) {
 func TestVerifyBlock(t *testing.T) {
 	aliceSigner := &mockscrypto.LocalSigner{Identity: []byte("Alice")}
 	policyManagerGetter := &mocks.ChannelPolicyManagerGetterWithManager{
-		map[string]policies.Manager{
-			"A": &mocks.ChannelPolicyManager{&mocks.Policy{&mocks.IdentityDeserializer{[]byte("Bob"), []byte("msg2"), mock.Mock{}}}},
-			"B": &mocks.ChannelPolicyManager{&mocks.Policy{&mocks.IdentityDeserializer{[]byte("Charlie"), []byte("msg3"), mock.Mock{}}}},
-			"C": &mocks.ChannelPolicyManager{&mocks.Policy{&mocks.IdentityDeserializer{[]byte("Alice"), []byte("msg1"), mock.Mock{}}}},
-			"D": &mocks.ChannelPolicyManager{&mocks.Policy{&mocks.IdentityDeserializer{[]byte("Alice"), []byte("msg1"), mock.Mock{}}}},
+		Managers: map[string]policies.Manager{
+			"A": &mocks.ChannelPolicyManager{
+				Policy: &mocks.Policy{Deserializer: &mocks.IdentityDeserializer{Identity: []byte("Bob"), Msg: []byte("msg2"), Mock: mock.Mock{}}},
+			},
+			"B": &mocks.ChannelPolicyManager{
+				Policy: &mocks.Policy{Deserializer: &mocks.IdentityDeserializer{Identity: []byte("Charlie"), Msg: []byte("msg3"), Mock: mock.Mock{}}},
+			},
+			"C": &mocks.ChannelPolicyManager{
+				Policy: &mocks.Policy{Deserializer: &mocks.IdentityDeserializer{Identity: []byte("Alice"), Msg: []byte("msg1"), Mock: mock.Mock{}}},
+			},
+			"D": &mocks.ChannelPolicyManager{
+				Policy: &mocks.Policy{Deserializer: &mocks.IdentityDeserializer{Identity: []byte("Alice"), Msg: []byte("msg1"), Mock: mock.Mock{}}},
+			},
 		},
 	}
 
@@ -186,10 +206,10 @@ func TestVerifyBlock(t *testing.T) {
 		policyManagerGetter,
 		aliceSigner,
 		&mocks.DeserializersManager{
-			LocalDeserializer: &mocks.IdentityDeserializer{[]byte("Alice"), []byte("msg1"), mock.Mock{}},
+			LocalDeserializer: &mocks.IdentityDeserializer{Identity: []byte("Alice"), Msg: []byte("msg1"), Mock: mock.Mock{}},
 			ChannelDeserializers: map[string]msp.IdentityDeserializer{
-				"A": &mocks.IdentityDeserializer{[]byte("Bob"), []byte("msg2"), mock.Mock{}},
-				"B": &mocks.IdentityDeserializer{[]byte("Charlie"), []byte("msg3"), mock.Mock{}},
+				"A": &mocks.IdentityDeserializer{Identity: []byte("Bob"), Msg: []byte("msg2"), Mock: mock.Mock{}},
+				"B": &mocks.IdentityDeserializer{Identity: []byte("Charlie"), Msg: []byte("msg3"), Mock: mock.Mock{}},
 			},
 		},
 	)

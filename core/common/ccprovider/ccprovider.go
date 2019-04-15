@@ -1,41 +1,34 @@
 /*
-Copyright IBM Corp. 2017 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package ccprovider
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric/common/chaincode"
 	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric/core/common/privdata"
 	"github.com/hyperledger/fabric/core/ledger"
 	pb "github.com/hyperledger/fabric/protos/peer"
+	"github.com/pkg/errors"
 )
 
 var ccproviderLogger = flogging.MustGetLogger("ccprovider")
 
 var chaincodeInstallPath string
 
-//CCPackage encapsulates a chaincode package which can be
+// CCPackage encapsulates a chaincode package which can be
 //    raw ChaincodeDeploymentSpec
 //    SignedChaincodeDeploymentSpec
 // Attempt to keep the interface at a level with minimal
@@ -71,7 +64,7 @@ type CCPackage interface {
 	GetId() []byte
 }
 
-//SetChaincodesPath sets the chaincode path for this peer
+// SetChaincodesPath sets the chaincode path for this peer
 func SetChaincodesPath(path string) {
 	if s, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
@@ -88,9 +81,23 @@ func SetChaincodesPath(path string) {
 	chaincodeInstallPath = path
 }
 
-//GetChaincodePackage returns the chaincode package from the file system
 func GetChaincodePackage(ccname string, ccversion string) ([]byte, error) {
-	path := fmt.Sprintf("%s/%s.%s", chaincodeInstallPath, ccname, ccversion)
+	return GetChaincodePackageFromPath(ccname, ccversion, chaincodeInstallPath)
+}
+
+// isPrintable is used by CDSPackage and SignedCDSPackage validation to
+// detect garbage strings in unmarshaled proto fields where printable
+// characters are expected.
+func isPrintable(name string) bool {
+	notASCII := func(r rune) bool {
+		return !unicode.IsPrint(r)
+	}
+	return strings.IndexFunc(name, notASCII) == -1
+}
+
+// GetChaincodePackage returns the chaincode package from the file system
+func GetChaincodePackageFromPath(ccname string, ccversion string, ccInstallPath string) ([]byte, error) {
+	path := fmt.Sprintf("%s/%s.%s", ccInstallPath, ccname, ccversion)
 	var ccbytes []byte
 	var err error
 	if ccbytes, err = ioutil.ReadFile(path); err != nil {
@@ -99,7 +106,7 @@ func GetChaincodePackage(ccname string, ccversion string) ([]byte, error) {
 	return ccbytes, nil
 }
 
-//ChaincodePackageExists returns whether the chaincode package exists in the file system
+// ChaincodePackageExists returns whether the chaincode package exists in the file system
 func ChaincodePackageExists(ccname string, ccversion string) (bool, error) {
 	path := filepath.Join(chaincodeInstallPath, ccname+"."+ccversion)
 	_, err := os.Stat(path)
@@ -111,7 +118,7 @@ func ChaincodePackageExists(ccname string, ccversion string) (bool, error) {
 }
 
 type CCCacheSupport interface {
-	//GetChaincode is needed by the cache to get chaincode data
+	// GetChaincode is needed by the cache to get chaincode data
 	GetChaincode(ccname string, ccversion string) (CCPackage, error)
 }
 
@@ -120,14 +127,28 @@ type CCCacheSupport interface {
 type CCInfoFSImpl struct{}
 
 // GetChaincodeFromFS this is a wrapper for hiding package implementation.
-func (*CCInfoFSImpl) GetChaincode(ccname string, ccversion string) (CCPackage, error) {
-	//try raw CDS
-	cccdspack := &CDSPackage{}
-	_, _, err := cccdspack.InitFromFS(ccname, ccversion)
+// It calls GetChaincodeFromPath with the chaincodeInstallPath
+func (cifs *CCInfoFSImpl) GetChaincode(ccname string, ccversion string) (CCPackage, error) {
+	return cifs.GetChaincodeFromPath(ccname, ccversion, chaincodeInstallPath)
+}
+
+func (cifs *CCInfoFSImpl) GetChaincodeCodePackage(ccname, ccversion string) ([]byte, error) {
+	ccpack, err := cifs.GetChaincode(ccname, ccversion)
 	if err != nil {
-		//try signed CDS
+		return nil, err
+	}
+	return ccpack.GetDepSpec().Bytes(), nil
+}
+
+// GetChaincodeFromPath this is a wrapper for hiding package implementation.
+func (*CCInfoFSImpl) GetChaincodeFromPath(ccname string, ccversion string, path string) (CCPackage, error) {
+	// try raw CDS
+	cccdspack := &CDSPackage{}
+	_, _, err := cccdspack.InitFromPath(ccname, ccversion, path)
+	if err != nil {
+		// try signed CDS
 		ccscdspack := &SignedCDSPackage{}
-		_, _, err = ccscdspack.InitFromFS(ccname, ccversion)
+		_, _, err = ccscdspack.InitFromPath(ccname, ccversion, path)
 		if err != nil {
 			return nil, err
 		}
@@ -155,20 +176,54 @@ func (*CCInfoFSImpl) PutChaincode(depSpec *pb.ChaincodeDeploymentSpec) (CCPackag
 	return cccdspack, nil
 }
 
-// The following lines create the cache of CCPackage data that sits
-// on top of the file system and avoids a trip to the file system
-// every time. The cache is disabled by default and only enabled
-// if EnableCCInfoCache is called. This is an unfortunate hack
-// required by some legacy tests that remove chaincode packages
-// from the file system as a means of simulating particular test
-// conditions. This way of testing is incompatible with the
-// immutable nature of chaincode packages that is assumed by hlf v1
-// and implemented by this cache. For this reason, tests are for now
-// allowed to run with the cache disabled (unless they enable it)
-// until a later time in which they are fixed. The peer process on
-// the other hand requires the benefits of this cache and therefore
-// enables it.
-// TODO: (post v1) enable cache by default as soon as https://jira.hyperledger.org/browse/FAB-3785 is completed
+// DirEnumerator enumerates directories
+type DirEnumerator func(string) ([]os.FileInfo, error)
+
+// ChaincodeExtractor extracts chaincode from a given path
+type ChaincodeExtractor func(ccname string, ccversion string, path string) (CCPackage, error)
+
+// ListInstalledChaincodes retrieves the installed chaincodes
+func (cifs *CCInfoFSImpl) ListInstalledChaincodes(dir string, ls DirEnumerator, ccFromPath ChaincodeExtractor) ([]chaincode.InstalledChaincode, error) {
+	var chaincodes []chaincode.InstalledChaincode
+	if _, err := os.Stat(dir); err != nil && os.IsNotExist(err) {
+		return nil, nil
+	}
+	files, err := ls(dir)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed reading directory %s", dir)
+	}
+
+	for _, f := range files {
+		// Skip directories, we're only interested in normal files
+		if f.IsDir() {
+			continue
+		}
+		// A chaincode file name is of the type "name.version"
+		// We're only interested in the name.
+		// Skip files that don't adhere to the file naming convention of "A.B"
+		i := strings.Index(f.Name(), ".")
+		if i == -1 {
+			ccproviderLogger.Info("Skipping", f.Name(), "because of missing separator '.'")
+			continue
+		}
+		ccName := f.Name()[:i]      // Everything before the separator
+		ccVersion := f.Name()[i+1:] // Everything after the separator
+
+		ccPackage, err := ccFromPath(ccName, ccVersion, dir)
+		if err != nil {
+			ccproviderLogger.Warning("Failed obtaining chaincode information about", ccName, ccVersion, ":", err)
+			return nil, errors.Wrapf(err, "failed obtaining information about %s, version %s", ccName, ccVersion)
+		}
+
+		chaincodes = append(chaincodes, chaincode.InstalledChaincode{
+			Name:    ccName,
+			Version: ccVersion,
+			Id:      ccPackage.GetId(),
+		})
+	}
+	ccproviderLogger.Debug("Returning", chaincodes)
+	return chaincodes, nil
+}
 
 // ccInfoFSStorageMgr is the storage manager used either by the cache or if the
 // cache is bypassed
@@ -176,15 +231,6 @@ var ccInfoFSProvider = &CCInfoFSImpl{}
 
 // ccInfoCache is the cache instance itself
 var ccInfoCache = NewCCInfoCache(ccInfoFSProvider)
-
-// ccInfoCacheEnabled keeps track of whether the cache is enable
-// (it is disabled by default)
-var ccInfoCacheEnabled bool
-
-// EnableCCInfoCache can be called to enable the cache
-func EnableCCInfoCache() {
-	ccInfoCacheEnabled = true
-}
 
 // GetChaincodeFromFS retrieves chaincode information from the file system
 func GetChaincodeFromFS(ccname string, ccversion string) (CCPackage, error) {
@@ -201,16 +247,8 @@ func PutChaincodeIntoFS(depSpec *pb.ChaincodeDeploymentSpec) error {
 
 // GetChaincodeData gets chaincode data from cache if there's one
 func GetChaincodeData(ccname string, ccversion string) (*ChaincodeData, error) {
-	if ccInfoCacheEnabled {
-		ccproviderLogger.Debugf("Getting chaincode data for <%s, %s> from cache", ccname, ccversion)
-		return ccInfoCache.GetChaincodeData(ccname, ccversion)
-	}
-	if ccpack, err := ccInfoFSProvider.GetChaincode(ccname, ccversion); err != nil {
-		return nil, err
-	} else {
-		ccproviderLogger.Infof("Putting chaincode data for <%s, %s> into cache", ccname, ccversion)
-		return ccpack.GetChaincodeData(), nil
-	}
+	ccproviderLogger.Debugf("Getting chaincode data for <%s, %s> from cache", ccname, ccversion)
+	return ccInfoCache.GetChaincodeData(ccname, ccversion)
 }
 
 func CheckInstantiationPolicy(name, version string, cdLedger *ChaincodeData) error {
@@ -243,17 +281,44 @@ func CheckInstantiationPolicy(name, version string, cdLedger *ChaincodeData) err
 // GetCCPackage tries each known package implementation one by one
 // till the right package is found
 func GetCCPackage(buf []byte) (CCPackage, error) {
-	//try raw CDS
-	cccdspack := &CDSPackage{}
-	if _, err := cccdspack.InitFromBuffer(buf); err != nil {
-		//try signed CDS
-		ccscdspack := &SignedCDSPackage{}
-		if _, err := ccscdspack.InitFromBuffer(buf); err != nil {
-			return nil, err
+	// try raw CDS
+	cds := &CDSPackage{}
+	if ccdata, err := cds.InitFromBuffer(buf); err != nil {
+		cds = nil
+	} else {
+		err = cds.ValidateCC(ccdata)
+		if err != nil {
+			cds = nil
 		}
-		return ccscdspack, nil
 	}
-	return cccdspack, nil
+
+	// try signed CDS
+	scds := &SignedCDSPackage{}
+	if ccdata, err := scds.InitFromBuffer(buf); err != nil {
+		scds = nil
+	} else {
+		err = scds.ValidateCC(ccdata)
+		if err != nil {
+			scds = nil
+		}
+	}
+
+	if cds != nil && scds != nil {
+		// Both were unmarshaled successfully, this is exactly why the approach of
+		// hoping proto fails for bad inputs is fatally flawed.
+		ccproviderLogger.Errorf("Could not determine chaincode package type, guessing SignedCDS")
+		return scds, nil
+	}
+
+	if cds != nil {
+		return cds, nil
+	}
+
+	if scds != nil {
+		return scds, nil
+	}
+
+	return nil, errors.New("could not unmarshal chaincode package to CDS or SignedCDS")
 }
 
 // GetInstalledChaincodes returns a map whose key is the chaincode id and
@@ -314,101 +379,75 @@ func GetInstalledChaincodes() (*pb.ChaincodeQueryResponse, error) {
 	return cqr, nil
 }
 
-//CCContext pass this around instead of string of args
+// CCContext pass this around instead of string of args
 type CCContext struct {
-	//ChainID chain id
-	ChainID string
-
-	//Name chaincode name
+	// Name chaincode name
 	Name string
 
-	//Version used to construct the chaincode image and register
+	// Version used to construct the chaincode image and register
 	Version string
-
-	//TxID is the transaction id for the proposal (if any)
-	TxID string
-
-	//Syscc is this a system chaincode
-	Syscc bool
-
-	//SignedProposal for this invoke (if any)
-	//this is kept here for access control and in case we need to pass something
-	//from this to the chaincode
-	SignedProposal *pb.SignedProposal
-
-	//Proposal for this invoke (if any)
-	//this is kept here just in case we need to pass something
-	//from this to the chaincode
-	Proposal *pb.Proposal
-
-	//this is not set but computed (note that this is not exported. use GetCanonicalName)
-	canonicalName string
-
-	// this is additional data passed to the chaincode
-	ProposalDecorations map[string][]byte
 }
 
-//NewCCContext just construct a new struct with whatever args
-func NewCCContext(cid, name, version, txid string, syscc bool, signedProp *pb.SignedProposal, prop *pb.Proposal) *CCContext {
-	//version CANNOT be empty. The chaincode namespace has to use version and chain name.
-	//All system chaincodes share the same version given by utils.GetSysCCVersion. Note
-	//that neither Chain Name or Version are stored in a chaincodes state on the ledger
-	if version == "" {
-		panic(fmt.Sprintf("---empty version---(chain=%s,chaincode=%s,version=%s,txid=%s,syscc=%t,proposal=%p", cid, name, version, txid, syscc, prop))
-	}
-
-	canName := name + ":" + version
-
-	cccid := &CCContext{cid, name, version, txid, syscc, signedProp, prop, canName, nil}
-
-	ccproviderLogger.Debugf("NewCCCC (chain=%s,chaincode=%s,version=%s,txid=%s,syscc=%t,proposal=%p,canname=%s", cid, name, version, txid, syscc, prop, cccid.canonicalName)
-
-	return cccid
-}
-
-//GetCanonicalName returns the canonical name associated with the proposal context
+// GetCanonicalName returns the canonical name associated with the proposal context
 func (cccid *CCContext) GetCanonicalName() string {
-	if cccid.canonicalName == "" {
-		panic(fmt.Sprintf("cccid not constructed using NewCCContext(chain=%s,chaincode=%s,version=%s,txid=%s,syscc=%t)", cccid.ChainID, cccid.Name, cccid.Version, cccid.TxID, cccid.Syscc))
-	}
+	return cccid.Name + ":" + cccid.Version
+}
 
-	return cccid.canonicalName
+//-------- ChaincodeDefinition - interface for ChaincodeData ------
+// ChaincodeDefinition describes all of the necessary information for a peer to decide whether to endorse
+// a proposal and whether to validate a transaction, for a particular chaincode.
+type ChaincodeDefinition interface {
+	// CCName returns the name of this chaincode (the name it was put in the ChaincodeRegistry with).
+	CCName() string
+
+	// Hash returns the hash of the chaincode.
+	Hash() []byte
+
+	// CCVersion returns the version of the chaincode.
+	CCVersion() string
+
+	// Validation returns how to validate transactions for this chaincode.
+	// The string returned is the name of the validation method (usually 'vscc')
+	// and the bytes returned are the argument to the validation (in the case of
+	// 'vscc', this is a marshaled pb.VSCCArgs message).
+	Validation() (string, []byte)
+
+	// Endorsement returns how to endorse proposals for this chaincode.
+	// The string returns is the name of the endorsement method (usually 'escc').
+	Endorsement() string
 }
 
 //-------- ChaincodeData is stored on the LSCC -------
 
-//ChaincodeData defines the datastructure for chaincodes to be serialized by proto
-//Type provides an additional check by directing to use a specific package after instantiation
-//Data is Type specifc (see CDSPackage and SignedCDSPackage)
+// ChaincodeData defines the datastructure for chaincodes to be serialized by proto
+// Type provides an additional check by directing to use a specific package after instantiation
+// Data is Type specifc (see CDSPackage and SignedCDSPackage)
 type ChaincodeData struct {
-	//Name of the chaincode
+	// Name of the chaincode
 	Name string `protobuf:"bytes,1,opt,name=name"`
 
-	//Version of the chaincode
+	// Version of the chaincode
 	Version string `protobuf:"bytes,2,opt,name=version"`
 
-	//Escc for the chaincode instance
+	// Escc for the chaincode instance
 	Escc string `protobuf:"bytes,3,opt,name=escc"`
 
-	//Vscc for the chaincode instance
+	// Vscc for the chaincode instance
 	Vscc string `protobuf:"bytes,4,opt,name=vscc"`
 
-	//Policy endorsement policy for the chaincode instance
+	// Policy endorsement policy for the chaincode instance
 	Policy []byte `protobuf:"bytes,5,opt,name=policy,proto3"`
 
-	//Data data specific to the package
+	// Data data specific to the package
 	Data []byte `protobuf:"bytes,6,opt,name=data,proto3"`
 
-	//Id of the chaincode that's the unique fingerprint for the CC
-	//This is not currently used anywhere but serves as a good
-	//eyecatcher
+	// Id of the chaincode that's the unique fingerprint for the CC This is not
+	// currently used anywhere but serves as a good eyecatcher
 	Id []byte `protobuf:"bytes,7,opt,name=id,proto3"`
 
-	//InstantiationPolicy for the chaincode
+	// InstantiationPolicy for the chaincode
 	InstantiationPolicy []byte `protobuf:"bytes,8,opt,name=instantiation_policy,proto3"`
 }
-
-// implement functions needed by resourcesconfig.ChaincodeDefinition
 
 // CCName returns the name of this chaincode (the name it was put in the ChaincodeRegistry with).
 func (cd *ChaincodeData) CCName() string {
@@ -439,58 +478,65 @@ func (cd *ChaincodeData) Endorsement() string {
 	return cd.Escc
 }
 
-//implement functions needed from proto.Message for proto's mar/unmarshal functions
+// implement functions needed from proto.Message for proto's mar/unmarshal functions
 
-//Reset resets
+// Reset resets
 func (cd *ChaincodeData) Reset() { *cd = ChaincodeData{} }
 
-//String converts to string
+// String converts to string
 func (cd *ChaincodeData) String() string { return proto.CompactTextString(cd) }
 
-//ProtoMessage just exists to make proto happy
+// ProtoMessage just exists to make proto happy
 func (*ChaincodeData) ProtoMessage() {}
+
+// ChaincodeContainerInfo is yet another synonym for the data required to start/stop a chaincode.
+type ChaincodeContainerInfo struct {
+	Name        string
+	Version     string
+	Path        string
+	Type        string
+	CodePackage []byte
+
+	// ContainerType is not a great name, but 'DOCKER' and 'SYSTEM' are the valid types
+	ContainerType string
+}
+
+// TransactionParams are parameters which are tied to a particular transaction
+// and which are required for invoking chaincode.
+type TransactionParams struct {
+	TxID                 string
+	ChannelID            string
+	SignedProp           *pb.SignedProposal
+	Proposal             *pb.Proposal
+	TXSimulator          ledger.TxSimulator
+	HistoryQueryExecutor ledger.HistoryQueryExecutor
+	CollectionStore      privdata.CollectionStore
+	IsInitTransaction    bool
+
+	// this is additional data passed to the chaincode
+	ProposalDecorations map[string][]byte
+}
 
 // ChaincodeProvider provides an abstraction layer that is
 // used for different packages to interact with code in the
 // chaincode package without importing it; more methods
 // should be added below if necessary
 type ChaincodeProvider interface {
-	// GetContext returns a ledger context and a tx simulator; it's the
-	// caller's responsability to release the simulator by calling its
-	// done method once it is no longer useful
-	GetContext(ledger ledger.PeerLedger, txid string) (context.Context, ledger.TxSimulator, error)
-	// GetCCContext returns an opaque chaincode context
-	GetCCContext(cid, name, version, txid string, syscc bool, signedProp *pb.SignedProposal, prop *pb.Proposal) interface{}
-	// ExecuteChaincode executes the chaincode given context and args
-	ExecuteChaincode(ctxt context.Context, cccid interface{}, args [][]byte) (*pb.Response, *pb.ChaincodeEvent, error)
-	// Execute executes the chaincode given context and spec (invocation or deploy)
-	Execute(ctxt context.Context, cccid interface{}, spec interface{}) (*pb.Response, *pb.ChaincodeEvent, error)
-	// ExecuteWithErrorFilter executes the chaincode given context and spec and returns payload
-	ExecuteWithErrorFilter(ctxt context.Context, cccid interface{}, spec interface{}) ([]byte, *pb.ChaincodeEvent, error)
-	// Stop stops the chaincode given context and deployment spec
-	Stop(ctxt context.Context, cccid interface{}, spec *pb.ChaincodeDeploymentSpec) error
+	// Execute executes a standard chaincode invocation for a chaincode and an input
+	Execute(txParams *TransactionParams, cccid *CCContext, input *pb.ChaincodeInput) (*pb.Response, *pb.ChaincodeEvent, error)
+	// ExecuteLegacyInit is a special case for executing chaincode deployment specs,
+	// which are not already in the LSCC, needed for old lifecycle
+	ExecuteLegacyInit(txParams *TransactionParams, cccid *CCContext, spec *pb.ChaincodeDeploymentSpec) (*pb.Response, *pb.ChaincodeEvent, error)
+	// Stop stops the chaincode give
+	Stop(ccci *ChaincodeContainerInfo) error
 }
 
-var ccFactory ChaincodeProviderFactory
-
-// ChaincodeProviderFactory defines a factory interface so
-// that the actual implementation can be injected
-type ChaincodeProviderFactory interface {
-	NewChaincodeProvider() ChaincodeProvider
-}
-
-// RegisterChaincodeProviderFactory is to be called once to set
-// the factory that will be used to obtain instances of ChaincodeProvider
-func RegisterChaincodeProviderFactory(ccfact ChaincodeProviderFactory) {
-	ccFactory = ccfact
-}
-
-// GetChaincodeProvider returns instances of ChaincodeProvider;
-// the actual implementation is controlled by the factory that
-// is registered via RegisterChaincodeProviderFactory
-func GetChaincodeProvider() ChaincodeProvider {
-	if ccFactory == nil {
-		panic("The factory must be set first via RegisterChaincodeProviderFactory")
+func DeploymentSpecToChaincodeContainerInfo(cds *pb.ChaincodeDeploymentSpec) *ChaincodeContainerInfo {
+	return &ChaincodeContainerInfo{
+		Name:          cds.Name(),
+		Version:       cds.Version(),
+		Path:          cds.Path(),
+		Type:          cds.CCType(),
+		ContainerType: cds.ExecEnv.String(),
 	}
-	return ccFactory.NewChaincodeProvider()
 }

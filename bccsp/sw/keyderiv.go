@@ -18,12 +18,10 @@ package sw
 
 import (
 	"crypto/ecdsa"
-	"fmt"
-
-	"errors"
-	"math/big"
-
 	"crypto/hmac"
+	"errors"
+	"fmt"
+	"math/big"
 
 	"github.com/hyperledger/fabric/bccsp"
 )
@@ -39,7 +37,7 @@ func (kd *smPublicKeyKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpts) 
 
 type ecdsaPublicKeyKeyDeriver struct{}
 
-func (kd *ecdsaPublicKeyKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpts) (dk bccsp.Key, err error) {
+func (kd *ecdsaPublicKeyKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpts) (bccsp.Key, error) {
 	// Validate opts
 	if opts == nil {
 		return nil, errors.New("Invalid opts parameter. It must not be nil.")
@@ -84,7 +82,7 @@ func (kd *ecdsaPublicKeyKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpt
 
 type ecdsaPrivateKeyKeyDeriver struct{}
 
-func (kd *ecdsaPrivateKeyKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpts) (dk bccsp.Key, err error) {
+func (kd *ecdsaPrivateKeyKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpts) (bccsp.Key, error) {
 	// Validate opts
 	if opts == nil {
 		return nil, errors.New("Invalid opts parameter. It must not be nil.")
@@ -135,10 +133,10 @@ func (kd *ecdsaPrivateKeyKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOp
 }
 
 type aesPrivateKeyKeyDeriver struct {
-	bccsp *impl
+	conf *config
 }
 
-func (kd *aesPrivateKeyKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpts) (dk bccsp.Key, err error) {
+func (kd *aesPrivateKeyKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpts) (bccsp.Key, error) {
 	// Validate opts
 	if opts == nil {
 		return nil, errors.New("Invalid opts parameter. It must not be nil.")
@@ -150,14 +148,14 @@ func (kd *aesPrivateKeyKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpts
 	case *bccsp.HMACTruncated256AESDeriveKeyOpts:
 		hmacOpts := opts.(*bccsp.HMACTruncated256AESDeriveKeyOpts)
 
-		mac := hmac.New(kd.bccsp.conf.hashFunction, aesK.privKey)
+		mac := hmac.New(kd.conf.hashFunction, aesK.privKey)
 		mac.Write(hmacOpts.Argument())
-		return &aesPrivateKey{mac.Sum(nil)[:kd.bccsp.conf.aesBitLength], false}, nil
+		return &aesPrivateKey{mac.Sum(nil)[:kd.conf.aesBitLength], false}, nil
 
 	case *bccsp.HMACDeriveKeyOpts:
 		hmacOpts := opts.(*bccsp.HMACDeriveKeyOpts)
 
-		mac := hmac.New(kd.bccsp.conf.hashFunction, aesK.privKey)
+		mac := hmac.New(kd.conf.hashFunction, aesK.privKey)
 		mac.Write(hmacOpts.Argument())
 		return &aesPrivateKey{mac.Sum(nil), true}, nil
 	default:

@@ -8,12 +8,13 @@ package kvledger
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/common/ledger/util/leveldbhelper"
 	"github.com/hyperledger/fabric/core/ledger"
+	"github.com/hyperledger/fabric/core/ledger/confighistory"
+	"github.com/hyperledger/fabric/core/ledger/kvledger/bookkeeping"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/history/historydb"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/history/historydb/historyleveldb"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/privacyenabledstate"
@@ -21,6 +22,7 @@ import (
 	"github.com/hyperledger/fabric/core/ledger/ledgerstorage"
 	"github.com/hyperledger/fabric/protos/common"
 	"github.com/hyperledger/fabric/protos/utils"
+	"github.com/pkg/errors"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -30,7 +32,7 @@ var (
 	// ErrNonExistingLedgerID is thrown by a OpenLedger call if a ledger with the given id does not exist
 	ErrNonExistingLedgerID = errors.New("LedgerID does not exist")
 	// ErrLedgerNotOpened is thrown by a CloseLedger call if a ledger with the given id has not been opened
-	ErrLedgerNotOpened = errors.New("Ledger is not opened yet")
+	ErrLedgerNotOpened = errors.New("ledger is not opened yet")
 
 	underConstructionLedgerKey = []byte("underConstructionLedgerKey")
 	ledgerKeyPrefix            = []byte("l")
@@ -42,39 +44,54 @@ type Provider struct {
 	ledgerStoreProvider *ledgerstorage.Provider
 	vdbProvider         privacyenabledstate.DBProvider
 	historydbProvider   historydb.HistoryDBProvider
-	stateListeners      ledger.StateListeners
+	configHistoryMgr    confighistory.Mgr
+	stateListeners      []ledger.StateListener
+	bookkeepingProvider bookkeeping.Provider
+	initializer         *ledger.Initializer
+	collElgNotifier     *collElgNotifier
+	stats               *stats
 }
 
 // NewProvider instantiates a new Provider.
 // This is not thread-safe and assumed to be synchronized be the caller
 func NewProvider() (ledger.PeerLedgerProvider, error) {
-
 	logger.Info("Initializing ledger provider")
-
 	// Initialize the ID store (inventory of chainIds/ledgerIds)
 	idStore := openIDStore(ledgerconfig.GetLedgerProviderPath())
-
 	ledgerStoreProvider := ledgerstorage.NewProvider()
-
-	// Initialize the versioned database (state database)
-	vdbProvider, err := privacyenabledstate.NewCommonStorageDBProvider()
-	if err != nil {
-		return nil, err
-	}
-
 	// Initialize the history database (index for history of values by key)
-	var historydbProvider historydb.HistoryDBProvider
-	historydbProvider = historyleveldb.NewHistoryDBProvider()
-
+	historydbProvider := historyleveldb.NewHistoryDBProvider()
 	logger.Info("ledger provider Initialized")
-	provider := &Provider{idStore, ledgerStoreProvider, vdbProvider, historydbProvider, nil}
-	provider.recoverUnderConstructionLedger()
+	provider := &Provider{idStore, ledgerStoreProvider,
+		nil, historydbProvider, nil, nil, nil, nil, nil, nil}
 	return provider, nil
 }
 
 // Initialize implements the corresponding method from interface ledger.PeerLedgerProvider
-func (provider *Provider) Initialize(stateListeners ledger.StateListeners) {
+func (provider *Provider) Initialize(initializer *ledger.Initializer) error {
+	var err error
+	configHistoryMgr := confighistory.NewMgr(initializer.DeployedChaincodeInfoProvider)
+	collElgNotifier := &collElgNotifier{
+		initializer.DeployedChaincodeInfoProvider,
+		initializer.MembershipInfoProvider,
+		make(map[string]collElgListener),
+	}
+	stateListeners := initializer.StateListeners
+	stateListeners = append(stateListeners, collElgNotifier)
+	stateListeners = append(stateListeners, configHistoryMgr)
+
+	provider.initializer = initializer
+	provider.configHistoryMgr = configHistoryMgr
 	provider.stateListeners = stateListeners
+	provider.collElgNotifier = collElgNotifier
+	provider.bookkeepingProvider = bookkeeping.NewProvider()
+	provider.vdbProvider, err = privacyenabledstate.NewCommonStorageDBProvider(provider.bookkeepingProvider, initializer.MetricsProvider)
+	if err != nil {
+		return err
+	}
+	provider.stats = newStats(initializer.MetricsProvider)
+	provider.recoverUnderConstructionLedger()
+	return nil
 }
 
 // Create implements the corresponding method from interface ledger.PeerLedgerProvider
@@ -99,8 +116,8 @@ func (provider *Provider) Create(genesisBlock *common.Block) (ledger.PeerLedger,
 	}
 	lgr, err := provider.openInternal(ledgerID)
 	if err != nil {
-		logger.Errorf("Error in opening a new empty ledger. Unsetting under construction flag. Err: %s", err)
-		panicOnErr(provider.runCleanup(ledgerID), "Error while running cleanup for ledger id [%s]", ledgerID)
+		logger.Errorf("Error opening a new empty ledger. Unsetting under construction flag. Error: %+v", err)
+		panicOnErr(provider.runCleanup(ledgerID), "Error running cleanup for ledger id [%s]", ledgerID)
 		panicOnErr(provider.idStore.unsetUnderConstructionFlag(), "Error while unsetting under construction flag")
 		return nil, err
 	}
@@ -134,6 +151,7 @@ func (provider *Provider) openInternal(ledgerID string) (ledger.PeerLedger, erro
 	if err != nil {
 		return nil, err
 	}
+	provider.collElgNotifier.registerListener(ledgerID, blockStore)
 
 	// Get the versioned database (state database) for a chain/ledger
 	vDB, err := provider.vdbProvider.GetDBHandle(ledgerID)
@@ -149,7 +167,12 @@ func (provider *Provider) openInternal(ledgerID string) (ledger.PeerLedger, erro
 
 	// Create a kvLedger for this chain/ledger, which encasulates the underlying data stores
 	// (id store, blockstore, state database, history database)
-	l, err := newKVLedger(ledgerID, blockStore, vDB, historyDB, provider.stateListeners)
+	l, err := newKVLedger(
+		ledgerID, blockStore, vDB, historyDB, provider.configHistoryMgr,
+		provider.stateListeners, provider.bookkeepingProvider,
+		provider.initializer.DeployedChaincodeInfoProvider,
+		provider.stats.ledgerStats(ledgerID),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -172,6 +195,8 @@ func (provider *Provider) Close() {
 	provider.ledgerStoreProvider.Close()
 	provider.vdbProvider.Close()
 	provider.historydbProvider.Close()
+	provider.bookkeepingProvider.Close()
+	provider.configHistoryMgr.Close()
 }
 
 // recoverUnderConstructionLedger checks whether the under construction flag is set - this would be the case
@@ -204,8 +229,8 @@ func (provider *Provider) recoverUnderConstructionLedger() {
 		panicOnErr(err, "Error while retrieving genesis block from blockchain for ledger [%s]", ledgerID)
 		panicOnErr(provider.idStore.createLedgerID(ledgerID, genesisBlock), "Error while adding ledgerID [%s] to created list", ledgerID)
 	default:
-		panic(fmt.Errorf(
-			"Data inconsistency: under construction flag is set for ledger [%s] while the height of the blockchain is [%d]",
+		panic(errors.Errorf(
+			"data inconsistency: under construction flag is set for ledger [%s] while the height of the blockchain is [%d]",
 			ledgerID, bcInfo.Height))
 	}
 	return
@@ -227,7 +252,7 @@ func panicOnErr(err error, mgsFormat string, args ...interface{}) {
 		return
 	}
 	args = append(args, err)
-	panic(fmt.Sprintf(mgsFormat+" Err:%s ", args...))
+	panic(fmt.Sprintf(mgsFormat+" Error: %s", args...))
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -263,14 +288,14 @@ func (s *idStore) createLedgerID(ledgerID string, gb *common.Block) error {
 	key := s.encodeLedgerKey(ledgerID)
 	var val []byte
 	var err error
-	if val, err = proto.Marshal(gb); err != nil {
-		return err
-	}
 	if val, err = s.db.Get(key); err != nil {
 		return err
 	}
 	if val != nil {
 		return ErrLedgerIDExists
+	}
+	if val, err = proto.Marshal(gb); err != nil {
+		return err
 	}
 	batch := &leveldb.Batch{}
 	batch.Put(key, val)
@@ -291,6 +316,7 @@ func (s *idStore) ledgerIDExists(ledgerID string) (bool, error) {
 func (s *idStore) getAllLedgerIds() ([]string, error) {
 	var ids []string
 	itr := s.db.GetIterator(nil, nil)
+	defer itr.Release()
 	itr.First()
 	for itr.Valid() {
 		if bytes.Equal(itr.Key(), underConstructionLedgerKey) {

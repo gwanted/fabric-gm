@@ -19,16 +19,16 @@ package sanitycheck
 import (
 	"testing"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/bccsp/factory"
 	"github.com/hyperledger/fabric/common/cauthdsl"
 	"github.com/hyperledger/fabric/common/channelconfig"
+	"github.com/hyperledger/fabric/common/tools/configtxgen/configtxgentest"
 	"github.com/hyperledger/fabric/common/tools/configtxgen/encoder"
 	genesisconfig "github.com/hyperledger/fabric/common/tools/configtxgen/localconfig"
 	cb "github.com/hyperledger/fabric/protos/common"
 	mspprotos "github.com/hyperledger/fabric/protos/msp"
 	"github.com/hyperledger/fabric/protos/utils"
-
-	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,13 +40,13 @@ var (
 func init() {
 	factory.InitFactories(nil)
 
-	insecureChannelGroup, err := encoder.NewChannelGroup(genesisconfig.Load(genesisconfig.SampleInsecureSoloProfile))
+	insecureChannelGroup, err := encoder.NewChannelGroup(configtxgentest.Load(genesisconfig.SampleInsecureSoloProfile))
 	if err != nil {
 		panic(err)
 	}
 	insecureConfig = &cb.Config{ChannelGroup: insecureChannelGroup}
 
-	singleMSPChannelGroup, err := encoder.NewChannelGroup(genesisconfig.Load(genesisconfig.SampleSingleMSPSoloProfile))
+	singleMSPChannelGroup, err := encoder.NewChannelGroup(configtxgentest.Load(genesisconfig.SampleSingleMSPSoloProfile))
 	if err != nil {
 		panic(err)
 	}

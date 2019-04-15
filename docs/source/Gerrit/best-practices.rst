@@ -32,7 +32,7 @@ the bottom and don't contain blank lines between one another. The
 following example shows the format and content expected in a commit
 message:
 
-Brief (no more than 50 chars) one line description.
+Brief (no more than 55 chars) one line description.
 
 Elaborate summary of the changes made referencing why (motivation), what
 was changed and how it was tested. Note also any changes to
@@ -48,7 +48,7 @@ The Gerrit server provides a precommit hook to autogenerate the
 Change-Id which is one time use.
 
 **Recommended reading:** `How to Write a Git Commit
-Message <http://chris.beams.io/posts/git-commit/>`__
+Message <https://chris.beams.io/posts/git-commit/>`__
 
 Avoid Pushing Untested Work to a Gerrit Server
 ----------------------------------------------
@@ -270,7 +270,7 @@ branch:
 After you get reviewers' feedback, there are changes in **c3** and
 **c4** that must be fixed. If the fix requires rebasing, rebasing
 changes the commit Ids, see the
-`rebasing <http://git-scm.com/book/en/v2/Git-Branching-Rebasing>`__
+`rebasing <https://git-scm.com/book/en/v2/Git-Branching-Rebasing>`__
 section for more information. However, you must keep the same Change-Id
 and push the changes again:
 

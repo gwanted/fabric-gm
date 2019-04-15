@@ -1,23 +1,13 @@
 /*
-Copyright IBM Corp. 2016 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package historyleveldb
 
 import (
-	"errors"
+	"bytes"
 
 	commonledger "github.com/hyperledger/fabric/common/ledger"
 	"github.com/hyperledger/fabric/common/ledger/blkstorage"
@@ -28,6 +18,7 @@ import (
 	"github.com/hyperledger/fabric/protos/common"
 	"github.com/hyperledger/fabric/protos/ledger/queryresult"
 	putils "github.com/hyperledger/fabric/protos/utils"
+	"github.com/pkg/errors"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
 )
 
@@ -41,7 +32,7 @@ type LevelHistoryDBQueryExecutor struct {
 func (q *LevelHistoryDBQueryExecutor) GetHistoryForKey(namespace string, key string) (commonledger.ResultsIterator, error) {
 
 	if ledgerconfig.IsHistoryDBEnabled() == false {
-		return nil, errors.New("History tracking not enabled - historyDatabase is false")
+		return nil, errors.New("history database not enabled")
 	}
 
 	var compositeStartKey []byte
@@ -69,32 +60,53 @@ func newHistoryScanner(compositePartialKey []byte, namespace string, key string,
 }
 
 func (scanner *historyScanner) Next() (commonledger.QueryResult, error) {
-	if !scanner.dbItr.Next() {
-		return nil, nil
-	}
-	historyKey := scanner.dbItr.Key() // history key is in the form namespace~key~blocknum~trannum
+	for {
+		if !scanner.dbItr.Next() {
+			return nil, nil
+		}
+		historyKey := scanner.dbItr.Key() // history key is in the form namespace~key~blocknum~trannum
 
-	// SplitCompositeKey(namespace~key~blocknum~trannum, namespace~key~) will return the blocknum~trannum in second position
-	_, blockNumTranNumBytes := historydb.SplitCompositeHistoryKey(historyKey, scanner.compositePartialKey)
-	blockNum, bytesConsumed := util.DecodeOrderPreservingVarUint64(blockNumTranNumBytes[0:])
-	tranNum, _ := util.DecodeOrderPreservingVarUint64(blockNumTranNumBytes[bytesConsumed:])
-	logger.Debugf("Found history record for namespace:%s key:%s at blockNumTranNum %v:%v\n",
-		scanner.namespace, scanner.key, blockNum, tranNum)
+		// SplitCompositeKey(namespace~key~blocknum~trannum, namespace~key~) will return the blocknum~trannum in second position
+		_, blockNumTranNumBytes := historydb.SplitCompositeHistoryKey(historyKey, scanner.compositePartialKey)
 
-	// Get the transaction from block storage that is associated with this history record
-	tranEnvelope, err := scanner.blockStore.RetrieveTxByBlockNumTranNum(blockNum, tranNum)
-	if err != nil {
-		return nil, err
-	}
+		// check that blockNumTranNumBytes does not contain a nil byte (FAB-11244) - except the last byte.
+		// if this contains a nil byte that indicate that its a different key other than the one we are
+		// scanning the history for. However, the last byte can be nil even for the valid key (indicating the transaction numer being zero)
+		// This is because, if 'blockNumTranNumBytes' really is the suffix of the desired key - only possibility of this containing a nil byte
+		// is the last byte when the transaction number in blockNumTranNumBytes is zero).
+		// On the other hand, if 'blockNumTranNumBytes' really is NOT the suffix of the desired key, then this has to be a prefix
+		// of some other key (other than the desired key) and in this case, there has to be at least one nil byte (other than the last byte),
+		// for the 'last' CompositeKeySep in the composite key
+		// Take an example of two keys "key" and "key\x00" in a namespace ns. The entries for these keys will be
+		// of type "ns-\x00-key-\x00-blkNumTranNumBytes" and ns-\x00-key-\x00-\x00-blkNumTranNumBytes respectively.
+		// "-" in above examples are just for readability. Further, when scanning the range
+		// {ns-\x00-key-\x00 - ns-\x00-key-xff} for getting the history for <ns, key>, the entry for the other key
+		// falls in the range and needs to be ignored
+		if bytes.Contains(blockNumTranNumBytes[:len(blockNumTranNumBytes)-1], historydb.CompositeKeySep) {
+			logger.Debugf("Some other key [%#v] found in the range while scanning history for key [%#v]. Skipping...",
+				historyKey, scanner.key)
+			continue
+		}
+		blockNum, bytesConsumed := util.DecodeOrderPreservingVarUint64(blockNumTranNumBytes[0:])
+		tranNum, _ := util.DecodeOrderPreservingVarUint64(blockNumTranNumBytes[bytesConsumed:])
+		logger.Debugf("Found history record for namespace:%s key:%s at blockNumTranNum %v:%v\n",
+			scanner.namespace, scanner.key, blockNum, tranNum)
 
-	// Get the txid, key write value, timestamp, and delete indicator associated with this transaction
-	queryResult, err := getKeyModificationFromTran(tranEnvelope, scanner.namespace, scanner.key)
-	if err != nil {
-		return nil, err
+		// Get the transaction from block storage that is associated with this history record
+		tranEnvelope, err := scanner.blockStore.RetrieveTxByBlockNumTranNum(blockNum, tranNum)
+		if err != nil {
+			return nil, err
+		}
+
+		// Get the txid, key write value, timestamp, and delete indicator associated with this transaction
+		queryResult, err := getKeyModificationFromTran(tranEnvelope, scanner.namespace, scanner.key)
+		if err != nil {
+			return nil, err
+		}
+		logger.Debugf("Found historic key value for namespace:%s key:%s from transaction %s\n",
+			scanner.namespace, scanner.key, queryResult.(*queryresult.KeyModification).TxId)
+		return queryResult, nil
 	}
-	logger.Debugf("Found historic key value for namespace:%s key:%s from transaction %s\n",
-		scanner.namespace, scanner.key, queryResult.(*queryresult.KeyModification).TxId)
-	return queryResult, nil
 }
 
 func (scanner *historyScanner) Close() {
@@ -147,9 +159,9 @@ func getKeyModificationFromTran(tranEnvelope *common.Envelope, namespace string,
 						Timestamp: timestamp, IsDelete: kvWrite.IsDelete}, nil
 				}
 			} // end keys loop
-			return nil, errors.New("Key not found in namespace's writeset")
+			return nil, errors.New("key not found in namespace's writeset")
 		} // end if
 	} //end namespaces loop
-	return nil, errors.New("Namespace not found in transaction's ReadWriteSets")
+	return nil, errors.New("namespace not found in transaction's ReadWriteSets")
 
 }

@@ -1,5 +1,3 @@
-// +build experimental
-
 /*
 Copyright IBM Corp. All Rights Reserved.
 
@@ -17,25 +15,26 @@ import (
 	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/core/common/ccprovider"
 	"github.com/hyperledger/fabric/core/ledger/ledgerconfig"
+	"github.com/hyperledger/fabric/protos/common"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/spf13/viper"
-	"golang.org/x/net/context"
 )
 
 // Test the invocation of a transaction for private data.
 func TestQueriesPrivateData(t *testing.T) {
-
+	// Skipping this tests as this test requires the application configuration to be set such that the private data capability is set to 'true'
+	// However, with the latest restructuring of some of the packages, it is not possible to register system chaincodes with desired configurations for test.
+	// see function RegisterSysCCs in file 'fabric/core/scc/register.go'. In absence of this lscc returns error while deploying a chaincode with collection configurations.
+	// This test should be moved as an integration test outside of chaincode package.
+	t.Skip()
 	chainID := util.GetTestChainID()
-
-	lis, err := initPeer(chainID)
+	_, chaincodeSupport, cleanup, err := initPeer(chainID)
 	if err != nil {
 		t.Fail()
 		t.Logf("Error creating peer: %s", err)
 	}
 
-	defer finitPeer(lis, chainID)
-
-	var ctxt = context.Background()
+	defer cleanup()
 
 	url := "github.com/hyperledger/fabric/examples/chaincode/go/map"
 	cID := &pb.ChaincodeID{Name: "tmap", Path: url, Version: "0"}
@@ -45,16 +44,28 @@ func TestQueriesPrivateData(t *testing.T) {
 
 	spec := &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
 
-	cccid := ccprovider.NewCCContext(chainID, "tmap", "0", "", false, nil, nil)
+	cccid := &ccprovider.CCContext{
+		Name:    "tmap",
+		Version: "0",
+	}
 
 	var nextBlockNumber uint64 = 1
-	_, err = deploy(ctxt, cccid, spec, nextBlockNumber)
+	// this test assumes four collections
+	collectionConfig := []*common.StaticCollectionConfig{{Name: "c1"}, {Name: "c2"}, {Name: "c3"}, {Name: "c4"}}
+	collectionConfigPkg := constructCollectionConfigPkg(collectionConfig)
+	defer chaincodeSupport.Stop(&ccprovider.ChaincodeContainerInfo{
+		Name:          cID.Name,
+		Version:       cID.Version,
+		Path:          cID.Path,
+		Type:          "GOLANG",
+		ContainerType: "DOCKER",
+	})
+	_, err = deployWithCollectionConfigs(chainID, cccid, spec, collectionConfigPkg, nextBlockNumber, chaincodeSupport)
 	nextBlockNumber++
 	ccID := spec.ChaincodeId.Name
 	if err != nil {
 		t.Fail()
 		t.Logf("Error initializing chaincode %s(%s)", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -80,13 +91,12 @@ func TestQueriesPrivateData(t *testing.T) {
 		argsString := fmt.Sprintf("{\"docType\":\"marble\",\"name\":\"%s\",\"color\":\"%s\",\"size\":35,\"owner\":\"%s\"}", key, color, owner)
 		args = util.ToChaincodeArgs(f, key, argsString)
 		spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-		_, _, _, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+		_, _, _, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 		nextBlockNumber++
 
 		if err != nil {
 			t.Fail()
 			t.Logf("Error invoking <%s>: %s", ccID, err)
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 
@@ -95,13 +105,12 @@ func TestQueriesPrivateData(t *testing.T) {
 		key = fmt.Sprintf("pmarble%03d", i)
 		args = util.ToChaincodeArgs(f, "c1", key, argsString)
 		spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-		_, _, _, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+		_, _, _, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 		nextBlockNumber++
 
 		if err != nil {
 			t.Fail()
 			t.Logf("Error invoking <%s>: %s", ccID, err)
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 
@@ -116,13 +125,12 @@ func TestQueriesPrivateData(t *testing.T) {
 		t.Logf("invoking PutPrivateData with collection:<%s> key:%s", collection, "marble001")
 		args = util.ToChaincodeArgs(f, collection, "pmarble001", value)
 		spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-		_, _, _, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+		_, _, _, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 		nextBlockNumber++
 
 		if err != nil {
 			t.Fail()
 			t.Logf("Error invoking <%s>: %s", ccID, err)
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 	}
@@ -132,13 +140,12 @@ func TestQueriesPrivateData(t *testing.T) {
 	args = util.ToChaincodeArgs(f, "c3", "pmarble001")
 
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, retval, err := invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, retval, err := invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -148,7 +155,6 @@ func TestQueriesPrivateData(t *testing.T) {
 	if val != expectedValue {
 		t.Fail()
 		t.Logf("Error detected with the GetPrivateData: expected '%s' but got '%s'", expectedValue, val)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -157,13 +163,12 @@ func TestQueriesPrivateData(t *testing.T) {
 	args = util.ToChaincodeArgs(f, "c3", "pmarble001")
 
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -172,13 +177,12 @@ func TestQueriesPrivateData(t *testing.T) {
 	args = util.ToChaincodeArgs(f, "c4", "pmarble001")
 
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -187,13 +191,12 @@ func TestQueriesPrivateData(t *testing.T) {
 	args = util.ToChaincodeArgs(f, "c3", "pmarble001")
 
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -201,7 +204,6 @@ func TestQueriesPrivateData(t *testing.T) {
 	if val != "" {
 		t.Fail()
 		t.Logf("Error detected with the GetPrivateData")
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -211,13 +213,12 @@ func TestQueriesPrivateData(t *testing.T) {
 	args = util.ToChaincodeArgs(f, "pmarble001")
 
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -225,7 +226,6 @@ func TestQueriesPrivateData(t *testing.T) {
 	if val != "" {
 		t.Fail()
 		t.Logf("Error detected with the GetState: %s", val)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 	//The following range query for "marble001" to "marble011" should return 10 marbles
@@ -233,12 +233,11 @@ func TestQueriesPrivateData(t *testing.T) {
 	args = util.ToChaincodeArgs(f, "c1", "pmarble001", "pmarble011")
 
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 	var keys []interface{}
@@ -246,7 +245,6 @@ func TestQueriesPrivateData(t *testing.T) {
 	if len(keys) != 10 {
 		t.Fail()
 		t.Logf("Error detected with the range query, should have returned 10 but returned %v", len(keys))
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -255,12 +253,11 @@ func TestQueriesPrivateData(t *testing.T) {
 	args = util.ToChaincodeArgs(f, "marble001", "marble011")
 
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -268,7 +265,6 @@ func TestQueriesPrivateData(t *testing.T) {
 	if len(keys) != 10 {
 		t.Fail()
 		t.Logf("Error detected with the range query, should have returned 10 but returned %v", len(keys))
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -276,23 +272,22 @@ func TestQueriesPrivateData(t *testing.T) {
 	//the peer should handle this gracefully and not die
 
 	//save the original timeout and set a new timeout of 1 sec
-	origTimeout := theChaincodeSupport.executetimeout
-	theChaincodeSupport.executetimeout = time.Duration(1) * time.Second
+	origTimeout := chaincodeSupport.ExecuteTimeout
+	chaincodeSupport.ExecuteTimeout = time.Duration(1) * time.Second
 
 	//chaincode to sleep for 2 secs with timeout 1
 	args = util.ToChaincodeArgs(f, "marble001", "marble002", "2000")
 
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	if err == nil {
 		t.Fail()
 		t.Logf("expected timeout error but succeeded")
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
 	//restore timeout
-	theChaincodeSupport.executetimeout = origTimeout
+	chaincodeSupport.ExecuteTimeout = origTimeout
 
 	// querying for all marbles will return 101 marbles
 	// this query should return exactly 101 results (one call to Next())
@@ -301,12 +296,11 @@ func TestQueriesPrivateData(t *testing.T) {
 	args = util.ToChaincodeArgs(f, "marble001", "marble102")
 
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -318,7 +312,6 @@ func TestQueriesPrivateData(t *testing.T) {
 	if len(keys) != 101 {
 		t.Fail()
 		t.Logf("Error detected with the range query, should have returned 101 but returned %v", len(keys))
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -329,12 +322,11 @@ func TestQueriesPrivateData(t *testing.T) {
 	args = util.ToChaincodeArgs(f, "", "")
 
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -346,7 +338,6 @@ func TestQueriesPrivateData(t *testing.T) {
 	if len(keys) != 101 {
 		t.Fail()
 		t.Logf("Error detected with the range query, should have returned 101 but returned %v", len(keys))
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -360,13 +351,12 @@ func TestQueriesPrivateData(t *testing.T) {
 		args = util.ToChaincodeArgs(f, "{\"selector\":{\"color\":\"blue\"}}")
 
 		spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-		_, _, _, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+		_, _, _, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 		nextBlockNumber++
 
 		if err != nil {
 			t.Fail()
 			t.Logf("Error invoking <%s>: %s", ccID, err)
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 
@@ -377,19 +367,17 @@ func TestQueriesPrivateData(t *testing.T) {
 		if len(keys) != 100 {
 			t.Fail()
 			t.Logf("Error detected with the rich query, should have returned 100 but returned %v %s", len(keys), keys)
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 		f = "queryPrivate"
 		args = util.ToChaincodeArgs(f, "c1", "{\"selector\":{\"color\":\"blue\"}}")
 
 		spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-		_, _, _, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+		_, _, _, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 		nextBlockNumber++
 		if err != nil {
 			t.Fail()
 			t.Logf("Error invoking <%s>: %s", ccID, err)
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 
@@ -400,7 +388,6 @@ func TestQueriesPrivateData(t *testing.T) {
 		if len(keys) != 100 {
 			t.Fail()
 			t.Logf("Error detected with the rich query, should have returned 100 but returned %v %s", len(keys), keys)
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 		//Reset the query limit to 5
@@ -411,12 +398,11 @@ func TestQueriesPrivateData(t *testing.T) {
 		args = util.ToChaincodeArgs(f, "marble001", "marble011")
 
 		spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-		_, _, retval, err := invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+		_, _, retval, err := invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 		nextBlockNumber++
 		if err != nil {
 			t.Fail()
 			t.Logf("Error invoking <%s>: %s", ccID, err)
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 
@@ -426,7 +412,6 @@ func TestQueriesPrivateData(t *testing.T) {
 		if len(keys) != 5 {
 			t.Fail()
 			t.Logf("Error detected with the range query, should have returned 5 but returned %v", len(keys))
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 
@@ -438,13 +423,12 @@ func TestQueriesPrivateData(t *testing.T) {
 		args = util.ToChaincodeArgs(f, "{\"selector\":{\"owner\":\"jerry\"}}")
 
 		spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-		_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+		_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 		nextBlockNumber++
 
 		if err != nil {
 			t.Fail()
 			t.Logf("Error invoking <%s>: %s", ccID, err)
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 
@@ -456,7 +440,6 @@ func TestQueriesPrivateData(t *testing.T) {
 		if len(keys) != 50 {
 			t.Fail()
 			t.Logf("Error detected with the rich query, should have returned 50 but returned %v", len(keys))
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 
@@ -468,12 +451,11 @@ func TestQueriesPrivateData(t *testing.T) {
 		args = util.ToChaincodeArgs(f, "{\"selector\":{\"owner\":\"jerry\"}}")
 
 		spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-		_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+		_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 		nextBlockNumber++
 		if err != nil {
 			t.Fail()
 			t.Logf("Error invoking <%s>: %s", ccID, err)
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 
@@ -484,7 +466,6 @@ func TestQueriesPrivateData(t *testing.T) {
 		if len(keys) != 5 {
 			t.Fail()
 			t.Logf("Error detected with the rich query, should have returned 5 but returned %v", len(keys))
-			theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 			return
 		}
 
@@ -494,24 +475,22 @@ func TestQueriesPrivateData(t *testing.T) {
 	f = "put"
 	args = util.ToChaincodeArgs(f, "marble012", "{\"docType\":\"marble\",\"name\":\"marble012\",\"color\":\"red\",\"size\":30,\"owner\":\"jerry\"}")
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, _, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, _, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
 	f = "put"
 	args = util.ToChaincodeArgs(f, "marble012", "{\"docType\":\"marble\",\"name\":\"marble012\",\"color\":\"red\",\"size\":30,\"owner\":\"jerry\"}")
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, _, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, _, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -519,12 +498,11 @@ func TestQueriesPrivateData(t *testing.T) {
 	f = "history"
 	args = util.ToChaincodeArgs(f, "marble012")
 	spec = &pb.ChaincodeSpec{Type: 1, ChaincodeId: cID, Input: &pb.ChaincodeInput{Args: args}}
-	_, _, retval, err = invoke(ctxt, chainID, spec, nextBlockNumber, nil)
+	_, _, retval, err = invoke(chainID, spec, nextBlockNumber, nil, chaincodeSupport)
 	nextBlockNumber++
 	if err != nil {
 		t.Fail()
 		t.Logf("Error invoking <%s>: %s", ccID, err)
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
 
@@ -533,9 +511,16 @@ func TestQueriesPrivateData(t *testing.T) {
 	if len(history) != 3 {
 		t.Fail()
 		t.Logf("Error detected with the history query, should have returned 3 but returned %v", len(history))
-		theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
 		return
 	}
+}
 
-	theChaincodeSupport.Stop(ctxt, cccid, &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec})
+func constructCollectionConfigPkg(staticCollectionConfigs []*common.StaticCollectionConfig) *common.CollectionConfigPackage {
+	var cc []*common.CollectionConfig
+	for _, sc := range staticCollectionConfigs {
+		cc = append(cc, &common.CollectionConfig{
+			Payload: &common.CollectionConfig_StaticCollectionConfig{
+				StaticCollectionConfig: sc}})
+	}
+	return &common.CollectionConfigPackage{Config: cc}
 }

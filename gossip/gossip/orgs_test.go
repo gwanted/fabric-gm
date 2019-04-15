@@ -111,6 +111,7 @@ func newGossipInstanceWithExternalEndpoint(portPrefix int, id int, mcs *configur
 		PublishCertPeriod:          time.Duration(4) * time.Second,
 		PublishStateInfoInterval:   time.Duration(1) * time.Second,
 		RequestStateInfoInterval:   time.Duration(1) * time.Second,
+		TimeForMembershipTracker:   5 * time.Second,
 	}
 	selfID := api.PeerIdentityType(conf.InternalEndpoint)
 	g := NewGossipServiceWithServer(conf, mcs, mcs, selfID,
@@ -207,7 +208,7 @@ func TestMultipleOrgEndpointLeakage(t *testing.T) {
 	for _, peers := range orgs2Peers {
 		for _, p := range peers {
 			p.JoinChan(jcm, channel)
-			p.UpdateChannelMetadata(createMetadata(1), channel)
+			p.UpdateLedgerHeight(1, channel)
 		}
 	}
 
@@ -398,11 +399,11 @@ func TestConfidentiality(t *testing.T) {
 			if isOrgInChan(org, ch) {
 				for _, p := range peers {
 					p.JoinChan(joinChanMsgsByChan[ch], common.ChainID(ch))
-					p.UpdateChannelMetadata(createMetadata(1), common.ChainID(ch))
+					p.UpdateLedgerHeight(1, common.ChainID(ch))
 					go func(p Gossip) {
 						for i := 0; i < 5; i++ {
 							time.Sleep(time.Second)
-							p.UpdateChannelMetadata(createMetadata(1), common.ChainID(ch))
+							p.UpdateLedgerHeight(1, common.ChainID(ch))
 						}
 					}(p)
 				}
@@ -483,9 +484,9 @@ func extractOrgsFromMsg(msg *proto.GossipMessage, sec api.SecurityAdvisor) []str
 		if msg.IsDigestMsg() || msg.IsDataReq() {
 			var digests []string
 			if msg.IsDigestMsg() {
-				digests = msg.GetDataDig().Digests
+				digests = util.BytesToStrings(msg.GetDataDig().Digests)
 			} else {
-				digests = msg.GetDataReq().Digests
+				digests = util.BytesToStrings(msg.GetDataReq().Digests)
 			}
 
 			for _, dig := range digests {

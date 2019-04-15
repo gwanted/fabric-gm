@@ -10,7 +10,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"testing"
-
 	"time"
 
 	"github.com/spf13/viper"
@@ -124,4 +123,9 @@ func TestSet(t *testing.T) {
 	assert.True(t, s.Exists(42))
 	s.Clear()
 	assert.False(t, s.Exists(42))
+}
+
+func TestStringsToBytesToStrings(t *testing.T) {
+	strings := []string{"foo", "bar"}
+	assert.Equal(t, strings, BytesToStrings(StringsToBytes(strings)))
 }

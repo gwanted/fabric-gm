@@ -15,52 +15,6 @@
 
 ###############################################################################
 #
-#    LOGGING section
-#
-###############################################################################
-logging:
-
-    # Default logging levels are specified here for each of the three peer
-    # commands 'node', 'network' and 'chaincode'. For commands that have
-    # subcommands, the defaults also apply to all subcommands of the command.
-    # Valid logging levels are case-insensitive strings chosen from
-
-    #     CRITICAL | ERROR | WARNING | NOTICE | INFO | DEBUG
-
-    # The logging levels specified here can be overridden in various ways,
-    # listed below from strongest to weakest:
-    #
-    # 1. The --logging-level=<level> command line option overrides all other
-    #    specifications.
-    #
-    # 2. The environment variable CORE_LOGGING_LEVEL otherwise applies to
-    #    all peer commands if defined as a non-empty string.
-    #
-    # 3. The environment variables CORE_LOGGING_[NODE|NETWORK|CHAINCODE]
-    #    otherwise apply to the respective peer commands if defined as non-empty
-    #    strings.
-    #
-    # 4. Otherwise, the specifications below apply.
-    #
-    # Developers: Please see fabric/docs/Setup/logging-control.md for more
-    # options.
-    peer:       warning
-    node:       warning
-    network:    warning
-    version:    warning
-    protoutils: warning
-    error:      warning
-    msp:        warning
-    gossip:     warning
-    grpc:       warning
-    ledger:     warning
-    policies:   warning
-    cauthdsl:   warning
-
-    format: '%{color}%{time:2006-01-02 15:04:05.000 MST} [%{module}] %{shortfunc} -> %{level:.4s} %{id:03x}%{color:reset} %{message}'
-
-###############################################################################
-#
 #    Peer section
 #
 ###############################################################################
@@ -119,6 +73,7 @@ peer:
         # Number of peers selected to push messages to
         propagatePeerNum: 3
         # Determines frequency of pull phases(unit: second)
+        # Must be greater than digestWaitTime + responseWaitTime
         pullInterval: 4s
         # Number of peers to pull from
         pullPeerNum: 3
@@ -141,9 +96,11 @@ peer:
         # Buffer size of sending messages
         sendBuffSize: 20
         # Time to wait before pull engine processes incoming digests (unit: second)
+        # Should be slightly smaller than requestWaitTime
         digestWaitTime: 1s
-        # Time to wait before pull engine removes incoming nonce (unit: second)
-        requestWaitTime: 1s
+        # Time to wait before pull engine removes incoming nonce (unit: milliseconds)
+        # Should be slightly bigger than digestWaitTime
+        requestWaitTime: 1500ms
         # Time to wait before pull engine ends pull (unit: second)
         responseWaitTime: 2s
         # Alive check interval(unit: second)
@@ -193,22 +150,6 @@ peer:
                 # NOTE: currently messages are not stored and forwarded,
                 # but rather lost if the channel write blocks.
                 channelSize: 20
-
-    # Validator defines whether this peer is a validating peer or not, and if
-    # it is enabled, what consensus plugin to load
-    events:
-        # The address that the Event service will be enabled on the validator
-        address: 0.0.0.0:7053
-
-        # total number of events that could be buffered without blocking the
-        # validator sends
-        buffersize: 100
-
-        # milliseconds timeout for producer to send an event.
-        # if < 0, if buffer full, unblocks immediately and not send
-        # if 0, if buffer full, will block and guarantee the event will be sent out
-        # if > 0, if buffer full, blocks till timeout
-        timeout: 10
 
     # TLS Settings for p2p communications
     tls:
@@ -340,8 +281,7 @@ chaincode:
         # tools added for java shim layer packaging.
         # This image is packed with shim layer libraries that are necessary
         # for Java chaincode runtime.
-        Dockerfile:  |
-            from $(DOCKER_NS)/fabric-javaenv:$(ARCH)-$(PROJECT_VERSION)
+        runtime: $(DOCKER_NS)/fabric-javaenv:$(ARCH)-$(PROJECT_VERSION)
 
     # timeout in millisecs for starting up a container and waiting for Register
     # to come through. 1sec should be plenty for chaincode unit tests

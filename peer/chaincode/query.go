@@ -1,17 +1,7 @@
 /*
-Copyright IBM Corp. 2016 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package chaincode
@@ -33,14 +23,16 @@ func queryCmd(cf *ChaincodeCmdFactory) *cobra.Command {
 		Long:      fmt.Sprintf("Get endorsed result of %s function call and print it. It won't generate transaction.", chainFuncName),
 		ValidArgs: []string{"1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return chaincodeQuery(cmd, args, cf)
+			return chaincodeQuery(cmd, cf)
 		},
 	}
 	flagList := []string{
 		"ctor",
 		"name",
-		"tid",
 		"channelID",
+		"peerAddresses",
+		"tlsRootCertFiles",
+		"connectionProfile",
 	}
 	attachFlags(chaincodeQueryCmd, flagList)
 
@@ -52,17 +44,20 @@ func queryCmd(cf *ChaincodeCmdFactory) *cobra.Command {
 	return chaincodeQueryCmd
 }
 
-func chaincodeQuery(cmd *cobra.Command, args []string, cf *ChaincodeCmdFactory) error {
+func chaincodeQuery(cmd *cobra.Command, cf *ChaincodeCmdFactory) error {
 	if channelID == "" {
 		return errors.New("The required parameter 'channelID' is empty. Rerun the command with -C flag")
 	}
+	// Parsing of the command line is done so silence cmd usage
+	cmd.SilenceUsage = true
+
 	var err error
 	if cf == nil {
-		cf, err = InitCmdFactory(true, false)
+		cf, err = InitCmdFactory(cmd.Name(), true, false)
 		if err != nil {
 			return err
 		}
 	}
 
-	return chaincodeInvokeOrQuery(cmd, args, false, cf)
+	return chaincodeInvokeOrQuery(cmd, false, cf)
 }

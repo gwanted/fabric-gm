@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package deliverclient
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -19,29 +20,28 @@ import (
 	"github.com/hyperledger/fabric/gossip/api"
 	"github.com/hyperledger/fabric/gossip/util"
 	"github.com/hyperledger/fabric/protos/orderer"
-	"github.com/op/go-logging"
 	"github.com/spf13/viper"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
-var logger *logging.Logger // package-level logger
-
-func init() {
-	logger = flogging.MustGetLogger("deliveryClient")
-}
+var logger = flogging.MustGetLogger("deliveryClient")
 
 const (
 	defaultReConnectTotalTimeThreshold = time.Second * 60 * 60
-)
-
-var (
-	connTimeout               = time.Second * 3
-	reConnectBackoffThreshold = float64(time.Hour)
+	defaultConnectionTimeout           = time.Second * 3
+	defaultReConnectBackoffThreshold   = float64(time.Hour)
 )
 
 func getReConnectTotalTimeThreshold() time.Duration {
 	return util.GetDurationOrDefault("peer.deliveryclient.reconnectTotalTimeThreshold", defaultReConnectTotalTimeThreshold)
+}
+
+func getConnectionTimeout() time.Duration {
+	return util.GetDurationOrDefault("peer.deliveryclient.connTimeout", defaultConnectionTimeout)
+}
+
+func getReConnectBackoffThreshold() float64 {
+	return util.GetFloat64OrDefault("peer.deliveryclient.reConnectBackoffThreshold", defaultReConnectBackoffThreshold)
 }
 
 // DeliverService used to communicate with orderers to obtain
@@ -121,19 +121,19 @@ func (d *deliverServiceImpl) UpdateEndpoints(chainID string, endpoints []string)
 func (d *deliverServiceImpl) validateConfiguration() error {
 	conf := d.conf
 	if len(conf.Endpoints) == 0 {
-		return errors.New("No endpoints specified")
+		return errors.New("no endpoints specified")
 	}
 	if conf.Gossip == nil {
-		return errors.New("No gossip provider specified")
+		return errors.New("no gossip provider specified")
 	}
 	if conf.ABCFactory == nil {
-		return errors.New("No AtomicBroadcast factory specified")
+		return errors.New("no AtomicBroadcast factory specified")
 	}
 	if conf.ConnFactory == nil {
-		return errors.New("No connection factory specified")
+		return errors.New("no connection factory specified")
 	}
 	if conf.CryptoSvc == nil {
-		return errors.New("No crypto service specified")
+		return errors.New("no crypto service specified")
 	}
 	return nil
 }
@@ -158,12 +158,21 @@ func (d *deliverServiceImpl) StartDeliverForChannel(chainID string, ledgerInfo b
 		client := d.newClient(chainID, ledgerInfo)
 		logger.Debug("This peer will pass blocks from orderer service to other peers for channel", chainID)
 		d.blockProviders[chainID] = blocksprovider.NewBlocksProvider(chainID, client, d.conf.Gossip, d.conf.CryptoSvc)
-		go func() {
-			d.blockProviders[chainID].DeliverBlocks()
-			finalizer()
-		}()
+		go d.launchBlockProvider(chainID, finalizer)
 	}
 	return nil
+}
+
+func (d *deliverServiceImpl) launchBlockProvider(chainID string, finalizer func()) {
+	d.lock.RLock()
+	pb := d.blockProviders[chainID]
+	d.lock.RUnlock()
+	if pb == nil {
+		logger.Info("Block delivery for channel", chainID, "was stopped before block provider started")
+		return
+	}
+	pb.DeliverBlocks()
+	finalizer()
 }
 
 // StopDeliverForChannel stops blocks delivery for channel by stopping channel block provider
@@ -200,20 +209,22 @@ func (d *deliverServiceImpl) Stop() {
 }
 
 func (d *deliverServiceImpl) newClient(chainID string, ledgerInfoProvider blocksprovider.LedgerInfo) *broadcastClient {
+	reconnectBackoffThreshold := getReConnectBackoffThreshold()
+	reconnectTotalTimeThreshold := getReConnectTotalTimeThreshold()
 	requester := &blocksRequester{
-		tls:     comm.TLSEnabled(),
+		tls:     viper.GetBool("peer.tls.enabled"),
 		chainID: chainID,
 	}
 	broadcastSetup := func(bd blocksprovider.BlocksDeliverer) error {
 		return requester.RequestBlocks(ledgerInfoProvider)
 	}
 	backoffPolicy := func(attemptNum int, elapsedTime time.Duration) (time.Duration, bool) {
-		if elapsedTime.Nanoseconds() > getReConnectTotalTimeThreshold().Nanoseconds() {
+		if elapsedTime > reconnectTotalTimeThreshold {
 			return 0, false
 		}
 		sleepIncrement := float64(time.Millisecond * 500)
 		attempt := float64(attemptNum)
-		return time.Duration(math.Min(math.Pow(2, attempt)*sleepIncrement, reConnectBackoffThreshold)), true
+		return time.Duration(math.Min(math.Pow(2, attempt)*sleepIncrement, reconnectBackoffThreshold)), true
 	}
 	connProd := comm.NewConnectionProducer(d.conf.ConnFactory(chainID), d.conf.Endpoints)
 	bClient := NewBroadcastClient(connProd, d.conf.ABCFactory, broadcastSetup, backoffPolicy)
@@ -225,10 +236,10 @@ func DefaultConnectionFactory(channelID string) func(endpoint string) (*grpc.Cli
 	return func(endpoint string) (*grpc.ClientConn, error) {
 		dialOpts := []grpc.DialOption{grpc.WithBlock()}
 		// set max send/recv msg sizes
-		dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(comm.MaxRecvMsgSize()),
-			grpc.MaxCallSendMsgSize(comm.MaxSendMsgSize())))
+		dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(comm.MaxRecvMsgSize),
+			grpc.MaxCallSendMsgSize(comm.MaxSendMsgSize)))
 		// set the keepalive options
-		kaOpts := comm.DefaultKeepaliveOptions()
+		kaOpts := comm.DefaultKeepaliveOptions
 		if viper.IsSet("peer.keepalive.deliveryClient.interval") {
 			kaOpts.ClientInterval = viper.GetDuration(
 				"peer.keepalive.deliveryClient.interval")
@@ -239,18 +250,17 @@ func DefaultConnectionFactory(channelID string) func(endpoint string) (*grpc.Cli
 		}
 		dialOpts = append(dialOpts, comm.ClientKeepaliveOptions(kaOpts)...)
 
-		if comm.TLSEnabled() {
+		if viper.GetBool("peer.tls.enabled") {
 			creds, err := comm.GetCredentialSupport().GetDeliverServiceCredentials(channelID)
 			if err != nil {
-				return nil, fmt.Errorf("Failed obtaining credentials for channel %s: %v", channelID, err)
+				return nil, fmt.Errorf("failed obtaining credentials for channel %s: %v", channelID, err)
 			}
 			dialOpts = append(dialOpts, grpc.WithTransportCredentials(creds))
 		} else {
 			dialOpts = append(dialOpts, grpc.WithInsecure())
 		}
-		grpc.EnableTracing = true
-		ctx := context.Background()
-		ctx, _ = context.WithTimeout(ctx, connTimeout)
+		ctx, cancel := context.WithTimeout(context.Background(), getConnectionTimeout())
+		defer cancel()
 		return grpc.DialContext(ctx, endpoint, dialOpts...)
 	}
 }

@@ -1,17 +1,7 @@
 /*
-Copyright IBM Corp. 2016 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package shim
@@ -24,6 +14,7 @@ import (
 
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMockStateRangeQueryIterator(t *testing.T) {
@@ -40,7 +31,7 @@ func TestMockStateRangeQueryIterator(t *testing.T) {
 	expectKeys := []string{"3", "4"}
 	expectValues := [][]byte{{63}, {64}}
 
-	rqi := NewMockStateRangeQueryIterator(stub, "2", "4")
+	rqi := NewMockStateRangeQueryIterator(stub, "2", "5")
 
 	fmt.Println("Running loop")
 	for i := 0; i < 2; i++ {
@@ -233,6 +224,64 @@ func TestGetTxTimestamp(t *testing.T) {
 	}
 
 	stub.MockTransactionEnd("init")
+}
+
+// TestPutEmptyState confirms that setting a key value to empty or nil in the mock state deletes the key
+// instead of storing an empty key.
+func TestPutEmptyState(t *testing.T) {
+	stub := NewMockStub("FAB-12545", nil)
+
+	// Put an empty and nil state value
+	stub.MockTransactionStart("1")
+	err := stub.PutState("empty", []byte{})
+	assert.NoError(t, err)
+	err = stub.PutState("nil", nil)
+	assert.NoError(t, err)
+	stub.MockTransactionEnd("1")
+
+	// Confirm both are nil
+	stub.MockTransactionStart("2")
+	val, err := stub.GetState("empty")
+	assert.NoError(t, err)
+	assert.Nil(t, val)
+	val, err = stub.GetState("nil")
+	assert.NoError(t, err)
+	assert.Nil(t, val)
+	// Add a value to both empty and nil
+	err = stub.PutState("empty", []byte{0})
+	assert.NoError(t, err)
+	err = stub.PutState("nil", []byte{0})
+	assert.NoError(t, err)
+	stub.MockTransactionEnd("2")
+
+	// Confirm the value is in both
+	stub.MockTransactionStart("3")
+	val, err = stub.GetState("empty")
+	assert.NoError(t, err)
+	assert.Equal(t, val, []byte{0})
+	val, err = stub.GetState("nil")
+	assert.NoError(t, err)
+	assert.Equal(t, val, []byte{0})
+	stub.MockTransactionEnd("3")
+
+	// Set both back to empty / nil
+	stub.MockTransactionStart("4")
+	err = stub.PutState("empty", []byte{})
+	assert.NoError(t, err)
+	err = stub.PutState("nil", nil)
+	assert.NoError(t, err)
+	stub.MockTransactionEnd("4")
+
+	// Confirm both are nil
+	stub.MockTransactionStart("5")
+	val, err = stub.GetState("empty")
+	assert.NoError(t, err)
+	assert.Nil(t, val)
+	val, err = stub.GetState("nil")
+	assert.NoError(t, err)
+	assert.Nil(t, val)
+	stub.MockTransactionEnd("5")
+
 }
 
 //TestMockMock clearly cheating for coverage... but not. Mock should

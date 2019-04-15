@@ -31,3 +31,18 @@ func TestSend(t *testing.T) {
 	err := stream.Send(msg)
 	assert.NotNil(t, err, "should have errored on panic")
 }
+
+func TestRecvChannelClosedError(t *testing.T) {
+	ch := make(chan *pb.ChaincodeMessage)
+
+	stream := newInProcStream(ch, ch)
+
+	// Close the channel
+	close(ch)
+
+	// Trying to call a closed receive channel should return an error
+	_, err := stream.Recv()
+	if assert.Error(t, err, "Should return an error") {
+		assert.Contains(t, err.Error(), "channel is closed")
+	}
+}

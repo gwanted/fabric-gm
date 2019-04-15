@@ -39,6 +39,9 @@ type Application interface {
 	// Organizations returns a map of org ID to ApplicationOrg
 	Organizations() map[string]ApplicationOrg
 
+	// APIPolicyMapper returns a PolicyMapper that maps API names to policies
+	APIPolicyMapper() PolicyMapper
+
 	// Capabilities defines the capabilities for the application portion of a channel
 	Capabilities() ApplicationCapabilities
 }
@@ -80,6 +83,9 @@ type Orderer interface {
 	// ConsensusType returns the configured consensus type
 	ConsensusType() string
 
+	// ConsensusMetadata returns the metadata associated with the consensus type.
+	ConsensusMetadata() []byte
+
 	// BatchSize returns the maximum number of messages to include in a block
 	BatchSize() *ab.BatchSize
 
@@ -120,15 +126,43 @@ type ApplicationCapabilities interface {
 	// in the same block or whether we mark the second one as TxValidationCode_DUPLICATE_TXID
 	ForbidDuplicateTXIdInBlock() bool
 
-	// ResourcesTree returns true if the peer should process the experimental resources transactions
-	ResourcesTree() bool
+	// ACLs returns true is ACLs may be specified in the Application portion of the config tree
+	ACLs() bool
 
 	// PrivateChannelData returns true if support for private channel data (a.k.a. collections) is enabled.
+	// In v1.1, the private channel data is experimental and has to be enabled explicitly.
+	// In v1.2, the private channel data is enabled by default.
 	PrivateChannelData() bool
+
+	// CollectionUpgrade returns true if this channel is configured to allow updates to
+	// existing collection or add new collections through chaincode upgrade (as introduced in v1.2)
+	CollectionUpgrade() bool
 
 	// V1_1Validation returns true is this channel is configured to perform stricter validation
 	// of transactions (as introduced in v1.1).
 	V1_1Validation() bool
+
+	// V1_2Validation returns true is this channel is configured to perform stricter validation
+	// of transactions (as introduced in v1.2).
+	V1_2Validation() bool
+
+	// V1_3Validation returns true if this channel supports transaction validation
+	// as introduced in v1.3. This includes:
+	//  - policies expressible at a ledger key granularity, as described in FAB-8812
+	//  - new chaincode lifecycle, as described in FAB-11237
+	V1_3Validation() bool
+
+	// MetadataLifecycle indicates whether the peer should use the deprecated and problematic
+	// v1.0/v1.1 lifecycle, or whether it should use the newer per channel peer local chaincode
+	// metadata package approach planned for release with Fabric v1.2
+	MetadataLifecycle() bool
+
+	// KeyLevelEndorsement returns true if this channel supports endorsement
+	// policies expressible at a ledger key granularity, as described in FAB-8812
+	KeyLevelEndorsement() bool
+
+	// FabToken returns true if this channel supports FabToken functions
+	FabToken() bool
 }
 
 // OrdererCapabilities defines the capabilities for the orderer portion of a channel
@@ -147,6 +181,13 @@ type OrdererCapabilities interface {
 	// ExpirationCheck specifies whether the orderer checks for identity expiration checks
 	// when validating messages
 	ExpirationCheck() bool
+}
+
+// PolicyMapper is an interface for
+type PolicyMapper interface {
+	// PolicyRefForAPI takes the name of an API, and returns the policy name
+	// or the empty string if the API is not found
+	PolicyRefForAPI(apiName string) string
 }
 
 // Resources is the common set of config resources for all channels

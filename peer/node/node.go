@@ -20,13 +20,13 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric/peer/common"
 	"github.com/spf13/cobra"
 )
 
 const (
 	nodeFuncName = "node"
-	shortDes     = "Operate a peer node: start|status."
-	longDes      = "Operate a peer node: start|status."
+	nodeCmdDes   = "Operate a peer node: start|status."
 )
 
 var logger = flogging.MustGetLogger("nodeCmd")
@@ -40,7 +40,8 @@ func Cmd() *cobra.Command {
 }
 
 var nodeCmd = &cobra.Command{
-	Use:   nodeFuncName,
-	Short: fmt.Sprint(shortDes),
-	Long:  fmt.Sprint(longDes),
+	Use:              nodeFuncName,
+	Short:            fmt.Sprint(nodeCmdDes),
+	Long:             fmt.Sprint(nodeCmdDes),
+	PersistentPreRun: common.InitCmd,
 }

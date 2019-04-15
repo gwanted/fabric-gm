@@ -15,7 +15,6 @@ import (
 	"github.com/hyperledger/fabric/gossip/discovery"
 	"github.com/hyperledger/fabric/gossip/util"
 	proto "github.com/hyperledger/fabric/protos/gossip"
-	"github.com/op/go-logging"
 )
 
 type msgImpl struct {
@@ -65,7 +64,7 @@ type adapterImpl struct {
 
 	channel common.ChainID
 
-	logger *logging.Logger
+	logger util.Logger
 
 	doneCh   chan struct{}
 	stopOnce *sync.Once
@@ -82,7 +81,7 @@ func NewAdapter(gossip gossip, pkiid common.PKIidType, channel common.ChainID) L
 
 		channel: channel,
 
-		logger: util.GetLogger(util.LoggingElectionModule, ""),
+		logger: util.GetLogger(util.ElectionLogger, ""),
 
 		doneCh:   make(chan struct{}),
 		stopOnce: &sync.Once{},

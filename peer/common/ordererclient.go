@@ -8,7 +8,6 @@ package common
 import (
 	"context"
 	"fmt"
-	"time"
 
 	tls "github.com/tjfoc/gmtls"
 
@@ -28,15 +27,11 @@ type OrdererClient struct {
 func NewOrdererClientFromEnv() (*OrdererClient, error) {
 	address, override, clientConfig, err := configFromEnv("orderer")
 	if err != nil {
-		return nil, errors.WithMessage(err,
-			"failed to load config for OrdererClient")
+		return nil, errors.WithMessage(err, "failed to load config for OrdererClient")
 	}
-	// set timeout
-	clientConfig.Timeout = time.Second * 3
 	gClient, err := comm.NewGRPCClient(clientConfig)
 	if err != nil {
-		return nil, errors.WithMessage(err,
-			"failed to create OrdererClient from config")
+		return nil, errors.WithMessage(err, "failed to create OrdererClient from config")
 	}
 	oClient := &OrdererClient{
 		commonClient: commonClient{
@@ -50,8 +45,7 @@ func NewOrdererClientFromEnv() (*OrdererClient, error) {
 func (oc *OrdererClient) Broadcast() (ab.AtomicBroadcast_BroadcastClient, error) {
 	conn, err := oc.commonClient.NewConnection(oc.address, oc.sn)
 	if err != nil {
-		return nil, errors.WithMessage(err,
-			fmt.Sprintf("orderer client failed to connect to %s", oc.address))
+		return nil, errors.WithMessage(err, fmt.Sprintf("orderer client failed to connect to %s", oc.address))
 	}
 	// TODO: check to see if we should actually handle error before returning
 	return ab.NewAtomicBroadcastClient(conn).Broadcast(context.TODO())
@@ -61,8 +55,7 @@ func (oc *OrdererClient) Broadcast() (ab.AtomicBroadcast_BroadcastClient, error)
 func (oc *OrdererClient) Deliver() (ab.AtomicBroadcast_DeliverClient, error) {
 	conn, err := oc.commonClient.NewConnection(oc.address, oc.sn)
 	if err != nil {
-		return nil, errors.WithMessage(err,
-			fmt.Sprintf("orderer client failed to connect to %s", oc.address))
+		return nil, errors.WithMessage(err, fmt.Sprintf("orderer client failed to connect to %s", oc.address))
 	}
 	// TODO: check to see if we should actually handle error before returning
 	return ab.NewAtomicBroadcastClient(conn).Deliver(context.TODO())

@@ -1,17 +1,7 @@
 /*
-Copyright IBM Corp. 2017 All Rights Reserved.
+Copyright IBM Corp. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: Apache-2.0
 */
 
 package scc
@@ -21,45 +11,69 @@ import (
 
 	"github.com/hyperledger/fabric/common/channelconfig"
 	"github.com/hyperledger/fabric/common/policies"
-	"github.com/hyperledger/fabric/core/common/sysccprovider"
 	"github.com/hyperledger/fabric/core/ledger"
 	"github.com/hyperledger/fabric/core/peer"
 )
 
-// sccProviderFactory implements the sysccprovider.SystemChaincodeProviderFactory
-// interface and returns instances of sysccprovider.SystemChaincodeProvider
-type sccProviderFactory struct {
+// NewProvider creates a new Provider instance
+func NewProvider(pOps peer.Operations, pSup peer.Support, r Registrar) *Provider {
+	return &Provider{
+		Peer:        pOps,
+		PeerSupport: pSup,
+		Registrar:   r,
+	}
 }
 
-// NewSystemChaincodeProvider returns pointers to sccProviderFactory as an
-// implementer of the sysccprovider.SystemChaincodeProvider interface
-func (c *sccProviderFactory) NewSystemChaincodeProvider() sysccprovider.SystemChaincodeProvider {
-	return &sccProviderImpl{}
+// Provider implements sysccprovider.SystemChaincodeProvider
+type Provider struct {
+	Peer        peer.Operations
+	PeerSupport peer.Support
+	Registrar   Registrar
+	SysCCs      []SelfDescribingSysCC
 }
 
-// init is called when this package is loaded. This implementation registers the factory
-func init() {
-	sysccprovider.RegisterSystemChaincodeProviderFactory(&sccProviderFactory{})
-}
-
-// ccProviderImpl is an implementation of the ccprovider.ChaincodeProvider interface
-type sccProviderImpl struct {
+// RegisterSysCC registers a system chaincode with the syscc provider.
+func (p *Provider) RegisterSysCC(scc SelfDescribingSysCC) {
+	p.SysCCs = append(p.SysCCs, scc)
+	_, err := p.registerSysCC(scc)
+	if err != nil {
+		sysccLogger.Panicf("Could not register system chaincode: %s", err)
+	}
 }
 
 // IsSysCC returns true if the supplied chaincode is a system chaincode
-func (c *sccProviderImpl) IsSysCC(name string) bool {
-	return IsSysCC(name)
+func (p *Provider) IsSysCC(name string) bool {
+	for _, sysCC := range p.SysCCs {
+		if sysCC.Name() == name {
+			return true
+		}
+	}
+	if isDeprecatedSysCC(name) {
+		return true
+	}
+	return false
 }
 
-// IsSysCCAndNotInvokableCC2CC returns true if the supplied chaincode is
-// ia system chaincode and it NOT invokable through a cc2cc invocation
-func (c *sccProviderImpl) IsSysCCAndNotInvokableCC2CC(name string) bool {
-	return IsSysCCAndNotInvokableCC2CC(name)
+// IsSysCCAndNotInvokableCC2CC returns true if the chaincode
+// is a system chaincode and *CANNOT* be invoked through
+// a cc2cc invocation
+func (p *Provider) IsSysCCAndNotInvokableCC2CC(name string) bool {
+	for _, sysCC := range p.SysCCs {
+		if sysCC.Name() == name {
+			return !sysCC.InvokableCC2CC()
+		}
+	}
+
+	if isDeprecatedSysCC(name) {
+		return true
+	}
+
+	return false
 }
 
 // GetQueryExecutorForLedger returns a query executor for the specified channel
-func (c *sccProviderImpl) GetQueryExecutorForLedger(cid string) (ledger.QueryExecutor, error) {
-	l := peer.GetLedger(cid)
+func (p *Provider) GetQueryExecutorForLedger(cid string) (ledger.QueryExecutor, error) {
+	l := p.Peer.GetLedger(cid)
 	if l == nil {
 		return nil, fmt.Errorf("Could not retrieve ledger for channel %s", cid)
 	}
@@ -67,22 +81,36 @@ func (c *sccProviderImpl) GetQueryExecutorForLedger(cid string) (ledger.QueryExe
 	return l.NewQueryExecutor()
 }
 
-// IsSysCCAndNotInvokableExternal returns true if the supplied chaincode is
-// ia system chaincode and it NOT invokable
-func (c *sccProviderImpl) IsSysCCAndNotInvokableExternal(name string) bool {
-	// call the static method of the same name
-	return IsSysCCAndNotInvokableExternal(name)
+// IsSysCCAndNotInvokableExternal returns true if the chaincode
+// is a system chaincode and *CANNOT* be invoked through
+// a proposal to this peer
+func (p *Provider) IsSysCCAndNotInvokableExternal(name string) bool {
+	for _, sysCC := range p.SysCCs {
+		if sysCC.Name() == name {
+			return !sysCC.InvokableExternal()
+		}
+	}
+
+	if isDeprecatedSysCC(name) {
+		return true
+	}
+
+	return false
 }
 
 // GetApplicationConfig returns the configtxapplication.SharedConfig for the channel
 // and whether the Application config exists
-func (c *sccProviderImpl) GetApplicationConfig(cid string) (channelconfig.Application, bool) {
-	return peer.GetSupport().GetApplicationConfig(cid)
+func (p *Provider) GetApplicationConfig(cid string) (channelconfig.Application, bool) {
+	return p.PeerSupport.GetApplicationConfig(cid)
 }
 
 // Returns the policy manager associated to the passed channel
 // and whether the policy manager exists
-func (c *sccProviderImpl) PolicyManager(channelID string) (policies.Manager, bool) {
-	m := peer.GetPolicyManager(channelID)
+func (p *Provider) PolicyManager(channelID string) (policies.Manager, bool) {
+	m := p.Peer.GetPolicyManager(channelID)
 	return m, (m != nil)
+}
+
+func isDeprecatedSysCC(name string) bool {
+	return name == "vscc" || name == "escc"
 }

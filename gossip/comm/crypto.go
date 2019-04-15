@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package comm
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/pem"
 	"math/big"
@@ -16,7 +17,6 @@ import (
 
 	"github.com/hyperledger/fabric/common/util"
 	"github.com/tjfoc/gmsm/sm2"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc/peer"
 )
 

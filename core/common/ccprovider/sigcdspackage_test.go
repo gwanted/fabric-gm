@@ -258,6 +258,11 @@ func TestValidateSignedCCErrorPaths(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "chaincode deployment spec cannot be nil in a package", "Unexpected error validating package")
 	ccpack.depSpec = depspec
+
+	cd = &ChaincodeData{Name: "\027", Version: "0"}
+	err = ccpack.ValidateCC(cd)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), `invalid chaincode name: "\x17"`)
 }
 
 func TestSigCDSGetCCPackage(t *testing.T) {
@@ -305,17 +310,14 @@ func TestInvalidSigCDSGetCCPackage(t *testing.T) {
 	cds := &pb.ChaincodeDeploymentSpec{ChaincodeSpec: &pb.ChaincodeSpec{Type: 1, ChaincodeId: &pb.ChaincodeID{Name: "testcc", Version: "0"}, Input: &pb.ChaincodeInput{Args: [][]byte{[]byte("")}}}, CodePackage: []byte("code")}
 
 	b := utils.MarshalOrPanic(cds)
-
 	ccpack, err := GetCCPackage(b)
 	if err != nil {
 		t.Fatalf("failed to get CCPackage %s", err)
-		return
 	}
 
 	ccsignedcdspack, ok := ccpack.(*SignedCDSPackage)
 	if ok || ccsignedcdspack != nil {
 		t.Fatalf("expected failure to get Signed CDS CCPackage but succeeded")
-		return
 	}
 }
 

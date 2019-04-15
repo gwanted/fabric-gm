@@ -8,82 +8,71 @@ package localconfig
 
 import (
 	"fmt"
-
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/common/policies"
 	"github.com/hyperledger/fabric/common/viperutil"
-	logging "github.com/op/go-logging"
-
-	"github.com/spf13/viper"
-
-	"path/filepath"
-
 	cf "github.com/hyperledger/fabric/core/config"
 	"github.com/hyperledger/fabric/msp"
+	"github.com/hyperledger/fabric/protos/orderer/etcdraft"
+	"github.com/spf13/viper"
 )
 
 const (
-	pkgLogID = "common/tools/configtxgen/localconfig"
-
 	// Prefix identifies the prefix for the configtxgen-related ENV vars.
 	Prefix string = "CONFIGTX"
 )
 
-var (
-	logger *logging.Logger
-
-	configName string
-)
-
-func init() {
-	logger = flogging.MustGetLogger(pkgLogID)
-	flogging.SetModuleLevel(pkgLogID, "error")
-
-	configName = strings.ToLower(Prefix)
-}
+var logger = flogging.MustGetLogger("common.tools.configtxgen.localconfig")
+var configName = strings.ToLower(Prefix)
 
 const (
-	// TestChainID is the channel name used for testing purposes when one is not given
+	// TestChainID is the channel name used for testing purposes when one is
+	// not given
 	TestChainID = "testchainid"
 
-	// SampleInsecureSoloProfile references the sample profile which does not include any MSPs and uses solo for ordering.
+	// SampleInsecureSoloProfile references the sample profile which does not
+	// include any MSPs and uses solo for ordering.
 	SampleInsecureSoloProfile = "SampleInsecureSolo"
-	// SampleDevModeSoloProfile references the sample profile which requires only basic membership for admin privileges and uses solo for ordering.
+	// SampleDevModeSoloProfile references the sample profile which requires
+	// only basic membership for admin privileges and uses solo for ordering.
 	SampleDevModeSoloProfile = "SampleDevModeSolo"
-	// SampleDevModeSoloProfileV11 references the sample profile which requires only basic membership for admin privileges and uses solo for ordering, but has v1.1 capabilities enabled
-	SampleDevModeSoloV11Profile = "SampleDevModeSoloV1_1"
-	// SampleSingleMSPSoloProfile references the sample profile which includes only the sample MSP and uses solo for ordering.
+	// SampleSingleMSPSoloProfile references the sample profile which includes
+	// only the sample MSP and uses solo for ordering.
 	SampleSingleMSPSoloProfile = "SampleSingleMSPSolo"
-	// SampleSingleMSPSoloV11Profile references the sample profile which includes only the sample MSP with v1.1 capabilities defined and uses solo for ordering.
-	SampleSingleMSPSoloV11Profile = "SampleSingleMSPSoloV1_1"
 
-	// SampleInsecureKafkaProfile references the sample profile which does not include any MSPs and uses Kafka for ordering.
+	// SampleInsecureKafkaProfile references the sample profile which does not
+	// include any MSPs and uses Kafka for ordering.
 	SampleInsecureKafkaProfile = "SampleInsecureKafka"
-	// SampleDevModeKafkaProfile references the sample profile which requires only basic membership for admin privileges and uses Kafka for ordering.
+	// SampleDevModeKafkaProfile references the sample profile which requires only
+	// basic membership for admin privileges and uses Kafka for ordering.
 	SampleDevModeKafkaProfile = "SampleDevModeKafka"
-	// SampleDevModeKafkaProfileV11 references the sample profile which requires only basic membership for admin privileges and uses Kafka for ordering, but has v1.1 capabilities enabled.
-	SampleDevModeKafkaV11Profile = "SampleDevModeKafkaV1_1"
-	// SampleSingleMSPKafkaProfile references the sample profile which includes only the sample MSP and uses Kafka for ordering.
+	// SampleSingleMSPKafkaProfile references the sample profile which includes
+	// only the sample MSP and uses Kafka for ordering.
 	SampleSingleMSPKafkaProfile = "SampleSingleMSPKafka"
-	// SampleSingleMSPKafkaV11Profile references the sample profile which includes only the sample MSP with v1.1 capabilities defined and uses Kafka for ordering.
-	SampleSingleMSPKafkaV11Profile = "SampleSingleMSPKafkaV1_1"
 
-	// SampleSingleMSPChannelProfile references the sample profile which includes only the sample MSP and is used to create a channel
+	// SampleDevModeEtcdRaftProfile references the sample profile used for testing
+	// the etcd/raft-based ordering service.
+	SampleDevModeEtcdRaftProfile = "SampleDevModeEtcdRaft"
+
+	// SampleSingleMSPChannelProfile references the sample profile which
+	// includes only the sample MSP and is used to create a channel
 	SampleSingleMSPChannelProfile = "SampleSingleMSPChannel"
-	// SampleSingleMSPChannelV11Profile references the sample profile which includes only the sample MSP with v1.1 capabilities and is used to create a channel
-	SampleSingleMSPChannelV11Profile = "SampleSingleMSPChannelV1_1"
 
-	// SampleConsortiumName is the sample consortium from the sample configtx.yaml
+	// SampleConsortiumName is the sample consortium from the
+	// sample configtx.yaml
 	SampleConsortiumName = "SampleConsortium"
 	// SampleOrgName is the name of the sample org in the sample profiles
 	SampleOrgName = "SampleOrg"
 
-	// AdminRoleAdminPrincipal is set as AdminRole to cause the MSP role of type Admin to be used as the admin principal default
+	// AdminRoleAdminPrincipal is set as AdminRole to cause the MSP role of
+	// type Admin to be used as the admin principal default
 	AdminRoleAdminPrincipal = "Role.ADMIN"
-	// MemberRoleAdminPrincipal is set as AdminRole to cause the MSP role of type Member to be used as the admin principal default
+	// MemberRoleAdminPrincipal is set as AdminRole to cause the MSP role of
+	// type Member to be used as the admin principal default
 	MemberRoleAdminPrincipal = "Role.MEMBER"
 )
 
@@ -91,50 +80,70 @@ const (
 type TopLevel struct {
 	Profiles      map[string]*Profile        `yaml:"Profiles"`
 	Organizations []*Organization            `yaml:"Organizations"`
+	Channel       *Profile                   `yaml:"Channel"`
 	Application   *Application               `yaml:"Application"`
 	Orderer       *Orderer                   `yaml:"Orderer"`
 	Capabilities  map[string]map[string]bool `yaml:"Capabilities"`
 	Resources     *Resources                 `yaml:"Resources"`
 }
 
-// Profile encodes orderer/application configuration combinations for the configtxgen tool.
+// Profile encodes orderer/application configuration combinations for the
+// configtxgen tool.
 type Profile struct {
 	Consortium   string                 `yaml:"Consortium"`
 	Application  *Application           `yaml:"Application"`
 	Orderer      *Orderer               `yaml:"Orderer"`
 	Consortiums  map[string]*Consortium `yaml:"Consortiums"`
 	Capabilities map[string]bool        `yaml:"Capabilities"`
+	Policies     map[string]*Policy     `yaml:"Policies"`
 }
 
-// Consortium represents a group of organizations which may create channels with eachother
+// Policy encodes a channel config policy
+type Policy struct {
+	Type string `yaml:"Type"`
+	Rule string `yaml:"Rule"`
+}
+
+// Consortium represents a group of organizations which may create channels
+// with each other
 type Consortium struct {
 	Organizations []*Organization `yaml:"Organizations"`
 }
 
-// Application encodes the application-level configuration needed in config transactions.
+// Application encodes the application-level configuration needed in config
+// transactions.
 type Application struct {
-	Organizations []*Organization `yaml:"Organizations"`
-	Capabilities  map[string]bool `yaml:"Capabilities"`
-	Resources     *Resources      `yaml:"Resources"`
+	Organizations []*Organization    `yaml:"Organizations"`
+	Capabilities  map[string]bool    `yaml:"Capabilities"`
+	Resources     *Resources         `yaml:"Resources"`
+	Policies      map[string]*Policy `yaml:"Policies"`
+	ACLs          map[string]string  `yaml:"ACLs"`
 }
 
-// Resouces encodes the application-level resources configuration needed to seed the resource tree
+// Resources encodes the application-level resources configuration needed to
+// seed the resource tree
 type Resources struct {
 	DefaultModPolicy string
 }
 
-// Organization encodes the organization-level configuration needed in config transactions.
+// Organization encodes the organization-level configuration needed in
+// config transactions.
 type Organization struct {
-	Name           string `yaml:"Name"`
-	ID             string `yaml:"ID"`
-	MSPDir         string `yaml:"MSPDir"`
-	MSPType        string `yaml:"MSPType"`
-	AdminPrincipal string `yaml:"AdminPrincipal"`
+	Name     string             `yaml:"Name"`
+	ID       string             `yaml:"ID"`
+	MSPDir   string             `yaml:"MSPDir"`
+	MSPType  string             `yaml:"MSPType"`
+	Policies map[string]*Policy `yaml:"Policies"`
 
 	// Note: Viper deserialization does not seem to care for
 	// embedding of types, so we use one organization struct
 	// for both orderers and applications.
 	AnchorPeers []*AnchorPeer `yaml:"AnchorPeers"`
+
+	// AdminPrincipal is deprecated and may be removed in a future release
+	// it was used for modifying the default policy generation, but policies
+	// may now be specified explicitly so it is redundant and unnecessary
+	AdminPrincipal string `yaml:"AdminPrincipal"`
 }
 
 // AnchorPeer encodes the necessary fields to identify an anchor peer.
@@ -146,19 +155,21 @@ type AnchorPeer struct {
 // Orderer contains configuration which is used for the
 // bootstrapping of an orderer by the provisional bootstrapper.
 type Orderer struct {
-	OrdererType   string          `yaml:"OrdererType"`
-	Addresses     []string        `yaml:"Addresses"`
-	BatchTimeout  time.Duration   `yaml:"BatchTimeout"`
-	BatchSize     BatchSize       `yaml:"BatchSize"`
-	Kafka         Kafka           `yaml:"Kafka"`
-	Organizations []*Organization `yaml:"Organizations"`
-	MaxChannels   uint64          `yaml:"MaxChannels"`
-	Capabilities  map[string]bool `yaml:"Capabilities"`
+	OrdererType   string             `yaml:"OrdererType"`
+	Addresses     []string           `yaml:"Addresses"`
+	BatchTimeout  time.Duration      `yaml:"BatchTimeout"`
+	BatchSize     BatchSize          `yaml:"BatchSize"`
+	Kafka         Kafka              `yaml:"Kafka"`
+	EtcdRaft      *etcdraft.Metadata `yaml:"EtcdRaft"`
+	Organizations []*Organization    `yaml:"Organizations"`
+	MaxChannels   uint64             `yaml:"MaxChannels"`
+	Capabilities  map[string]bool    `yaml:"Capabilities"`
+	Policies      map[string]*Policy `yaml:"Policies"`
 }
 
 // BatchSize contains configuration affecting the size of batches.
 type BatchSize struct {
-	MaxMessageCount   uint32 `yaml:"MaxMessageSize"`
+	MaxMessageCount   uint32 `yaml:"MaxMessageCount"`
 	AbsoluteMaxBytes  uint32 `yaml:"AbsoluteMaxBytes"`
 	PreferredMaxBytes uint32 `yaml:"PreferredMaxBytes"`
 }
@@ -181,16 +192,34 @@ var genesisDefaults = TopLevel{
 		Kafka: Kafka{
 			Brokers: []string{"127.0.0.1:9092"},
 		},
+		EtcdRaft: &etcdraft.Metadata{
+			Options: &etcdraft.Options{
+				TickInterval:    100,
+				ElectionTick:    10,
+				HeartbeatTick:   1,
+				MaxInflightMsgs: 256,
+				MaxSizePerMsg:   1048576,
+			},
+		},
 	},
 }
 
-// LoadTopLevel simply loads the configtx.yaml file into the structs above
-// and completes their initialization.  Note, for environment overrides to work properly
-// within a profile, Load(profile string) should be called when attempting to work within
-// a particular profile.
-func LoadTopLevel() *TopLevel {
+// LoadTopLevel simply loads the configtx.yaml file into the structs above and
+// completes their initialization. Config paths may optionally be provided and
+// will be used in place of the FABRIC_CFG_PATH env variable.
+//
+// Note, for environment overrides to work properly within a profile, Load
+// should be used instead.
+func LoadTopLevel(configPaths ...string) *TopLevel {
 	config := viper.New()
-	cf.InitViper(config, configName)
+	if len(configPaths) > 0 {
+		for _, p := range configPaths {
+			config.AddConfigPath(p)
+		}
+		config.SetConfigName(configName)
+	} else {
+		cf.InitViper(config, configName)
+	}
 
 	// For environment variables
 	config.SetEnvPrefix(Prefix)
@@ -218,16 +247,26 @@ func LoadTopLevel() *TopLevel {
 	return &uconf
 }
 
-// Load returns the orderer/application config combination that corresponds to a given profile.
-func Load(profile string) *Profile {
+// Load returns the orderer/application config combination that corresponds to
+// a given profile. Config paths may optionally be provided and will be used
+// in place of the FABRIC_CFG_PATH env variable.
+func Load(profile string, configPaths ...string) *Profile {
 	config := viper.New()
-	cf.InitViper(config, configName)
+	if len(configPaths) > 0 {
+		for _, p := range configPaths {
+			config.AddConfigPath(p)
+		}
+		config.SetConfigName(configName)
+	} else {
+		cf.InitViper(config, configName)
+	}
 
 	// For environment variables
 	config.SetEnvPrefix(Prefix)
 	config.AutomaticEnv()
 
-	// This replacer allows substitution within the particular profile without having to fully qualify the name
+	// This replacer allows substitution within the particular profile without
+	// having to fully qualify the name
 	replacer := strings.NewReplacer(strings.ToUpper(fmt.Sprintf("profiles.%s.", profile)), "", ".", "_")
 	config.SetEnvKeyReplacer(replacer)
 
@@ -261,17 +300,11 @@ func (t *TopLevel) completeInitialization(configDir string) {
 	}
 
 	if t.Orderer != nil {
-		t.Orderer.completeInitialization()
+		t.Orderer.completeInitialization(configDir)
 	}
 }
 
 func (p *Profile) completeInitialization(configDir string) {
-	if p.Orderer != nil {
-		for _, org := range p.Orderer.Organizations {
-			org.completeInitialization(configDir)
-		}
-	}
-
 	if p.Application != nil {
 		for _, org := range p.Application.Organizations {
 			org.completeInitialization(configDir)
@@ -289,9 +322,12 @@ func (p *Profile) completeInitialization(configDir string) {
 		}
 	}
 
-	// Some profiles will not define orderer parameters
 	if p.Orderer != nil {
-		p.Orderer.completeInitialization()
+		for _, org := range p.Orderer.Organizations {
+			org.completeInitialization(configDir)
+		}
+		// Some profiles will not define orderer parameters
+		p.Orderer.completeInitialization(configDir)
 	}
 }
 
@@ -318,33 +354,110 @@ func (org *Organization) completeInitialization(configDir string) {
 	translatePaths(configDir, org)
 }
 
-func (oc *Orderer) completeInitialization() {
+func (ord *Orderer) completeInitialization(configDir string) {
+loop:
 	for {
 		switch {
-		case oc.OrdererType == "":
-			logger.Infof("Orderer.OrdererType unset, setting to %s", genesisDefaults.Orderer.OrdererType)
-			oc.OrdererType = genesisDefaults.Orderer.OrdererType
-		case oc.Addresses == nil:
+		case ord.OrdererType == "":
+			logger.Infof("Orderer.OrdererType unset, setting to %v", genesisDefaults.Orderer.OrdererType)
+			ord.OrdererType = genesisDefaults.Orderer.OrdererType
+		case ord.Addresses == nil:
 			logger.Infof("Orderer.Addresses unset, setting to %s", genesisDefaults.Orderer.Addresses)
-			oc.Addresses = genesisDefaults.Orderer.Addresses
-		case oc.BatchTimeout == 0:
+			ord.Addresses = genesisDefaults.Orderer.Addresses
+		case ord.BatchTimeout == 0:
 			logger.Infof("Orderer.BatchTimeout unset, setting to %s", genesisDefaults.Orderer.BatchTimeout)
-			oc.BatchTimeout = genesisDefaults.Orderer.BatchTimeout
-		case oc.BatchSize.MaxMessageCount == 0:
-			logger.Infof("Orderer.BatchSize.MaxMessageCount unset, setting to %s", genesisDefaults.Orderer.BatchSize.MaxMessageCount)
-			oc.BatchSize.MaxMessageCount = genesisDefaults.Orderer.BatchSize.MaxMessageCount
-		case oc.BatchSize.AbsoluteMaxBytes == 0:
-			logger.Infof("Orderer.BatchSize.AbsoluteMaxBytes unset, setting to %s", genesisDefaults.Orderer.BatchSize.AbsoluteMaxBytes)
-			oc.BatchSize.AbsoluteMaxBytes = genesisDefaults.Orderer.BatchSize.AbsoluteMaxBytes
-		case oc.BatchSize.PreferredMaxBytes == 0:
-			logger.Infof("Orderer.BatchSize.PreferredMaxBytes unset, setting to %s", genesisDefaults.Orderer.BatchSize.PreferredMaxBytes)
-			oc.BatchSize.PreferredMaxBytes = genesisDefaults.Orderer.BatchSize.PreferredMaxBytes
-		case oc.Kafka.Brokers == nil:
-			logger.Infof("Orderer.Kafka.Brokers unset, setting to %v", genesisDefaults.Orderer.Kafka.Brokers)
-			oc.Kafka.Brokers = genesisDefaults.Orderer.Kafka.Brokers
+			ord.BatchTimeout = genesisDefaults.Orderer.BatchTimeout
+		case ord.BatchSize.MaxMessageCount == 0:
+			logger.Infof("Orderer.BatchSize.MaxMessageCount unset, setting to %v", genesisDefaults.Orderer.BatchSize.MaxMessageCount)
+			ord.BatchSize.MaxMessageCount = genesisDefaults.Orderer.BatchSize.MaxMessageCount
+		case ord.BatchSize.AbsoluteMaxBytes == 0:
+			logger.Infof("Orderer.BatchSize.AbsoluteMaxBytes unset, setting to %v", genesisDefaults.Orderer.BatchSize.AbsoluteMaxBytes)
+			ord.BatchSize.AbsoluteMaxBytes = genesisDefaults.Orderer.BatchSize.AbsoluteMaxBytes
+		case ord.BatchSize.PreferredMaxBytes == 0:
+			logger.Infof("Orderer.BatchSize.PreferredMaxBytes unset, setting to %v", genesisDefaults.Orderer.BatchSize.PreferredMaxBytes)
+			ord.BatchSize.PreferredMaxBytes = genesisDefaults.Orderer.BatchSize.PreferredMaxBytes
 		default:
-			return
+			break loop
 		}
+	}
+
+	logger.Infof("orderer type: %s", ord.OrdererType)
+	// Additional, consensus type-dependent initialization goes here
+	// Also using this to panic on unknown orderer type.
+	switch ord.OrdererType {
+	case "solo":
+		// nothing to be done here
+	case "kafka":
+		if ord.Kafka.Brokers == nil {
+			logger.Infof("Orderer.Kafka unset, setting to %v", genesisDefaults.Orderer.Kafka.Brokers)
+			ord.Kafka.Brokers = genesisDefaults.Orderer.Kafka.Brokers
+		}
+	case etcdraft.TypeKey:
+		if ord.EtcdRaft == nil {
+			logger.Panicf("%s raft configuration missing", etcdraft.TypeKey)
+		}
+		if ord.EtcdRaft.Options == nil {
+			logger.Infof("Orderer.EtcdRaft.Options unset, setting to %v", genesisDefaults.Orderer.EtcdRaft.Options)
+			ord.EtcdRaft.Options = genesisDefaults.Orderer.EtcdRaft.Options
+		}
+	second_loop:
+		for {
+			switch {
+			case ord.EtcdRaft.Options.TickInterval == 0:
+				logger.Infof("Orderer.EtcdRaft.Options.TickInterval unset, setting to %v", genesisDefaults.Orderer.EtcdRaft.Options.TickInterval)
+				ord.EtcdRaft.Options.TickInterval = genesisDefaults.Orderer.EtcdRaft.Options.TickInterval
+
+			case ord.EtcdRaft.Options.ElectionTick == 0:
+				logger.Infof("Orderer.EtcdRaft.Options.ElectionTick unset, setting to %v", genesisDefaults.Orderer.EtcdRaft.Options.ElectionTick)
+				ord.EtcdRaft.Options.ElectionTick = genesisDefaults.Orderer.EtcdRaft.Options.ElectionTick
+
+			case ord.EtcdRaft.Options.HeartbeatTick == 0:
+				logger.Infof("Orderer.EtcdRaft.Options.HeartbeatTick unset, setting to %v", genesisDefaults.Orderer.EtcdRaft.Options.HeartbeatTick)
+				ord.EtcdRaft.Options.HeartbeatTick = genesisDefaults.Orderer.EtcdRaft.Options.HeartbeatTick
+
+			case ord.EtcdRaft.Options.MaxInflightMsgs == 0:
+				logger.Infof("Orderer.EtcdRaft.Options.MaxInflightMsgs unset, setting to %v", genesisDefaults.Orderer.EtcdRaft.Options.MaxInflightMsgs)
+				ord.EtcdRaft.Options.MaxInflightMsgs = genesisDefaults.Orderer.EtcdRaft.Options.MaxInflightMsgs
+
+			case ord.EtcdRaft.Options.MaxSizePerMsg == 0:
+				logger.Infof("Orderer.EtcdRaft.Options.MaxSizePerMsg unset, setting to %v", genesisDefaults.Orderer.EtcdRaft.Options.MaxSizePerMsg)
+				ord.EtcdRaft.Options.MaxSizePerMsg = genesisDefaults.Orderer.EtcdRaft.Options.MaxSizePerMsg
+
+			case len(ord.EtcdRaft.Consenters) == 0:
+				logger.Panicf("%s configuration did not specify any consenter", etcdraft.TypeKey)
+
+			default:
+				break second_loop
+			}
+		}
+
+		// validate the specified members for Options
+		if ord.EtcdRaft.Options.ElectionTick <= ord.EtcdRaft.Options.HeartbeatTick {
+			logger.Panicf("election tick must be greater than heartbeat tick")
+		}
+
+		for _, c := range ord.EtcdRaft.GetConsenters() {
+			if c.Host == "" {
+				logger.Panicf("consenter info in %s configuration did not specify host", etcdraft.TypeKey)
+			}
+			if c.Port == 0 {
+				logger.Panicf("consenter info in %s configuration did not specify port", etcdraft.TypeKey)
+			}
+			if c.ClientTlsCert == nil {
+				logger.Panicf("consenter info in %s configuration did not specify client TLS cert", etcdraft.TypeKey)
+			}
+			if c.ServerTlsCert == nil {
+				logger.Panicf("consenter info in %s configuration did not specify server TLS cert", etcdraft.TypeKey)
+			}
+			clientCertPath := string(c.GetClientTlsCert())
+			cf.TranslatePathInPlace(configDir, &clientCertPath)
+			c.ClientTlsCert = []byte(clientCertPath)
+			serverCertPath := string(c.GetServerTlsCert())
+			cf.TranslatePathInPlace(configDir, &serverCertPath)
+			c.ServerTlsCert = []byte(serverCertPath)
+		}
+	default:
+		logger.Panicf("unknown orderer type: %s", ord.OrdererType)
 	}
 }
 

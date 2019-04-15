@@ -7,6 +7,8 @@ SPDX-License-Identifier: Apache-2.0
 package viperutil
 
 import (
+	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -15,9 +17,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"encoding/json"
-	"encoding/pem"
 
 	"github.com/Shopify/sarama"
 	version "github.com/hashicorp/go-version"
@@ -335,4 +334,9 @@ func EnhancedExactUnmarshalKey(baseKey string, output interface{}) error {
 	}
 
 	return decoder.Decode(leafKeys[baseKey])
+}
+
+// Decode is used to decode opaque field in configuration
+func Decode(input interface{}, output interface{}) error {
+	return mapstructure.Decode(input, output)
 }

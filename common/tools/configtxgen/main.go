@@ -23,14 +23,12 @@ import (
 	cb "github.com/hyperledger/fabric/protos/common"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
-
-	logging "github.com/op/go-logging"
 	"github.com/pkg/errors"
 )
 
 var exitCode = 0
 
-var logger = flogging.MustGetLogger("common/tools/configtxgen")
+var logger = flogging.MustGetLogger("common.tools.configtxgen")
 
 func doOutputBlock(config *genesisconfig.Profile, channelID string, outputBlock string) error {
 	pgen := encoder.New(config)
@@ -50,7 +48,7 @@ func doOutputBlock(config *genesisconfig.Profile, channelID string, outputBlock 
 func doOutputChannelCreateTx(conf *genesisconfig.Profile, channelID string, outputChannelCreateTx string) error {
 	logger.Info("Generating new channel configtx")
 
-	configtx, err := encoder.MakeChannelCreationTransaction(channelID, nil, nil, conf)
+	configtx, err := encoder.MakeChannelCreationTransaction(channelID, nil, conf)
 	if err != nil {
 		return err
 	}
@@ -206,12 +204,13 @@ func doPrintOrg(t *genesisconfig.TopLevel, printOrg string) error {
 }
 
 func main() {
-	var outputBlock, outputChannelCreateTx, profile, channelID, inspectBlock, inspectChannelCreateTx, outputAnchorPeersUpdate, asOrg, printOrg string
+	var outputBlock, outputChannelCreateTx, profile, configPath, channelID, inspectBlock, inspectChannelCreateTx, outputAnchorPeersUpdate, asOrg, printOrg string
 
 	flag.StringVar(&outputBlock, "outputBlock", "", "The path to write the genesis block to (if set)")
-	flag.StringVar(&channelID, "channelID", genesisconfig.TestChainID, "The channel ID to use in the configtx")
+	flag.StringVar(&channelID, "channelID", "", "The channel ID to use in the configtx")
 	flag.StringVar(&outputChannelCreateTx, "outputCreateChannelTx", "", "The path to write a channel creation configtx to (if set)")
 	flag.StringVar(&profile, "profile", genesisconfig.SampleInsecureSoloProfile, "The profile from configtx.yaml to use for generation.")
+	flag.StringVar(&configPath, "configPath", "", "The path containing the configuration to use (if set)")
 	flag.StringVar(&inspectBlock, "inspectBlock", "", "Prints the configuration contained in the block at the specified path")
 	flag.StringVar(&inspectChannelCreateTx, "inspectChannelCreateTx", "", "Prints the configuration contained in the transaction at the specified path")
 	flag.StringVar(&outputAnchorPeersUpdate, "outputAnchorPeersUpdate", "", "Creates an config update to update an anchor peer (works only with the default channel creation, and only for the first update)")
@@ -222,21 +221,30 @@ func main() {
 
 	flag.Parse()
 
+	if channelID == "" && (outputBlock != "" || outputChannelCreateTx != "" || outputAnchorPeersUpdate != "") {
+		channelID = genesisconfig.TestChainID
+		logger.Warningf("Omitting the channel ID for configtxgen for output operations is deprecated.  Explicitly passing the channel ID will be required in the future, defaulting to '%s'.", channelID)
+	}
+
 	// show version
 	if *version {
 		printVersion()
 		os.Exit(exitCode)
 	}
 
-	logging.SetLevel(logging.INFO, "")
-
 	// don't need to panic when running via command line
 	defer func() {
 		if err := recover(); err != nil {
 			if strings.Contains(fmt.Sprint(err), "Error reading configuration: Unsupported Config Type") {
 				logger.Error("Could not find configtx.yaml. " +
-					"Please make sure that FABRIC_CFG_PATH is set to a path " +
+					"Please make sure that FABRIC_CFG_PATH or -configPath is set to a path " +
 					"which contains configtx.yaml")
+				os.Exit(1)
+			}
+			if strings.Contains(fmt.Sprint(err), "Could not find profile") {
+				logger.Error(fmt.Sprint(err) + ". " +
+					"Please make sure that FABRIC_CFG_PATH or -configPath is set to a path " +
+					"which contains configtx.yaml with the specified profile")
 				os.Exit(1)
 			}
 			logger.Panic(err)
@@ -247,10 +255,18 @@ func main() {
 	factory.InitFactories(nil)
 	var profileConfig *genesisconfig.Profile
 	if outputBlock != "" || outputChannelCreateTx != "" || outputAnchorPeersUpdate != "" {
-		profileConfig = genesisconfig.Load(profile)
+		if configPath != "" {
+			profileConfig = genesisconfig.Load(profile, configPath)
+		} else {
+			profileConfig = genesisconfig.Load(profile)
+		}
 	}
-
-	topLevelConfig := genesisconfig.LoadTopLevel()
+	var topLevelConfig *genesisconfig.TopLevel
+	if configPath != "" {
+		topLevelConfig = genesisconfig.LoadTopLevel(configPath)
+	} else {
+		topLevelConfig = genesisconfig.LoadTopLevel()
+	}
 
 	if outputBlock != "" {
 		if err := doOutputBlock(profileConfig, channelID, outputBlock); err != nil {

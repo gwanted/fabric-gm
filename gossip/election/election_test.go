@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hyperledger/fabric/core/config"
+	"github.com/hyperledger/fabric/core/config/configtest"
 	"github.com/hyperledger/fabric/gossip/util"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -206,7 +206,7 @@ func TestInitPeersAtSameTime(t *testing.T) {
 func TestInitPeersStartAtIntervals(t *testing.T) {
 	t.Parallel()
 	// Scenario: Peers are spawned one by one in a slow rate
-	// expected outcome: the first peer is the leader although its ID is lowest
+	// expected outcome: the first peer is the leader although its ID is highest
 	peers := createPeers(getStartupGracePeriod()+getLeadershipDeclarationInterval(), 3, 2, 1, 0)
 	waitForLeaderElection(t, peers)
 	assert.True(t, peers[0].IsLeader())
@@ -414,7 +414,20 @@ func TestPartition(t *testing.T) {
 			waitForBoolFunc(t, p.isCallbackInvoked, true, "Leadership callback wasn't invoked for %s", p.id)
 		}
 	}
+}
 
+func Test_peerIDString(t *testing.T) {
+	tests := []struct {
+		input    peerID
+		expected string
+	}{
+		{nil, "<nil>"},
+		{peerID{}, ""},
+		{peerID{0, 1, 2, 3}, "00010203"},
+	}
+	for _, tt := range tests {
+		assert.Equal(t, tt.expected, tt.input.String())
+	}
 }
 
 func TestConfigFromFile(t *testing.T) {
@@ -443,7 +456,7 @@ func TestConfigFromFile(t *testing.T) {
 	viper.Reset()
 	viper.SetConfigName("core")
 	viper.SetEnvPrefix("CORE")
-	config.AddDevConfigPath(nil)
+	configtest.AddDevConfigPath(nil)
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	err := viper.ReadInConfig()

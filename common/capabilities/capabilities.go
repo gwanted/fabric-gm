@@ -9,13 +9,10 @@ package capabilities
 import (
 	"github.com/hyperledger/fabric/common/flogging"
 	cb "github.com/hyperledger/fabric/protos/common"
-
 	"github.com/pkg/errors"
 )
 
-const pkgLogID = "common/capabilities"
-
-var logger = flogging.MustGetLogger(pkgLogID)
+var logger = flogging.MustGetLogger("common.capabilities")
 
 // provider is the 'plugin' parameter for registry.
 type provider interface {

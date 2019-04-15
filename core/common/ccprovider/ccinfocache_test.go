@@ -79,7 +79,7 @@ func (m *mockCCInfoFSStorageMgrImpl) GetChaincode(ccname string, ccversion strin
 func TestCCInfoCache(t *testing.T) {
 	ccname := "foo"
 	ccver := "1.0"
-	ccpath := "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02"
+	ccpath := "github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd"
 
 	ccinfoFs := &mockCCInfoFSStorageMgrImpl{CCMap: map[string]CCPackage{}}
 	cccache := NewCCInfoCache(ccinfoFs)
@@ -134,7 +134,7 @@ func TestCCInfoCache(t *testing.T) {
 func TestPutChaincode(t *testing.T) {
 	ccname := ""
 	ccver := "1.0"
-	ccpath := "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02"
+	ccpath := "github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd"
 
 	ccinfoFs := &mockCCInfoFSStorageMgrImpl{CCMap: map[string]CCPackage{}}
 	NewCCInfoCache(ccinfoFs)
@@ -164,7 +164,7 @@ func TestPutChaincode(t *testing.T) {
 func TestCCInfoFSPeerInstance(t *testing.T) {
 	ccname := "bar"
 	ccver := "1.0"
-	ccpath := "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02"
+	ccpath := "github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd"
 
 	// the cc data is not yet in the cache
 	_, err := GetChaincodeFromFS(ccname, ccver)
@@ -178,11 +178,11 @@ func TestCCInfoFSPeerInstance(t *testing.T) {
 	err = PutChaincodeIntoFS(ds)
 	assert.NoError(t, err)
 
-	// Get all installed chaincodes, it should not return 0 chain codes
+	// Get all installed chaincodes, it should not return 0 chaincodes
 	resp, err := GetInstalledChaincodes()
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
-	assert.NotZero(t, len(resp.Chaincodes), "GetInstalledChaincodes should not have returned 0 chain codes")
+	assert.NotZero(t, len(resp.Chaincodes), "GetInstalledChaincodes should not have returned 0 chaincodes")
 
 	//get chaincode data
 	_, err = GetChaincodeData(ccname, ccver)
@@ -200,30 +200,14 @@ func TestGetInstalledChaincodesErrorPaths(t *testing.T) {
 	assert.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	// Set the above created directory as the chain code install path
+	// Set the above created directory as the chaincode install path
 	SetChaincodesPath(dir)
 	err = ioutil.WriteFile(filepath.Join(dir, "idontexist.1.0"), []byte("test"), 0777)
 	assert.NoError(t, err)
 	resp, err := GetInstalledChaincodes()
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(resp.Chaincodes),
-		"Expected 0 chain codes but GetInstalledChaincodes returned %s chain codes", len(resp.Chaincodes))
-}
-
-func TestNewCCContext(t *testing.T) {
-	ccctx := NewCCContext("foo", "foo", "1.0", "", false, nil, nil)
-	assert.NotNil(t, ccctx)
-	canName := ccctx.GetCanonicalName()
-	assert.NotEmpty(t, canName)
-
-	assert.Panics(t, func() {
-		NewCCContext("foo", "foo", "", "", false, nil, nil)
-	}, "NewCCContext should have paniced if version is empty")
-
-	ccctx = &CCContext{"foo", "foo", "1.0", "", false, nil, nil, "", nil}
-	assert.Panics(t, func() {
-		ccctx.GetCanonicalName()
-	}, "GetConnonicalName should have paniced if cannonical name is empty")
+		"Expected 0 chaincodes but GetInstalledChaincodes returned %s chaincodes", len(resp.Chaincodes))
 }
 
 func TestChaincodePackageExists(t *testing.T) {

@@ -60,6 +60,35 @@ type MessageCryptoService interface {
 	Expiration(peerIdentity PeerIdentityType) (time.Time, error)
 }
 
+// PeerIdentityInfo aggregates a peer's identity,
+// and also additional metadata about it
+type PeerIdentityInfo struct {
+	PKIId        common.PKIidType
+	Identity     PeerIdentityType
+	Organization OrgIdentityType
+}
+
+// PeerIdentitySet aggregates a PeerIdentityInfo slice
+type PeerIdentitySet []PeerIdentityInfo
+
+// ByOrg sorts the PeerIdentitySet by organizations of its peers
+func (pis PeerIdentitySet) ByOrg() map[string]PeerIdentitySet {
+	m := make(map[string]PeerIdentitySet)
+	for _, id := range pis {
+		m[string(id.Organization)] = append(m[string(id.Organization)], id)
+	}
+	return m
+}
+
+// ByOrg sorts the PeerIdentitySet by PKI-IDs of its peers
+func (pis PeerIdentitySet) ByID() map[string]PeerIdentityInfo {
+	m := make(map[string]PeerIdentityInfo)
+	for _, id := range pis {
+		m[string(id.PKIId)] = id
+	}
+	return m
+}
+
 // PeerIdentityType is the peer's certificate
 type PeerIdentityType []byte
 

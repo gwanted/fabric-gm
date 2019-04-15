@@ -14,11 +14,10 @@ import (
 	"github.com/hyperledger/fabric/msp"
 	cb "github.com/hyperledger/fabric/protos/common"
 	"github.com/hyperledger/fabric/protos/utils"
-
 	"github.com/pkg/errors"
 )
 
-var logger = flogging.MustGetLogger("common/channelconfig")
+var logger = flogging.MustGetLogger("common.channelconfig")
 
 // RootGroupKey is the key for namespacing the channel config, especially for
 // policy evaluation.
