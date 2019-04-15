@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package msp
 
 import (
+	"fmt"
 	"crypto"
 	"crypto/rand"
 	"encoding/hex"
@@ -155,6 +156,8 @@ func (id *identity) Verify(msg []byte, sig []byte) error {
 	if err != nil {
 		return errors.WithMessage(err, "failed computing digest")
 	}
+	fmt.Printf("Verify: digest = %s", hex.Dump(digest))
+	fmt.Printf("Verify: hashOpt = %v", hashOpt)
 
 	if mspIdentityLogger.IsEnabledFor(zapcore.DebugLevel) {
 		mspIdentityLogger.Debugf("Verify: digest = %s", hex.Dump(digest))
@@ -165,7 +168,7 @@ func (id *identity) Verify(msg []byte, sig []byte) error {
 	if err != nil {
 		return errors.WithMessage(err, "could not determine the validity of the signature")
 	} else if !valid {
-		return errors.New("The signature is invalid")
+		return errors.New("The signature is invalidaaa")
 	}
 
 	return nil
@@ -194,8 +197,10 @@ func (id *identity) Serialize() ([]byte, error) {
 func (id *identity) getHashOpt(hashFamily string) (bccsp.HashOpts, error) {
 	switch hashFamily {
 	case bccsp.SHA2:
+		fmt.Println("SHA256\n")
 		return bccsp.GetHashOpt(bccsp.SHA256)
 	case bccsp.SHA3:
+		fmt.Println("SHA3_256\n")
 		return bccsp.GetHashOpt(bccsp.SHA3_256)
 	}
 	return nil, errors.Errorf("hash familiy not recognized [%s]", hashFamily)

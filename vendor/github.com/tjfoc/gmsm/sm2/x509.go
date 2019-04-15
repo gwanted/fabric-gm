@@ -1041,6 +1041,27 @@ func checkSignature(algo SignatureAlgorithm, signed, signature []byte, publicKey
 			}
 		}
 		return
+	case *PublicKey:
+		ecdsaSig := new(ecdsaSignature)
+		if rest, err := asn1.Unmarshal(signature, ecdsaSig); err != nil {
+			return err
+		} else if len(rest) != 0 {
+			return errors.New("x509: trailing data after ECDSA signature")
+		}
+		if ecdsaSig.R.Sign() <= 0 || ecdsaSig.S.Sign() <= 0 {
+			return errors.New("x509: ECDSA signature contained zero or negative values")
+		}
+		switch pub.Curve {
+		case P256Sm2():
+			if !Verify(&PublicKey{
+				Curve: pub.Curve,
+				X:     pub.X,
+				Y:     pub.Y,
+			}, digest, ecdsaSig.R, ecdsaSig.S) {
+				return errors.New("x509: SM2 verification failure")
+			}
+		}
+		return
 	}
 	return ErrUnsupportedAlgorithm
 }
@@ -1178,7 +1199,8 @@ func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (interface{
 		if x == nil {
 			return nil, errors.New("x509: failed to unmarshal elliptic curve point")
 		}
-		pub := &ecdsa.PublicKey{
+
+		pub := &PublicKey{
 			Curve: namedCurve,
 			X:     x,
 			Y:     y,

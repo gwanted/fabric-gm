@@ -199,7 +199,7 @@ func (msp *bccspmsp) validateIdentityOUsV11(id *identity) error {
 		}
 	}
 	if counter != 1 {
-		return errors.Errorf("the identity must be a client, a peer or an orderer identity to be valid, not a combination of them. OUs: [%v], MSP: [%s]", id.GetOrganizationalUnits(), msp.name)
+		return errors.Errorf("the identity must be a client, a peer or an orderer identity to be valid, not a combination of them. OUs: [%v], MSP: [%s] OU.OrganizationalUnitIdentifier %v, msp.clientOU.OrganizationalUnitIdentifier %v , msp.peerOU.OrganizationalUnitIdentifier %v", id.GetOrganizationalUnits(), msp.name, id.GetOrganizationalUnits()[0].OrganizationalUnitIdentifier,msp.clientOU.OrganizationalUnitIdentifier,msp.peerOU.OrganizationalUnitIdentifier)
 	}
 
 	return nil
