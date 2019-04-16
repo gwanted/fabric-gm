@@ -972,16 +972,21 @@ func checkSignature(algo SignatureAlgorithm, signed, signature []byte, publicKey
 
 	switch algo {
 	case SHA1WithRSA, DSAWithSHA1, ECDSAWithSHA1, SM2WithSHA1:
+		fmt.Println("SHA1")
 		hashType = SHA1
 	case SHA256WithRSA, SHA256WithRSAPSS, DSAWithSHA256, ECDSAWithSHA256, SM2WithSHA256:
+		fmt.Println("SHA256")
 		hashType = SHA256
 	case SHA384WithRSA, SHA384WithRSAPSS, ECDSAWithSHA384:
+		fmt.Println("SHA384")
 		hashType = SHA384
 	case SHA512WithRSA, SHA512WithRSAPSS, ECDSAWithSHA512:
+		fmt.Println("SHA512")
 		hashType = SHA512
 	case MD2WithRSA, MD5WithRSA:
 		return InsecureAlgorithmError(algo)
 	case SM2WithSM3: // SM3WithRSA reserve
+		fmt.Println("SM3")
 		hashType = SM3
 	default:
 		return ErrUnsupportedAlgorithm
