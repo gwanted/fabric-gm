@@ -156,8 +156,6 @@ func (id *identity) Verify(msg []byte, sig []byte) error {
 	if err != nil {
 		return errors.WithMessage(err, "failed computing digest")
 	}
-	fmt.Printf("Verify: digest = %s", hex.Dump(digest))
-	fmt.Printf("Verify: hashOpt = %v", hashOpt)
 
 	if mspIdentityLogger.IsEnabledFor(zapcore.DebugLevel) {
 		mspIdentityLogger.Debugf("Verify: digest = %s", hex.Dump(digest))
