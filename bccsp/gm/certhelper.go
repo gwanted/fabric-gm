@@ -186,7 +186,13 @@ func ParseX509Certificate2Sm2(x509Cert *x509.Certificate) *sm2.Certificate {
 	for _, val := range x509Cert.ExtKeyUsage {
 		sm2cert.ExtKeyUsage = append(sm2cert.ExtKeyUsage, sm2.ExtKeyUsage(val))
 	}
+        if sm2cert.SignatureAlgorithm == sm2.UnknownSignatureAlgorithm {
+		sm2cert.SignatureAlgorithm = sm2.SM2WithSM3
+	}
 
+	if sm2cert.PublicKeyAlgorithm == sm2.UnknownPublicKeyAlgorithm {
+		sm2cert.PublicKeyAlgorithm = sm2.ECDSA
+	}
 	return sm2cert
 }
 
