@@ -32,6 +32,6 @@ pycparser==2.18
 pyOpenSSL==17.1.0
 pysha3==1.0.2
 python-slugify==1.2.4
-PyYAML==3.12
+PyYAML==5.1
 six==1.10.0
 Unidecode==0.4.21
